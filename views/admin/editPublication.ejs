@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Publication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container my-4">
+    <h1>Edit Publication</h1>
+    <form action="/admin/editPublication/<%= publication._id %>" method="POST">
+        <!-- Publication Name -->
+        <div class="mb-3">
+            <label for="name" class="form-label">Publication Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="<%= publication.name %>" required>
+            <input type="file" name="productImages" multiple>
+        </div>
+
+        <!-- Is Listed -->
+        <div class="mb-3">
+            <label for="isListed" class="form-label">Is Listed</label>
+            <select class="form-control" id="isListed" name="isListed" required>
+                <option value="true" <%= publication.isListed ? 'selected' : '' %>>Yes</option>
+                <option value="false" <%= !publication.isListed ? 'selected' : '' %>>No</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Update Publication</button>
+        <a href="/admin/publication" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<%- include("../../views/partials/admin/footer") %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

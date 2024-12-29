@@ -1,0 +1,513 @@
+<%- include("../../views/partials/admin/header") %>
+
+<!-- Sidebar -->
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+    }
+
+    .sidebar {
+        width: 220px;
+        height: 100vh;
+        background: linear-gradient(to bottom, #e91e63, #333);
+        color: #fff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 20px 0;
+    }
+
+    .sidebar h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+        text-decoration: none;
+        color: #fff;
+        font-size: 1em;
+        padding: 10px 20px;
+        display: block;
+        transition: background 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar .In-Stock {
+        background: #fff;
+        color: #333;
+    }
+
+    .content {
+        margin-left: 220px;
+        padding: 20px;
+        width: calc(100% - 220px);
+    }
+
+    .content h1 {
+        font-size: 2em;
+        color: #333;
+    }
+
+    .search-bar {
+        display: flex;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .search-bar input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    .search-bar button {
+        padding: 10px 15px;
+        background-color: #e91e63;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+    .search-bar button:hover {
+        background-color: #d81b60;
+    }
+
+    .category-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .category-form input {
+        width: 200px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    .category-form button {
+        padding: 10px 15px;
+        background-color: #e91e63;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .category-form button:hover {
+        background-color: #d81b60;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 0.875em;
+        margin-top: -5px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table th,
+    table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    table th {
+        background-color: #7e3b51;
+        color: #fff;
+    }
+
+    table td button {
+        padding: 5px 10px;
+        border: none;
+        color: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .edit-btn {
+        background-color: #4caf50;
+    }
+
+    .unlist-btn {
+        background-color: #f44336;
+    }
+
+    .list-btn {
+        background-color: #007bff;
+    }
+
+    .edit-btn:hover {
+        background-color: #388e3c;
+    }
+
+    .unlist-btn:hover {
+        background-color: #d32f2f;
+    }
+
+    .list-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+    }
+
+    .pagination li {
+        margin: 0 5px;
+    }
+
+    .pagination li a {
+        text-decoration: none;
+        padding: 8px 12px;
+        background-color: #e91e63;
+        color: #fff;
+        border-radius: 3px;
+        transition: background 0.3s;
+    }
+
+    .pagination li a:hover {
+        background-color: #d81b60;
+    }
+
+    .pagination .In-Stock a {
+        background-color: #333;
+    }
+
+    button.edit-btn {
+    background-color: #007bff; 
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button.save-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button.edit-btn:hover,
+button.save-btn:hover {
+    opacity: 0.8; 
+}
+
+
+.edit-btn {
+    display: inline-block; 
+    padding: 5px 10px; 
+    background-color: #007bff;
+    color: #fff; 
+    text-decoration: none; 
+    border: none; 
+    border-radius: 5px; 
+    font-size: 14px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+.edit-btn:hover {
+    background-color: #0056b3; 
+}
+
+
+
+</style>
+
+<!-- Main Content -->
+<div class="content">
+    <h1>Categories</h1>
+    <br>
+    <br>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search category...">
+        <button type="button" id="clearSearch">Clear</button>
+    </div>
+
+    <!-- Add Category -->
+    <form class="category-form" id="categoryForm"  >
+        <div>
+            <input type="text" id="name" placeholder="Enter category name">
+            <div class="error-message" id="nameError"></div>
+        </div>
+        <div>
+            <input type="text" id="description" placeholder="Enter category description">
+            <div class="error-message" id="descriptionError"></div>
+        </div>
+        <div>
+            <input type="text" id="offer" placeholder="Enter offer (if any)">
+            <input type="number" id="offerPrice" placeholder="Enter offer price">
+            <div class="error-message" id="offerError"></div>
+        </div>
+        <button type="submit">Add Category</button>
+    </form>  
+      
+
+    <!-- Available Categories Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Category Name</th>
+                <th>Description</th>
+                <th>Offer</th>
+                <th>Offer Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+                <th>Edit</th> <!-- New Edit Column -->
+            </tr>
+        </thead>
+        <tbody id="categoryTable">
+            <% for(let i=0;i<cat.length;i++){%>
+                <tr>
+                    <td><%= cat[i].name %></td>
+                    <td><%= cat[i].description %></td>
+                    <td><%= cat[i].offer || "None" %></td>
+                    <td><%= cat[i].offerPrice || "N/A" %></td>
+                    <td class="editable"><%= cat[i].status || "In-Stock" %></td>
+                    <td>
+                        <button class="<%= cat[i].status === 'In-Stock' ? 'unlist-btn' : 'list-btn' %>">
+                            <%= cat[i].status === 'In-Stock' ? 'Unlist' : 'List' %>
+                        </button>
+                    </td>
+                    <td>
+                        <a href="/admin/editCategory/<%= cat[i]._id %>" class="edit-btn" data-id="<%= cat[i]._id %>">Edit</a>
+                    </td>
+                </tr>
+            <%}%>
+        </tbody>
+    </table>
+</div>
+
+<%- include("../../views/partials/admin/footer") %>
+
+<script>
+    const form = document.getElementById("categoryForm");
+    const categoryTable = document.getElementById("categoryTable");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearch = document.getElementById("clearSearch");
+
+    // Form submission handler
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById("name").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const offer = document.getElementById("offer").value.trim();
+        const offerPrice = document.getElementById("offerPrice").value.trim();
+        //Errors
+        const nameError = document.getElementById("nameError");
+        const descriptionError = document.getElementById("descriptionError");
+        const offerError = document.getElementById("offerError");
+        const offerPriceError = document.getElementById("offerPriceError");
+
+        nameError.textContent = "";
+        descriptionError.textContent = "";
+        offerError.textContent = "";
+
+        let isValid = true;
+
+        if (!name) {
+            nameError.textContent = "Category name is required.";
+            isValid = false;
+        } else if (name.length < 3) {
+            nameError.textContent = "Category name must be at least 3 characters.";
+            isValid = false;
+        }
+
+        if (!description) {
+            descriptionError.textContent = "Description is required.";
+            isValid = false;
+        } else if (description.length < 5) {
+            descriptionError.textContent = "Description must be at least 5 characters.";
+            isValid = false;
+        }
+
+        if (offer && isNaN(offerPrice)) {
+            offerError.textContent = "Offer price must be a valid number.";
+            isValid = false;
+        }
+        if (isValid) {
+            try {
+                const response = await fetch("/admin/addCategory", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, description, offer, offerPrice, isListed: true }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log(data);  
+                    
+                    const newRow = `
+                        <tr data-id="${data.category._id}">
+                            <td>${data.category.name}</td>
+                            <td>${data.category.description}</td>
+                            <td>${data.category.offer || "N/A"}</td>
+                            <td>${data.category.offerPrice || "N/A"}</td>
+                            <td class="status">${data.category.isListed ? "In-Stock" : "Out of Stock"}</td>
+                            <td>
+                                <button class="${data.category.isListed ? 'unlist-btn' : 'list-btn'}">
+                                    ${data.category.isListed ? 'Unlist' : 'List'}
+                                </button>
+                            </td>
+                            <td>
+                                <a href="/admin/editCategory/${data.category._id}"  class="edit-btn" data-id="${data.category._id}">Edit</a>
+                            </td>
+                        </tr>
+                    `;
+                    console.log(newRow);
+                    
+                    categoryTable.innerHTML += newRow;
+                } else {
+                    console.error("Failed to add category:", data.error);
+                }
+            } catch (error) {
+                console.error("Error adding category:", error);
+            }
+        }
+    });
+
+    // Search functionality
+    searchInput.addEventListener("input", () => {
+        const filter = searchInput.value.toLowerCase();
+        const rows = categoryTable.querySelectorAll("tr");
+
+        rows.forEach(row => {
+            const name = row.children[0].textContent.toLowerCase();
+            const description = row.children[1].textContent.toLowerCase();
+            row.style.display = name.includes(filter) || description.includes(filter) ? "" : "none";
+        });
+    });
+
+    // Clear search functionality
+    clearSearch.addEventListener("click", () => {
+        searchInput.value = "";
+        const rows = categoryTable.querySelectorAll("tr");
+        rows.forEach(row => (row.style.display = ""));
+    });
+
+    // Handle edit, save, OK, list, and unlist functionality
+    categoryTable.addEventListener("click", async (event) => {
+        const target = event.target;
+
+        if (target.classList.contains("edit-btn")) {
+            const row = target.closest("tr");
+            const cells = row.querySelectorAll("td:not(:last-child):not(.status)"); 
+            cell.innerHTML = `<input type="text" value="${currentText}" style="width: 100%; padding: 5px;"/>`;
+            
+        } else if (target.classList.contains("ok-btn")) {
+            const row = target.closest("tr");
+            const cells = row.querySelectorAll("td:not(:last-child):not(.status)"); 
+            const updatedData = {};
+
+            cells.forEach(cell => {
+                const input = cell.querySelector("input");
+                const key = cell.dataset.key;
+                updatedData[key] = input.value.trim();
+                cell.textContent = input.value.trim();
+            });
+
+            target.textContent = "Edit";
+            target.classList.replace("ok-btn", "edit-btn");
+            target.style.backgroundColor = "#007bff"; // Blue for "Edit"
+
+            // Send updated data to the server
+            try {
+                const response = await fetch(`/admin/updateCategory/${row.dataset.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedData),
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    console.error("Update failed:", result.error);
+                }
+            } catch (error) {
+                console.error("Error updating category:", error);
+            }
+        } else if (target.classList.contains("unlist-btn")) {
+            const row = target.closest("tr");
+            const statusCell = row.querySelector(".status");
+            statusCell.textContent = "Out of Stock";
+            target.textContent = "List";
+            target.classList.replace("unlist-btn", "list-btn");
+
+            // Send status update to the server
+            try {
+                const response = await fetch(`/admin/updateStatus/${row.dataset.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ isListed: false }),
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    console.error("Status update failed:", result.error);
+                }
+            } catch (error) {
+                console.error("Error updating status:", error);
+            }
+        } else if (target.classList.contains("list-btn")) {
+            const row = target.closest("tr");
+            const statusCell = row.querySelector(".status");
+            statusCell.textContent = "In-Stock";
+            target.textContent = "Unlist";
+            target.classList.replace("list-btn", "unlist-btn");
+
+            // Send status update to the server
+            try {
+                const response = await fetch(`/admin/updateStatus/${row.dataset.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ isListed: true }),
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    console.error("Status update failed:", result.error);
+                }
+            } catch (error) {
+                console.error("Error updating status:", error);
+            }
+        }
+    });
+    
+</script>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" />
+    <style>
+      /* General styles */
+      body {
+        font-family: Arial, sans-serif;
+        background-image: url("../Books/Background01.jpg");
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background-color: white;
+        padding: 20px 60px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 350px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #007bff;
+      }
+
+      .error {
+        color: red;
+        font-size: 0.8em;
+      }
+
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        font-size: 1em;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background-color: #0056b3;
+      }
+
+      .google-btn {
+        width: 50px;
+        height: 50px;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        margin: 0 auto;
+      }
+
+      .google-btn:hover {
+        background-color: #f7f7f7;
+      }
+
+      .google-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .divider {
+        text-align: center;
+        margin: 15px 0;
+        color: #888;
+      }
+
+      .login-link {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .login-link a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      .login-link a:hover {
+        text-decoration: underline;
+      }
+
+      /* Small screen adjustments */
+      @media screen and (max-width: 480px) {
+        .container {
+          width: 100%;
+          padding: 15px;
+        }
+
+        .btn,
+        .google-btn {
+          font-size: 14px;
+          padding: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <form id="loginForm">
+        <h2>Login</h2>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email address"
+            required
+          />
+          <span class="error" id="emailError"></span>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+          />
+          <span class="error" id="passwordError"></span>
+        </div>
+        <%if(locals.message && message.length>0){%>
+        <div class="alert alert-danger text-center"><%=message%></div>
+        <%}%>
+        <button type="submit" class="btn">Login</button>
+        <div class="divider">OR Sign up with</div>
+        <button type="button" class="btn google-btn">
+          <img src="../Books/Google-G.svg" alt="Google G" class="google-icon" />
+        </button>
+        <p class="login-link">
+          Don't have an account? <a href="/signup">Sign Up</a>
+        </p>
+      </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      // login.js
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault(); // Prevent form submission
+          let isValid = true;
+
+          // Clear previous error messages
+          document
+            .querySelectorAll(".error")
+            .forEach((error) => (error.textContent = ""));
+
+          // Collect form data
+          const email = document.getElementById("email").value.trim();
+          const password = document.getElementById("password").value;
+
+          // Basic validation
+          if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            isValid = false;
+            document.getElementById("emailError").textContent =
+              "Enter a valid email address.";
+          }
+          if (password.length < 6) {
+            isValid = false;
+            document.getElementById("passwordError").textContent =
+              "Password must be at least 6 characters.";
+          }
+
+          if (isValid) {
+            try {
+              const response = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+              });
+              const data = await response.json();
+              console.log("hkhkh",data);
+              if (data.success) {
+                window.location.href = "/"; // Redirect to dashboard or another page
+              } else { 
+                Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: data.message,
+                footer: '<a href="/signup">signup</a>',
+              });
+              }
+            } catch (error) {
+              console.error("Error:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+                footer: '<a href="#">Why do I have this issue?</a>',
+              });
+            }
+          }
+        });
+    </script>
+  </body>
+</html>

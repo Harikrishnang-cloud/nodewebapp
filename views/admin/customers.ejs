@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booklove - Customers</title>
+    <style>
+        /* General Reset */
+        body {
+            /* width:500px */
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background: linear-gradient(to bottom, #e91e63, #333);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px 0;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 1em;
+            padding: 10px 20px;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content */
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .content h1 {
+            font-size: 2em;
+            color: #333;
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .search-container button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background-color: #e91e63;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-container button:hover {
+            background-color: #d81b60;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #7e3b51;
+            color: #fff;
+        }
+
+        table td button {
+            padding: 5px 10px;
+            border: none;
+            color: #fff;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .block-btn {
+            background-color: #f44336;
+        }
+
+        .unblock-btn {
+            background-color: #4caf50;
+        }
+
+        .block-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .unblock-btn:hover {
+            background-color: #388e3c;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination li a {
+            text-decoration: none;
+            padding: 8px 12px;
+            background-color: #e91e63;
+            color: #fff;
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+
+        .pagination li a:hover {
+            background-color: #d81b60;
+        }
+
+        .pagination .active a {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Booklove</h2>
+        <ul>
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <li><a href="/admin/customers">Customers</a></li>
+            <li><a href="/admin/category">Category</a></li>
+            <li><a href="/admin/add-product">Add Product</a></li>
+            <li><a href="/admin/products">Products</a></li>
+            <li><a href="/admin/coupon">Coupon</a></li>
+            <li><a href="/admin/sales-report">Sales Report</a></li>
+            <li><a href="/admin/banner">Banner</a></li>
+            <li><a href="/admin/orders">Orders</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>Customers</h1>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" placeholder="Search by Name, Email, or Phone No." id="searchInput">
+            <button>Search</button>
+        </div>
+
+        <!-- Customers Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone No.</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (let i = 0; i < data.length; i++) { %>
+                <tr>
+                    <td><%= data[i].fullName %></td>
+                    <td><%= data[i].email %></td>
+                    <td><%= data[i].phone %></td>
+                    <td>
+                        <% if (data[i].isBlocked) { %>
+                            <button class="unblock-btn" onclick="toggleAction(this, false, '<%= data[i]._id %>')">Unblock</button>
+                        <% } else { %>
+                            <button class="block-btn" onclick="toggleAction(this, true, '<%= data[i]._id %>')">Block</button>
+                        <% } %>
+                    </td>
+                </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        function toggleAction(button, isBlocked, customerId) {
+            // Update UI
+            if (isBlocked) {
+                button.textContent = 'Unblock';
+                button.className = 'unblock-btn';
+                button.setAttribute('onclick', `toggleAction(this, false, '${customerId}')`);
+            } else {
+                button.textContent = 'Block';
+                button.className = 'block-btn';
+                button.setAttribute('onclick', `toggleAction(this, true, '${customerId}')`);
+            }
+
+            // Send request to backend
+            fetch(`blockCustomer?id=${customerId}&block=${isBlocked}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update customer status');
+            });
+        }
+    </script>
+</body>
+</html>

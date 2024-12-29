@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Category</title>
+    <style>
+      /* General Styles */
+      body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+
+      /* Form Styles */
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      input[type="text"]:focus {
+        border-color: #8b2c38;
+        box-shadow: 0 0 5px rgba(139, 44, 56, 0.5);
+      }
+
+      .save-btn-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .save-btn {
+        padding: 10px 20px;
+        background-color: #a42550;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .save-btn:hover {
+        background-color: #b71149;
+      }
+      .content{
+        width:500px;
+      }
+    </style>
+</head>
+<body>
+<%-include("../../views/partials/admin/header")%>
+
+<div class="content">
+    <div class="header">
+      <h2>Edit Category</h2>
+      <br><br>
+    </div>
+  
+    <div class="form-group">
+      <label for="categoryName">Category Name</label>
+      <input type="text" id="categoryName" placeholder="Enter category name" value="<%=category.name%>">
+    </div>
+  
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input type="text" id="description" placeholder="Enter description" value="<%=category.description%>">
+    </div>
+  
+    <div class="form-group">
+      <label for="offer">Offer</label>
+      <input type="text" id="offer" placeholder="Enter offer" value="<%=category.offer%>">
+    </div> 
+  
+    <div class="form-group">
+      <label for="offerPrice">Offer Price</label>
+      <input type="text" id="offerPrice" placeholder="Enter offer price" value="<%=category.offerPrice%>">
+    </div> 
+  
+    <div class="save-btn-container">
+      <button id="saveCategoryBtn" data-category-id="<%= category._id %>">Save</button>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  document.getElementById('saveCategoryBtn').addEventListener('click', async () => {
+      // Get the category ID from a hidden input or data attribute
+      const categoryId = document.getElementById('saveCategoryBtn').dataset.categoryId;
+      //define data
+      const categoryName = document.getElementById('categoryName').value;
+      const description = document.getElementById('description').value;
+      const offer = document.getElementById('offer').value;
+      const offerPrice = document.getElementById('offerPrice').value;
+      // Construct the data to send
+      const updatedCategory = {
+          name: categoryName,
+          description: description,
+          offer:offer,
+          offerPrice:offerPrice,
+      };
+      console.log("Updated category data:", updatedCategory);
+
+      try {
+          // Send the updated data to the server using fetch
+          const response = await fetch(`/admin/category/edit/${categoryId}`, { 
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(updatedCategory),
+          });
+
+          if (response.ok) {
+              // Success: Redirect to the category page
+              Swal.fire({
+              title: 'Success!',
+              text: 'Your category has been updated.',
+              icon: 'success',
+            });
+            setTimeout(() => {
+            window.location.href = '/admin/category';  
+            }, 5000);
+
+
+          } else {
+              alert('Failed to update the category. Please try again.');
+          }
+      } catch (error) {
+          console.error('Error updating category:', error);
+          alert('An error occurred. Please try again.');
+      }
+  });
+</script>
+
+
+<%-include("../../views/partials/admin/footer")%>
+</body>
+</html>

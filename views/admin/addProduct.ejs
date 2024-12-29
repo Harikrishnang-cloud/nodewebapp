@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - Booklove</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+ 
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            overflow-y: scroll;
+            text-align: left;
+        }
+
+        .content-main {
+            padding: 20px;
+            margin: 0 ;
+            max-width: 1200px;
+        }
+
+        .content-header {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .content-header h1 {
+            color: #333;
+        }
+
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two equal halves */
+            gap: 20px; 
+            margin-top: 20px;
+        }
+
+        .left-section,
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #a42550;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .image-upload-container {
+            display: flex;
+            flex-wrap: wrap;
+            /* gap: 10px; */
+        }
+
+        .image-preview {
+            width: 120px;
+            height: 120px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background: #357abd;
+        }
+        body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f7f7;
+    overflow: hidden; 
+}
+
+.content-main {
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+    max-height: 100vh; 
+    overflow-y: auto; 
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal halves */
+    gap: 20px;
+    margin-top: 20px;
+}
+.save-btn {
+    display: block;
+    margin: 5px;
+    padding: 4px 8px;
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.save-btn:hover {
+    background-color: #357abd;
+}
+.image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    margin: 5px;
+}
+
+.image-preview {
+    width: 120px;
+    height: 120px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f5;
+    overflow: hidden;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.button-group button {
+    padding: 4px 6px;
+    background-color: #4a90e2;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    flex: 1;
+    margin: 0 2px;
+}
+
+.button-group button.delete-btn {
+    background-color: #e94e4e;
+}
+
+.button-group button:hover {
+    opacity: 0.9;
+}
+
+    </style>
+</head>
+<body>
+<%- include("../../views/partials/admin/header") %>
+
+<section class="content-main">
+    <div class="content-header">
+        <h1>Add New Product</h1>
+    </div>
+    <form method="post" action="/admin/addProduct" enctype="multipart/form-data">
+        <div class="form-container">
+            <!-- Left Section -->
+            <div class="left-section">
+                <!-- General Info Section -->
+                <div class="card">
+                    <h3>General Info</h3>
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" name="productName" placeholder="Enter product name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" placeholder="Enter product description"></textarea>
+                    </div>
+                </div>
+
+                <!-- Category Section -->
+                <div class="card">
+                    <h3>Category</h3>
+                    <div class="form-group">
+                        <label for="category">Select Category</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a Category</option>
+                            <% for (let i = 0; i < cat.length; i++) { %>
+                                <option value="<%= cat[i].id %>"><%= cat[i].name %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Stock Section -->
+                <div class="card">
+                    <h3>Stock</h3>
+                    <div class="form-group">
+                        <label for="stock">Available Quantity</label>
+                        <input type="text" id="stock" name="Quantity" placeholder="Enter stock quantity" required>
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- Right Section -->
+            <div class="right-section">
+                <!-- Media Section -->
+                <div class="card">
+                    <h3>Media</h3>
+                    <div class="image-upload-container">
+                        <% for (let i = 0; i < 4; i++) { %>
+                        <div class="image-container">
+                            <div class="image-preview" id="previewContainer<%= i %>">
+                                <span>Add Image</span>
+                            </div>
+                            <input type="file" name="images" multiple id="imageInput<%= i %>" accept="image/*" style="display: none;">
+                            <div class="button-group">
+                                <!-- <button type="button" class="save-btn" onclick="handleSave('<%= i %>')">Save</button> -->
+                                <button type="button" class="delete-btn" onclick="handleDelete('<%= i %>')">Delete</button>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+                <!-- Publication Listing Section -->
+            <div class="card">
+                <h3>Publication</h3>
+                <div class="form-group">
+                    <label for="publication">Select Publication</label>
+                    <select id="publication" name="publication" required>
+                        <option value="">Select a Publication</option>
+                        <% for (let i = 0; i < pub.length; i++) { %>
+                            <option value="<%= pub[i].id %>"><%= pub[i].name %></option>
+                        <% } %>
+                    </select>
+                </div>
+            </div>
+                
+                <!-- Pricing Section -->
+                <div class="card">
+                    <h3>Pricing</h3>
+                    <div class="form-group">
+                        <label for="regularPrice">Regular Price</label>
+                        <input type="text" id="regularPrice" name="regularPrice" placeholder="Enter regular price" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="salePrice">Sale Price</label>
+                        <input type="text" id="salePrice" name="salePrice" placeholder="Enter sale price">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary">Add Product</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+<!-- Cropper Modal -->
+<div id="cropperModal">
+    <div class="modal-content">
+        <img id="cropperImage" alt="Crop Image">
+        <div class="modal-buttons">
+            <button class="btn-primary" id="cropSaveBtn">Save</button>
+            <button class="btn-primary" id="cropCancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script>
+
+ const maxImages = 4;
+    let cropper = null;
+    let currentImageIndex = null;
+
+    for (let i = 0; i < maxImages; i++) {
+        const previewContainer = document.getElementById(`previewContainer${i}`);
+        const imageInput = document.getElementById(`imageInput${i}`);
+
+        previewContainer.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', (event) => handleFileChange(event, i));
+    } 
+
+    const cropperModal = document.getElementById('cropperModal');
+    const cropperImage = document.getElementById('cropperImage');
+    const cropSaveBtn = document.getElementById('cropSaveBtn');
+    const cropCancelBtn = document.getElementById('cropCancelBtn');
+
+    function handleFileChange(event, index) {
+
+        const file = event.target.files[0];
+        
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                cropperImage.src = e.target.result;
+                
+                openCropperModal(index);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function openCropperModal(index) {
+        currentImageIndex = index;
+        cropperModal.style.display = 'flex';
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(cropperImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+        });
+    }
+
+    cropSaveBtn.addEventListener('click', () => {
+        const croppedCanvas = cropper.getCroppedCanvas();
+        const croppedImage = croppedCanvas.toDataURL('image/png');
+        const previewContainer = document.getElementById(`previewContainer${currentImageIndex}`);
+
+        // Update the preview container with cropped image
+        previewContainer.innerHTML = `<img src="${croppedImage}" alt="Cropped Image">`;
+
+        closeCropperModal();
+    });
+
+    cropCancelBtn.addEventListener('click', closeCropperModal);
+
+    function closeCropperModal() {
+        cropperModal.style.display = 'none';
+        if (cropper) cropper.destroy();
+    }
+
+    // function handleSave(index) {
+    //     alert(`Image ${index + 1} saved!`);
+    // }
+
+    function handleDelete(index) {
+        const previewContainer = document.getElementById(`previewContainer${index}`);
+        previewContainer.innerHTML = `<span>Add Image</span>`;
+        alert(`Image ${index + 1} deleted!`);
+    }
+
+</script>
+
+<%- include("../../views/partials/admin/footer") %>
+</body>
+</html>

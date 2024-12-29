@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Listing</title>
+     
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        
+         body {
+            background-color: #fdfcfb; 
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            color: black
+        }
+        header, footer {
+            background-color: #2b3e50; 
+            color: #fdfcfb; 
+            padding: 10px 20px;
+        }
+
+
+        
+        .table {
+            background-color: #7e3b51;
+            overflow: hidden;
+        }
+
+        .table-d {
+            background-color: #7e3b51;
+            color: #ffffff;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f4f8fb; 
+        }
+
+        th, td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        /* Buttons Styling */
+        .btn-primary {
+            background-color: #4caf50; 
+            border-color: #4caf50;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b8b40;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+       
+        header, footer {
+            background-color: #7e3b51;
+            color: #ffffff;
+            padding: 10px 20px;
+        }
+
+        header a, footer a {
+            color: #f7ca18;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        header a:hover, footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Extra Styling for Responsiveness */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .table {
+                font-size: 14px;
+            }
+        }
+        .btn-success {
+    background-color: #4caf50; /* Green for Listed */
+    border-color: #4caf50;
+}
+
+.btn-warning {
+    background-color: #f39c12; /* Orange for Unlisted */
+    border-color: #f39c12;
+}
+
+.btn-success:hover {
+    background-color: #3b8b40;
+}
+
+.btn-warning:hover {
+    background-color: #e67e22;
+}
+
+    </style>
+</head>
+<body>
+<%- include("../../views/partials/admin/header") %>
+    <div class="container mt-5">
+        <h1 class="mb-4">Product Listing</h1>
+        <table class="table table-bordered table-hover">
+            <thead class="" style="background-color: #7e3b51 ;">
+                <tr>
+                    <th>No.</th>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                    <th>Publication</th>
+                    <th>Category</th>
+                    <th>Regular Price</th>
+                    <th>Sale Price</th>
+                    <th>Offer</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% products.forEach((product, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= product.productName %></td>
+                        <td><%= product.description %></td>
+                        <td><%= product.publication.name %></td>
+                        <td><%= product.category ? product.category.name : 'Uncategorized' %></td>
+                        <td><%= product.regularPrice %></td>
+                        <td><%= product.salePrice %></td>
+                        <td><%= product.productOffer %>%</td>
+                        <td><%= product.Quantity %></td>
+                        <td><%= product.status %></td>
+                        <td>
+                            <%= product.status === 'Unblock' ? 'Listed' : 'Unlisted' %>
+                        </td>
+                        <td>
+                            <a href="/products/edit/<%= product._id %>" class="btn btn-sm btn-primary">Edit</a>
+                            <button class="btn btn-sm <%= product.status === 'Unblock' ? 'btn-success' : 'btn-warning' %>" 
+                                onclick="toggleProductStatus('<%= product._id %>', '<%= product.status %>')">
+                                <%= product.status === 'Unblock' ? 'Block' : 'Unblock' %>
+                            </button>
+                        </td>
+                        
+                        
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+<%- include("../../views/partials/admin/footer") %>
+<script>
+    async function toggleProductStatus(productId, currentStatus) {
+        const confirmToggle = confirm(`Are you sure you want to ${currentStatus === 'Unblock' ? 'Block' : 'Unblock'} this product?`);
+        if (!confirmToggle) return;
+
+        try {
+            const response = await fetch(`/admin/products/toggle-status/${productId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                // Reload the page to reflect the updated status
+                location.reload();
+            } else {
+                alert(`Error: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error toggling product status:', error);
+            alert('An error occurred while updating the product status.');
+        }
+    }
+</script>
+
+
+</body>
+</html> 

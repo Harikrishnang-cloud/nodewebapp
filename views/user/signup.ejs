@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign-Up Form</title>
+  <link rel="stylesheet"> 
+  <style>
+    /* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('../Books/Background01.jpg');
+    /* background-color: #f4f4f4; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .container {
+    background-color: white;
+    padding: 20px 80px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 350px;
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #007BFF;
+  }
+  
+  .error {
+    color: red;
+    font-size: 0.8em;
+  }
+  
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  
+  .btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .google-btn {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    margin: 0 auto;
+  }
+  
+  .google-btn:hover {
+    background-color: #f7f7f7;
+  }
+  
+  .google-icon {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .divider {
+    text-align: center;
+    margin: 15px 0;
+    color: #888;
+  }
+  
+  .login-link {
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  .login-link a {
+    color: #007BFF;
+    text-decoration: none;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+  
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form method="post" action="/signup" id="signupForm">
+      <h2>Sign Up</h2>
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+        <span class="error" id="nameError"></span>
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+        <span class="error" id="emailError"></span>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+        <span class="error" id="phoneError"></span>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        <span class="error" id="passwordError"></span>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+        <span class="error" id="confirmPasswordError"></span>
+      </div>
+      <button type="submit" class="btn">Sign Up</button>
+      <div class="divider">OR Sign Up with</div>
+      <a href="/auth/google" class="btn google-btn">
+        <img src="../Books/Google-G.svg" alt="Google G" class="google-icon">
+      </a>      
+      <p class="login-link">Already registered? <a href="/login">Login</a></p>
+    </form>
+  </div>
+  <!-- <script src="sign-up.js"></script>  -->
+  <script>
+    // script.js
+    document.getElementById('signupForm').addEventListener('submit', async function (e) {
+    e.preventDefault(); // Prevent form submission
+    let isValid = true;
+  
+    // Clear previous error messages
+    document.querySelectorAll('.error').forEach(error => (error.textContent = ''));
+  
+    // Collect form data
+    const fullName = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+  
+    // Basic validation
+    if (fullName.trim() === '') {
+      isValid = false;
+      document.getElementById('nameError').textContent = 'Full Name is required.';
+    }
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      isValid = false;
+      document.getElementById('emailError').textContent = 'Enter a valid email address.';
+    }
+    if (!phone.match(/^[0-9]{10}$/)) {
+      isValid = false;
+      document.getElementById('phoneError').textContent = 'Enter a valid 10-digit phone number.';
+    }
+    if (password.length < 6) {
+      isValid = false;
+      document.getElementById('passwordError').textContent = 'Password must be at least 6 characters.';
+    }
+    if (password.trim() !== confirmPassword.trim()) {
+      isValid = false;
+      document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.';
+    }
+   
+    if (isValid) {
+      try {
+        const response = await fetch('/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, phone, password }),
+        });
+        if (response.ok) {
+        window.location.href = '/otp'; 
+      } else {
+        const errorData = await response.json();
+        alert('Error: ' + errorData.message); // Display server error
+      }
+    } catch (error) {
+      console.error('Network Error:', error);
+      alert('Failed to send data. Please try again later.');
+    }
+  
+     
+    // }else{
+
+  }
+  });
+  
+  </script>
+</body>
+</html>

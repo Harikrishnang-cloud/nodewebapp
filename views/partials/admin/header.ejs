@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #e91e63, #333);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #f8f9fa;
+        }
+
+        .sidebar a {
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(233, 30, 99, 0.8);
+            color: #fff;
+        }
+
+        .sidebar a:active {
+            background-color: #444;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background-color: #f4f4f4;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .main-header {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .main-header img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .main-header h1 {
+            font-size: 24px;
+            color: #333;
+            flex: 1; /* Allows the heading to take up remaining space */
+        }
+
+        .logout-btn {
+            background-color: #e91e63;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 16px;
+            text-decoration: none; /* Ensures no underline */
+        }
+
+        .logout-btn:hover {
+            background-color: #d81b60;
+            transform: scale(1.05);
+        }
+
+        .logout-btn:active {
+            background-color: #c2185b;
+        }
+
+        .content {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar h2 {
+                display: none;
+            }
+
+            .sidebar a {
+                text-align: center;
+                padding: 15px;
+            }
+            .sidebar a span {
+                display: none;
+            }
+
+            .main-content {
+                padding: 10px;
+            }
+
+            .main-header img {
+                height: 30px;
+            }
+
+            .logout-btn {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Booklove</h2>
+        <a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a>
+        <a href="/admin/users"><i class="fas fa-users"></i><span>Customers</span></a>
+        <a href="/admin/category"><i class="fas fa-tags"></i><span>Category</span></a>
+        <a href="/admin/publication"><i class="fas fa-book"></i><span>Publications</span></a>
+        <a href="/admin/addProduct"><i class="fas fa-plus"></i><span>Add Product</span></a>
+        <a href="/admin/productview"><i class="fas fa-box"></i><span>Products</span></a>
+        <a href="/admin/orders"><i class="fas fa-shopping-cart"></i><span>Orders</span></a>
+        <a href="/admin/coupon"><i class="fas fa-ticket-alt"></i><span>Coupon</span></a>
+        <a href="/admin/sales"><i class="fas fa-chart-line"></i><span>Sales Report</span></a>
+        <a href="/admin/logout"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+    </div>
+   
+</body>
+</html>
