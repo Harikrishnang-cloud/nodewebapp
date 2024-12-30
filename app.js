@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 
 // <---------- Admin parts ---------->
 app.use('/admin',adminRouter)
-// app.use('/uploads',express.static('public/uploads'))
+app.use('/uploads', express.static(path.join(__dirname, 'controllers/public/uploads')));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true })); // For form submissions

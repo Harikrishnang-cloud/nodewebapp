@@ -39,7 +39,9 @@ router.get("/addProduct",adminAuth,productController.productAddpage);
 router.post("/addProduct",adminAuth,upload.array('images', 4),productController.productAdd)
 router.get("/productview",adminAuth,productController.productview)
 router.post('/products/toggle-status/:id',adminAuth,productController.deleteProduct);
+router.get("/editProduct/:id",adminAuth,productController.editProduct)
+router.post("/editProduct/:id",adminAuth,upload.array('images',4),productController.updateProduct)
 
 
-
+ 
 module.exports = router;

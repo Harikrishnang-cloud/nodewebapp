@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #fdfcfb;
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: black;
+        }
+
+        .scrollable-container {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #7e3b51;
+        }
+
+        .btn-primary {
+            background-color: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b8b40;
+        }
+
+        .btn-secondary {
+            background-color: #7e3b51;
+            border-color: #7e3b51;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #643143;
+        }
+
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .img-preview-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .img-container {
+            text-align: center;
+        }
+
+        .img-thumbnail {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .btn-remove {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #ffffff;
+        }
+
+        .btn-remove:hover {
+            background-color: #b02a37;
+        }
+
+        .add-image {
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .btn-back {
+                position: static;
+                float: right;
+                margin-bottom: 10px;
+            }
+
+            .img-preview-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+<%- include("../../views/partials/admin/header") %>
+<header>
+    <a href="/admin/productview" class="btn btn-secondary btn-back">Back to Product Page</a>
+</header>
+
+<div class="scrollable-container">
+    <div class="container mt-5">
+        <h1 class="mb-4">Edit Product</h1>
+        <div class="form-container">
+            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <!-- Left Section -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Product Name</label>
+                            <input type="text" id="productName" name="productName" class="form-control" 
+                                   value="<%= product.productName %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control" rows="3" required>
+                                <%= product.description %>
+                            </textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select id="category" name="category" class="form-control" required>
+                                <% cat.forEach(category => { %>
+                                    <option value="<%= category._id %>" 
+                                            <%= product.category.equals(category._id) ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Quantity" class="form-label">Quantity</label>
+                            <input type="number" id="Quantity" name="Quantity" class="form-control" 
+                                   value="<%= product.Quantity %>" required>
+                        </div>
+                    </div>
+
+                    <!-- Right Section -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="publication" class="form-label">Publication</label>
+                            <select id="publication" name="publication" required>
+                                <option value="">Select a Publication</option>
+                                <% for (let i = 0; i < publication.length; i++) { %>
+                                    <option value="<%= publication[i].id %>"><%= publication[i].name %></option>
+                                <% } %>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="regularPrice" class="form-label">Regular Price</label>
+                            <input type="number" id="regularPrice" name="regularPrice" class="form-control" 
+                                   value="<%= product.regularPrice %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="salePrice" class="form-label">Sale Price</label>
+                            <input type="number" id="salePrice" name="salePrice" class="form-control" 
+                                   value="<%= product.salePrice %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="isListed" class="form-label">Is Listed</label>
+                            <select id="isListed" name="isListed" class="form-control">
+                                <option value="true" <%= product.isListed ? 'selected' : '' %>>Yes</option>
+                                <option value="false" <%= !product.isListed ? 'selected' : '' %>>No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Images Section -->
+                <div class="mb-3">
+                    <label class="form-label">Product Images</label>
+                    <div class="img-preview-container" id="imagePreviewContainer">
+                        <% for (let i = 0; i < 4; i++) { %>
+                            <div class="img-container" id="img-container-<%= i %>">
+                                <% if (product.productImage[i]) { %>
+                                    <img src="/uploads/<%= product.productImage[i] %>" alt="Product Image <%= i + 1 %>" class="img-thumbnail">
+                                    <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('<%= i %>')">Remove</button>
+                                    <input type="checkbox" name="removeImages[]" value="<%= product.productImage[i] %>" id="remove-<%= i %>" style="display:none;">
+                                <% } else { %>
+                                    <div class="img-thumbnail add-image" onclick="triggerFileInput('<%= i %>')" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
+                                        <span style="color: #ccc;">Add Image</span>
+                                    </div>
+                                <% } %>
+                                <input type="file" id="fileInput-<%= i %>" name="productImage" class="form-control file-input" style="display: none;" onchange="previewImage(this, '<%= i %>')">
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Submit and Cancel Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-primary">Update Product</button>
+                    <a href="/admin/productview" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerFileInput(index) {
+        document.getElementById(`fileInput-${index}`).click();
+    }
+
+    function previewImage(input, index) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById(`img-container-${index}`).innerHTML = `
+                    <img src="${e.target.result}" class="img-thumbnail">
+                    <button type="button" class="btn btn-remove btn-sm" onclick="removeImage(${index})">Remove</button>
+                `;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeImage(index) {
+        document.getElementById(`img-container-${index}`).innerHTML = `
+            <div class="img-thumbnail add-image" onclick="triggerFileInput(${index})" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
+                <span style="color: #ccc;">Add Image</span>
+            </div>
+            <input type="file" id="fileInput-${index}" name="productImage" class="form-control file-input" style="display: none;" onchange="previewImage(this, ${index})">
+        `;
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<%- include("../../views/partials/admin/footer") %>
+</body>
+</html>

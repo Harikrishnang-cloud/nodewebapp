@@ -5,39 +5,10 @@ const fs = require("fs")
 const multer = require("multer")
 const path = require("path");
 const sharp = require("sharp");
+const mongoose = require("mongoose")
 // const { publicationInfo } = require("./publicationController");
 // const Publication = require('../../models/publicationSchema');
 const publicationSchema = require("../../models/publicationSchema");
-
-
-
-
-// //Multer session
-// const storage = multer.diskStorage({
-//     destination: './public/uploads/', // Folder to save uploaded files
-//     filename: (req, file, cb) => {
-//         cb(null, `${Date.now()}_${file.originalname}`);
-//     },
-// });
-
-// // File upload validation
-// const fileFilter = (req, file, cb) => {
-//     const fileTypes = /jpeg|jpg|png|gif/;
-//     const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
-//     const mimeType = fileTypes.test(file.mimetype);
-
-//     if (extName && mimeType) {
-//         cb(null, true);
-//     } else {
-//         cb('Error: Images only!');
-//     }
-// };
-
-// const upload = multer({
-//     storage,
-//     fileFilter,
-//     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-// });
 
 
 //product add page
@@ -61,8 +32,7 @@ const productAdd = async (req, res) => {
 
         // Ensure the uploads directory exists
         if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, 
-                { recursive: true });
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
         
         const images = [];
@@ -72,11 +42,7 @@ const productAdd = async (req, res) => {
         
             try {
                 // Resize and save the image
-                await sharp(originalImagePath)
-                    .resize({ width: 440, height: 440 })
-                    .toFile(resizedImagePath);
-        
-                // Push the relative path of the resized image
+                await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
                 images.push(path.relative('public', resizedImagePath));
             } catch (error) {
                 console.error('Error processing image:', error.message);
@@ -108,7 +74,6 @@ const productAdd = async (req, res) => {
 };
 
 
-
 // product add cheyyan
 const productAddpage = async (req,res)=>{
     try {
@@ -136,6 +101,7 @@ const productview = async (req, res) => {
     }
 };
 
+//delete-Product
 const deleteProduct = async (req, res) => {
     console.log('lolololo');
     
@@ -163,10 +129,79 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+//edit-Product
+const editProduct = async(req,res)=>{
+    try {
+        const productId = req.params.id;
+        const product = await Product.findById(productId).populate('category').populate('publication')
+        if (product.productImage && product.productImage.length > 0) {
+            product.productImage = product.productImage.map(imgPath => {
+                return imgPath.replace(/\\/g, '/').replace('../controllers/public/uploads/', '');
+            });
+        }
+        
+        console.log(product.productImage); 
+        const categories = await Category.find();
+        const publication = await publicationSchema.find({});
+
+        res.render('editProduct',{product,cat:categories,publication})
+    } catch (error) {
+        console.error("Error loading edit page:", error.message)
+        res.status(500).send("Failed to load the edit page.")
+    }
+}
+//Update-Product
+const updateProduct = async (req, res) => {
+    console.log('Update Product Controller Hit');
+    try {
+      const productId = req.params.id; 
+      const { productName, description, regularPrice,salePrice, category,Quantity, publication } = req.body; 
+  
+      console.log('Request Params:', req.params);
+      console.log('Request Body:', req.body);
+      console.log('Request files:',req.files)
+  
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(400).json({ success: false, message: "Invalid Product ID format" });
+      }
+  
+      if (!productName || !description || !regularPrice || !category) {
+        return res.status(400).json({ success: false, message: "All fields are required" });
+      }
+      const updatedData = {
+            productName,
+            description,
+            category,
+            Quantity,
+            publication,
+            regularPrice,
+            salePrice,
+            productImage,
+      };
+      if (req.files && req.files.length > 0) {
+        const productImages = req.files.map((file) => file.path.replace(/\\/g, '/')); 
+        updatedData.productImage = productImages; 
+      }
+      // Update the product in the database
+      const updatedProduct = await Product.findByIdAndUpdate(productId,updatedData,{ new: true } );
+  
+      if (!updatedProduct) {
+        return res.status(404).json({ success: false, message: "Product not found" });
+      }
+      console.log('Updated Product:', updatedProduct);
+      res.json({ success: true, product: updatedProduct });
+    } catch (error) {
+      console.error('Error updating product:', error.stack);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+  
 
 module.exports = {
     productAddpage,
     productAdd,
     productview,
-    deleteProduct
+    deleteProduct,
+    editProduct,
+    updateProduct
 }

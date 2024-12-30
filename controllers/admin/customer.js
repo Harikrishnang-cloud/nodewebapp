@@ -1,5 +1,23 @@
 const user = require("../../models/userSchema")
 
+//customer Search data
+
+const searchCustomer = async(req,res)=>{
+    let query = req.query.query.toLowerCase();
+    try {
+        console.log(query);
+        
+        let customers = await Customer.find({$or:[{fullName:{regex:query,$options:'i'}},
+            {email:{regex:query,$options:'i'}},
+            {phone:{regex:query,$options:'i'}}
+        ]})
+        res.json(customers)
+        console.log(customers)
+    } catch (error) {
+        res.send(500).json({success:false, message:"search failed"})
+    }
+}
+
 //customer-page data
 const customerInfo = async(req,res)=>{
     try {
@@ -60,4 +78,5 @@ const customerBlocked = async(req,res)=>{
 module.exports = {
     customerInfo,
     customerBlocked,
+    searchCustomer,
 }

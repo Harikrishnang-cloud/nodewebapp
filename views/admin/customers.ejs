@@ -7,7 +7,6 @@
     <style>
         /* General Reset */
         body {
-            /* width:500px */
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -136,39 +135,10 @@
         .unblock-btn:hover {
             background-color: #388e3c;
         }
-
-        /* Pagination */
-        .pagination {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            list-style: none;
-            padding: 0;
-        }
-
-        .pagination li {
-            margin: 0 5px;
-        }
-
-        .pagination li a {
-            text-decoration: none;
-            padding: 8px 12px;
-            background-color: #e91e63;
-            color: #fff;
-            border-radius: 3px;
-            transition: background 0.3s;
-        }
-
-        .pagination li a:hover {
-            background-color: #d81b60;
-        }
-
-        .pagination .active a {
-            background-color: #333;
-        }
     </style>
 </head>
 <body>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>Booklove</h2>
@@ -192,7 +162,7 @@
         <!-- Search Bar -->
         <div class="search-container">
             <input type="text" placeholder="Search by Name, Email, or Phone No." id="searchInput">
-            <button>Search</button>
+            <button onclick="filterTable()">Search</button>
         </div>
 
         <!-- Customers Table -->
@@ -205,7 +175,7 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="customerTable">
                 <% for (let i = 0; i < data.length; i++) { %>
                 <tr>
                     <td><%= data[i].fullName %></td>
@@ -224,33 +194,39 @@
         </table>
     </div>
 
-    <!-- JavaScript -->
     <script>
-        function toggleAction(button, isBlocked, customerId) {
-            // Update UI
-            if (isBlocked) {
-                button.textContent = 'Unblock';
-                button.className = 'unblock-btn';
-                button.setAttribute('onclick', `toggleAction(this, false, '${customerId}')`);
-            } else {
-                button.textContent = 'Block';
-                button.className = 'block-btn';
-                button.setAttribute('onclick', `toggleAction(this, true, '${customerId}')`);
-            }
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#customerTable tr');
 
-            // Send request to backend
-            fetch(`blockCustomer?id=${customerId}&block=${isBlocked}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to update customer status');
+            rows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const email = row.cells[1].textContent.toLowerCase();
+                const phone = row.cells[2].textContent.toLowerCase();
+
+                if (name.includes(query) || email.includes(query) || phone.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
         }
+
+        function toggleAction(button, isBlocked, customerId) {
+            const action = isBlocked ? 'Unblock' : 'Block';
+            fetch(`/admin/customers/toggle?id=${customerId}&block=${isBlocked}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        button.textContent = isBlocked ? 'Unblock' : 'Block';
+                        button.className = isBlocked ? 'unblock-btn' : 'block-btn';
+                    } else {
+                        alert('Failed to update status');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
     </script>
+
 </body>
 </html>

@@ -146,7 +146,7 @@
                             <%= product.status === 'Unblock' ? 'Listed' : 'Unlisted' %>
                         </td>
                         <td>
-                            <a href="/products/edit/<%= product._id %>" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="/admin/editProduct/<%= product._id %>" class="btn btn-sm btn-primary">Edit</a>
                             <button class="btn btn-sm <%= product.status === 'Unblock' ? 'btn-success' : 'btn-warning' %>" 
                                 onclick="toggleProductStatus('<%= product._id %>', '<%= product.status %>')">
                                 <%= product.status === 'Unblock' ? 'Block' : 'Unblock' %>

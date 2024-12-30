@@ -39,7 +39,8 @@ const productSchema = new mongoose.Schema({
     productImage: [
         {
              type: String 
-            }],
+            }
+        ],
     isBlocked : {
         type : Boolean,
         default : false
@@ -56,7 +57,10 @@ const productSchema = new mongoose.Schema({
         required: true,
         default: "Unblock",
     },    
-
+    isListed : {
+        type : Boolean,
+        default : true
+    }
 },{timestamps : true})
 
 const Product = mongoose.model("Product",productSchema)
