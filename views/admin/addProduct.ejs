@@ -257,8 +257,6 @@
                     </div>
                 </div>
             </div>
-            
-
             <!-- Right Section -->
             <div class="right-section">
                 <!-- Media Section -->
@@ -373,10 +371,8 @@
         const croppedCanvas = cropper.getCroppedCanvas();
         const croppedImage = croppedCanvas.toDataURL('image/png');
         const previewContainer = document.getElementById(`previewContainer${currentImageIndex}`);
-
         // Update the preview container with cropped image
         previewContainer.innerHTML = `<img src="${croppedImage}" alt="Cropped Image">`;
-
         closeCropperModal();
     });
 
@@ -386,10 +382,6 @@
         cropperModal.style.display = 'none';
         if (cropper) cropper.destroy();
     }
-
-    // function handleSave(index) {
-    //     alert(`Image ${index + 1} saved!`);
-    // }
 
     function handleDelete(index) {
         const previewContainer = document.getElementById(`previewContainer${index}`);
