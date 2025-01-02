@@ -199,11 +199,21 @@
     }
 
     .pagination li a:hover {
-        background-color: #d81b60;
+        background-color: #7e3b51;
     }
+    
 
     .pagination .In-Stock a {
         background-color: #333;
+    }
+    .pagination a {
+        background-color: #e91e63;
+    }
+    .pagination a :active {
+        background-color: #7e3b51;
+    }
+    .pagination a:hover {
+        background-color: #7e3b51;
     }
 
     button.edit-btn {
@@ -292,7 +302,7 @@ button.save-btn:hover {
                 <th>Offer Price</th>
                 <th>Status</th>
                 <th>Actions</th>
-                <th>Edit</th> <!-- New Edit Column -->
+                <th>Edit</th> 
             </tr>
         </thead>
         <tbody id="categoryTable">
@@ -315,6 +325,21 @@ button.save-btn:hover {
             <%}%>
         </tbody>
     </table>
+    <!-- Pagination -->
+<ul class="pagination">
+    <% if (currentPage > 1) { %>
+        <li><a href="?page=<%= currentPage - 1 %>&limit=10">Previous</a></li>
+    <% } %>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <li>
+            <a href="?page=<%= i %>&limit=10" class="<%= i === currentPage ? 'In-Stock' : '' %>"><%= i %></a>
+        </li>
+    <% } %>
+    <% if (currentPage < totalPages) { %>
+        <li><a href="?page=<%= currentPage + 1 %>&limit=10">Next</a></li>
+    <% } %>
+</ul>
+
 </div>
 
 <%- include("../../views/partials/admin/footer") %>
@@ -378,8 +403,7 @@ button.save-btn:hover {
                 if (data.success) {
                     console.log(data);  
                     
-                    const newRow = `
-                        <tr data-id="${data.category._id}">
+                    const newRow = `<tr data-id="${data.category._id}">
                             <td>${data.category.name}</td>
                             <td>${data.category.description}</td>
                             <td>${data.category.offer || "N/A"}</td>
@@ -393,8 +417,7 @@ button.save-btn:hover {
                             <td>
                                 <a href="/admin/editCategory/${data.category._id}"  class="edit-btn" data-id="${data.category._id}">Edit</a>
                             </td>
-                        </tr>
-                    `;
+                        </tr>`;
                     console.log(newRow);
                     
                     categoryTable.innerHTML += newRow;

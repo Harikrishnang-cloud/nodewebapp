@@ -1,3 +1,4 @@
+const mongoose = require("mongoose")
 const user = require("../../models/userSchema")
 
 //customer Search data
@@ -19,57 +20,64 @@ const searchCustomer = async(req,res)=>{
 }
 
 //customer-page data
-const customerInfo = async(req,res)=>{
+const customerInfo = async (req, res) => {
     try {
-        let search = "";//oru search bar vakkunnund.
-        if(req.query.search){
+        let search = ""; // For the search bar
+        if (req.query.search) {
             search = req.query.search;
         }
-        console.log("A");
-        
-        let page = 1;//pagination ne vendi. initially 1 akki set cheyyam
-        if(req.query.page){
-            page = req.query.page
-        }
-        const limit=5
+
+        let page = parseInt(req.query.page) || 1; // Current page, default to 1
+        const limit = 6; // Number of records per page
+
+        // Fetch user data with search and pagination
         const userData = await user.find({
-            isAdmin:false,
-            $or:[
-
-                {name:{$regex:".*"+search+".*"}},
-                {email:{$regex:".*"+search+".*"}}
-            ]
+            isAdmin: false,
+            $or: [
+                { name: { $regex: ".*" + search + ".*", $options: "i" } },
+                { email: { $regex: ".*" + search + ".*", $options: "i" } },
+            ],
         })
-        .limit(limit*1)
-        .skip((page-1)*limit)
-        .exec()//chain of promise ne combine cheyyan vendi
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .exec();
 
-        const count = await user.find({
-            isAdmin:false,
-            $or:[
+        // Get total count of documents matching the search
+        const count = await user.countDocuments({
+            isAdmin: false,
+            $or: [
+                { name: { $regex: ".*" + search + ".*", $options: "i" } },
+                { email: { $regex: ".*" + search + ".*", $options: "i" } },
+            ],
+        });
 
-                {name:{$regex:".*"+search+".*"}},
-                {email:{$regex:".*"+search+".*"}}
-            ]
-        }).countDocuments()
-        res.render("customers",{data:userData})
+        const totalPages = Math.ceil(count / limit); // Calculate total pages
 
+        // Render the view with the required data
+        res.render("customers", {
+            data: userData,
+            currentPage: page,
+            totalPages,
+            searchQuery: search,
+        });
     } catch (error) {
-        
+        console.error("Error fetching customer data:", error);
+        res.status(500).send("Internal Server Error");
     }
-}
+};
+
 
 //Blocked Customer
 const customerBlocked = async(req,res)=>{
-
-    // console.log("hi") 
     try {
       let id = req.query.id;
       console.log(typeof(id))
-      let block = req.query.block
+      let block = req.query.block 
+      console.log(block)
       await user.updateOne({_id:id},{isBlocked:block})
       
-      res.status(200).json({message:"user update successful"})
+      
+      res.status(200).json({success:true, message:"user update successful"})
     } catch (error) {
       res.redirect("/pageerror")
     }

@@ -4,7 +4,7 @@ const mongoose = require("mongoose")
 const categoryInfo = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 4;
+    const limit = 6;
     const skip = (page - 1) * limit;
 
     const categoryData = await Category.find({})
@@ -71,32 +71,25 @@ const updateCategory = async (req, res) => {
   try {
     const id = req.params.id; 
     const { name, description, offer, offerPrice } = req.body;
-    
     console.log('Request Params:', req.params); 
+    console.log("id",req.params.id)
     console.log('Request Body:', req.body); 
-    
+
     // Validate ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid ID format" });
     }
-
     // Validate inputs
     if (!name || !description || offer === undefined || offerPrice === undefined) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
-
     // Update the category in the database
-    const updatedCategory = await Category.findByIdAndUpdate(
-      id,
-      { name, description, offer, offerPrice },
-      { new: true } 
-    );
+    const updatedCategory = await Category.findByIdAndUpdate(id,{ name, description, offer, offerPrice },{ new: true })
 
     if (!updatedCategory) {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
-
-    console.log('Updated Category:', updatedCategory); // Debug log
+    console.log('Updated Category:', updatedCategory); 
     res.json({ success: true, category: updatedCategory });
   } catch (error) {
     console.error('Error updating category:', error.stack);

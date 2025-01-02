@@ -135,6 +135,34 @@
         .unblock-btn:hover {
             background-color: #388e3c;
         }
+
+        .pagination {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .pagination a {
+        text-decoration: none;
+        padding: 8px 12px;
+        background: #e91e63;
+        color: #fff;
+        border-radius: 5px;
+        transition: background 0.3s;
+    }
+
+    .pagination a.active {
+        background: #7e3b51;
+    }
+
+    .pagination a:hover {
+        background: #7e3b51;
+    }
+
+
+
+
     </style>
 </head>
 <body>
@@ -192,6 +220,25 @@
                 <% } %>
             </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+<div class="pagination">
+    <% if (currentPage > 1) { %>
+        <a href="/admin/customers?page=<%= currentPage - 1 %>">Previous</a>
+    <% } %>
+
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="/admin/customers?page=<%= i %>" 
+           class="<%= currentPage === i ? 'active' : '' %>">
+           <%= i %>
+        </a>
+    <% } %>
+
+    <% if (currentPage < totalPages) { %>
+        <a href="/admin/customers?page=<%= currentPage + 1 %>">Next</a>
+    <% } %>
+</div>
+
     </div>
 
     <script>
@@ -214,12 +261,16 @@
 
         function toggleAction(button, isBlocked, customerId) {
             const action = isBlocked ? 'Unblock' : 'Block';
-            fetch(`/admin/customers/toggle?id=${customerId}&block=${isBlocked}`, { method: 'POST' })
+            fetch(`/admin/blockCustomer/toggle?id=${customerId}&block=${isBlocked}`, 
+            { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
+                    
                     if (data.success) {
                         button.textContent = isBlocked ? 'Unblock' : 'Block';
                         button.className = isBlocked ? 'unblock-btn' : 'block-btn';
+                        window.location.reload()
                     } else {
                         alert('Failed to update status');
                     }

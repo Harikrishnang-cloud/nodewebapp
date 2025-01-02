@@ -1,17 +1,26 @@
 const publication = require('../../models/publicationSchema')
 
 
-
-//publication-Details
-const publicationInfo = async (req,res)=>{
+// Publication Details with Pagination
+const publicationInfo = async (req, res) => {
     try {
-        
-        const publications = await publication.find();
-        res.render("publication",{publications})
+        const limit = 6; 
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit; 
+        const totalPublications = await publication.countDocuments(); 
+        const publications = await publication.find().skip(skip).limit(limit); 
+
+        const totalPages = Math.ceil(totalPublications / limit); 
+
+        res.render("publication", {
+            publications,
+            currentPage: page,
+            totalPages,
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-}
+};
 //add Publication
 const addPublication = async(req,res)=>{
     try {
@@ -72,30 +81,6 @@ const postEditPublication = async(req,res)=>{
         res.status(400).json({error:err.message})
     }
 }
-
-
-//blockUnBlock publications
-// const blockUnBlock = async (req, res) => {
-//     try {
-//         const id = req.params.id;
-//         const publication = await Publication.findById(id); 
-//         if (!publication) {
-//             return res.status(404).json({ message: "Publication not found" });
-//         }
-
-//         publication.status = publication.status === "Unblock" ? "Block" : "Unblock";
-//         await publication.save();
-
-//         res.status(200).json({
-//             message: `Publication status updated to ${publication.status}`,
-//             status: publication.status,
-//         });
-//     } catch (error) {
-//         console.error("Error toggling publication status:", error);
-//         res.status(500).json({ message: "Internal Server Error" });
-//     }
-// };
-
 
 
 

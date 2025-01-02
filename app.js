@@ -45,10 +45,8 @@ app.use('/admin',adminRouter)
 app.use('/uploads', express.static(path.join(__dirname, 'controllers/public/uploads')));
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.urlencoded({ extended: true })); // For form submissions
-app.use(express.json()); // For JSON payloads
-
-
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.json()); 
 
 
 app.listen(process.env.PORT,()=>{

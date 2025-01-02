@@ -17,6 +17,7 @@ const loadLogin = (req,res)=>{
       res.render("adminlogin",{message:null})
     }
 }
+
 // dashboard load cheyyan
 const loaddashboard = (req,res)=>{
   try {
@@ -30,6 +31,7 @@ const loaddashboard = (req,res)=>{
     console.log("dashboard cannot load",error)     
   }
 }
+
 //admin validation
 const adminLogin = async(req,res)=>{
     try {

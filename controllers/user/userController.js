@@ -4,6 +4,8 @@ const dotenv = require("dotenv").config();
 const nodemailer = require("nodemailer");
 const userHelper = require('../../helpers/userHelper')
 const bcrypt = require('bcrypt')
+const Books = require("../../models/productSchema")
+const Category = require("../../models/categorySchema")
 
 
 
@@ -20,7 +22,8 @@ const pageNotFound = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const userOtp = req.body.otp;
-    const validotp = await otpModel.findOne({otp:userOtp})
+    // const validotp = await otpModel.findOne({otp:userOtp})
+    const validotp = req.session.singupotp
     console.log("validotp",validotp)
        
     if(validotp){
@@ -99,10 +102,11 @@ const { fullName, email, phone, password} = req.body;
       return res.render("signup",{message:"Failed to send OTP.please try again."})
     }
     if (emailSent) {
-      const res = await otpModel.create({ 
-        email: email,
-        otp: otp,
-      });
+      // const res = await otpModel.create({ 
+      //   email: email,
+      //   otp: otp,
+      // });
+      req.session.singupotp = otp;
       console.log("otp",otp);
       
     }
@@ -138,6 +142,7 @@ const loadSignup = async (req, res) => {
 const loadShopping = async (req, res) => {
   try {
     res.render("shop");
+    
   } catch (error) {
     console.error("Shopping page not loading:", error);
     res.status(500).send("Server Error");
@@ -166,9 +171,31 @@ const resendotp = async (req, res) => {
 };
 // Load Homepage
 const loadHomepage = async (req, res) => {
+  console.log("Session", req.session.user)
   try {
+    const userbooks = await Books.find({isListed:true})
+    .limit(5)
+
+    const categoryBooks = await Category.aggregate([
+      {$match:{ isListed : true}},
+      {
+        $limit:4,
+      },{
+        $lookup:{from:"products",localField:"_id",foreignField:"category",as:"products"}
+      },
+      {$addFields:{topProducts:{$slice:["$products",5]}}},
+      {
+        $project:{
+          products:0
+        }
+      }
+    ]) 
+
+    // console.log(categoryBooks)
     res.render("home",{
-      user:req.session.user
+      user:req.session.user,
+      book:userbooks,
+      cats:categoryBooks
     });
   } catch (error) {
     console.error("Homepage not found:", error);

@@ -19,7 +19,7 @@ router.get("/logout",adminController.logout)
 
 //Customer Management
 router.get("/users",adminAuth,customerController.customerInfo)
-router.post("/blockCustomer",adminAuth,customerController.customerBlocked)//Block & Unblock 
+router.post("/blockCustomer/toggle",adminAuth,customerController.customerBlocked)//Block & Unblock 
 
 //Category Management
 router.get("/category",adminAuth,categoryController.categoryInfo)
@@ -41,7 +41,6 @@ router.get("/productview",adminAuth,productController.productview)
 router.post('/products/toggle-status/:id',adminAuth,productController.deleteProduct);
 router.get("/editProduct/:id",adminAuth,productController.editProduct)
 router.post("/editProduct/:id",adminAuth,upload.array('images',4),productController.updateProduct)
-
 
  
 module.exports = router;

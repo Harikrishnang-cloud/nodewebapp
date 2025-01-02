@@ -25,7 +25,7 @@
 
         
         .table {
-            background-color: #7e3b51;
+            background-color: #ffffff;
             overflow: hidden;
         }
 
@@ -79,7 +79,7 @@
             text-decoration: underline;
         }
 
-        /* Extra Styling for Responsiveness */
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 24px;
@@ -90,12 +90,12 @@
             }
         }
         .btn-success {
-    background-color: #4caf50; /* Green for Listed */
+    background-color: #4caf50; 
     border-color: #4caf50;
 }
 
 .btn-warning {
-    background-color: #f39c12; /* Orange for Unlisted */
+    background-color: #f39c12; 
     border-color: #f39c12;
 }
 
@@ -106,6 +106,42 @@
 .btn-warning:hover {
     background-color: #e67e22;
 }
+.pagination .page-link {
+    border-radius: 4px;
+    margin: 0 2px;
+    border: none;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: #c2185b;
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #e91e63;
+    border-color: #e91e63;
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: none;
+}
+.btn-primary {
+            background-color: #e91e63 !important;
+            border-color: #e91e63 !important;
+        }
+        .active>.page-link {
+            background-color: #763b51 !important;
+            border-color : #763b51 !important;
+        }
+        .btn-primary:hover {
+            background-color: #6c334b;
+        }
+
 
     </style>
 </head>
@@ -142,9 +178,7 @@
                         <td><%= product.productOffer %>%</td>
                         <td><%= product.Quantity %></td>
                         <td><%= product.status %></td>
-                        <td>
-                            <%= product.status === 'Unblock' ? 'Listed' : 'Unlisted' %>
-                        </td>
+                        <td><%= product.status === 'Unblock' ? 'Listed' : 'Unlisted' %></td>
                         <td>
                             <a href="/admin/editProduct/<%= product._id %>" class="btn btn-sm btn-primary">Edit</a>
                             <button class="btn btn-sm <%= product.status === 'Unblock' ? 'btn-success' : 'btn-warning' %>" 
@@ -153,18 +187,45 @@
                             </button>
                         </td>
                         
-                        
                     </tr>
                 <% }); %>
             </tbody>
         </table>
-    </div>
+ <!-- Pagination Controls -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        <% if (currentPage > 1) { %>
+            <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+            </li>
+        <% } else { %>
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+            </li>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+            <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+            </li>
+        <% } else { %>
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+        <% } %>
+    </ul>
+</nav>
 <%- include("../../views/partials/admin/footer") %>
 <script>
     async function toggleProductStatus(productId, currentStatus) {
         const confirmToggle = confirm(`Are you sure you want to ${currentStatus === 'Unblock' ? 'Block' : 'Unblock'} this product?`);
         if (!confirmToggle) return;
-
         try {
             const response = await fetch(`/admin/products/toggle-status/${productId}`, {
                 method: 'POST',
@@ -172,10 +233,8 @@
             });
 
             const result = await response.json();
-
             if (response.ok) {
                 alert(result.message);
-                // Reload the page to reflect the updated status
                 location.reload();
             } else {
                 alert(`Error: ${result.message}`);

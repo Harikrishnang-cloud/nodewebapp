@@ -13,11 +13,15 @@
             color: #333;
         }
         .btn-primary {
-            background-color: #e91e63;
-            border-color: #e91e63;
+            background-color: #e91e63 !important;
+            border-color: #e91e63 !important;
+        }
+        .active>.page-link {
+            background-color: #763b51 !important;
+            border-color : #763b51 !important;
         }
         .btn-primary:hover {
-            background-color: #d81b60;
+            background-color: #6c334b;
         }
         .btn-danger {
             background-color: #f44336;
@@ -43,6 +47,7 @@
         .input-group .btn {
             border-radius: 0.25rem;
         }
+        
     </style>
 </head>
 <body>
@@ -80,22 +85,47 @@
                         <th scope="row"><%= index + 1 %></th>
                         <td><%= publication.name %></td>
                         <td><%= publication.isListed ? 'Yes' : 'No' %></td>
-                        <!-- <td><%= publication.status === 'Unblock' ? 'Listed' : 'Unlisted' %></td> -->
                         <td>
                             <a href="/admin/editPublication/<%= publication._id %>" class="btn btn-sm btn-primary">Edit</a>
-                            <!-- <button 
-                               class="btn btn-sm <%= publication.status === 'Unblock' ? 'btn-danger' : 'btn-success' %>" 
-                               onclick="togglePublicationStatus('<%= publication._id %>', '<%= publication.status %>')">
-                               <%= publication.status === 'Unblock' ? 'Block' : 'Unblock' %>
-                            </button> -->
                         </td>
                     </tr>
                 <% } %>
             </tbody>            
         </table>
+<!-- Pagination Controls -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        <% if (currentPage > 1) { %>
+            <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+            </li>
+        <% } else { %>
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+            </li>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+            <li class="page-item">
+                <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+            </li>
+        <% } else { %>
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+        <% } %>
+    </ul>
+</nav>
+
     </div>
     <% } else { %>
-    <p class="text-center">No publications found. Add a new publication to get started!</p>
+    <!-- <p class="text-center">No publications found. Add a new publication to get started!</p> -->
     <% } %>
 </div>
 

@@ -164,7 +164,9 @@
                             <select id="publication" name="publication" required>
                                 <option value="">Select a Publication</option>
                                 <% for (let i = 0; i < publication.length; i++) { %>
-                                    <option value="<%= publication[i].id %>"><%= publication[i].name %></option>
+                                    <option value="<%= publication[i].id %>" <%= product.publication.equals(publication[i].id) ? 'selected' : '' %>>
+                                        <%= publication[i].name %>
+                                    </option>
                                 <% } %>
                             </select>
                         </div>
@@ -195,18 +197,19 @@
                 <div class="mb-3">
                     <label class="form-label">Product Images</label>
                     <div class="img-preview-container" id="imagePreviewContainer">
-                        <% for (let i = 0; i < 4; i++) { %>
+                        <% product.productImage.forEach((image, index) => { %>
+                            <div class="img-container" id="img-container-<%= index %>">
+                                <img src="/uploads/<%= image %>" alt="Product Image <%= index + 1 %>" class="img-thumbnail">
+                                <input type="hidden" name="existingImages[]" value="<%= image %>">
+                                <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('<%= index %>', '<%= image %>')">Remove</button>
+                            </div>
+                        <% }); %>
+                        <% for (let i = product.productImage.length; i < 4; i++) { %> <!-- Allow up to 4 images -->
                             <div class="img-container" id="img-container-<%= i %>">
-                                <% if (product.productImage[i]) { %>
-                                    <img src="/uploads/<%= product.productImage[i] %>" alt="Product Image <%= i + 1 %>" class="img-thumbnail">
-                                    <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('<%= i %>')">Remove</button>
-                                    <input type="checkbox" name="removeImages[]" value="<%= product.productImage[i] %>" id="remove-<%= i %>" style="display:none;">
-                                <% } else { %>
-                                    <div class="img-thumbnail add-image" onclick="triggerFileInput('<%= i %>')" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
-                                        <span style="color: #ccc;">Add Image</span>
-                                    </div>
-                                <% } %>
-                                <input type="file" id="fileInput-<%= i %>" name="productImage" class="form-control file-input" style="display: none;" onchange="previewImage(this, '<%= i %>')">
+                                <div class="img-thumbnail add-image" onclick="triggerFileInput('<%= i %>')" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
+                                    <span style="color: #ccc;">Add Image</span>
+                                </div>
+                                <input type="file" id="fileInput-<%= i %>" name="images[]" multiple class="form-control file-input" style="display: none;" onchange="previewImage(this, '<%= i %>')">
                             </div>
                         <% } %>
                     </div>
@@ -224,32 +227,49 @@
 
 <script>
     function triggerFileInput(index) {
-        document.getElementById(`fileInput-${index}`).click();
+    const fileInput = document.getElementById(`fileInput-${index}`);
+    if (fileInput) {
+        fileInput.click();
     }
+}
 
     function previewImage(input, index) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById(`img-container-${index}`).innerHTML = `
-                    <img src="${e.target.result}" class="img-thumbnail">
-                    <button type="button" class="btn btn-remove btn-sm" onclick="removeImage(${index})">Remove</button>
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const container = document.getElementById(`img-container-${index}`);
+            if (container) {
+                container.innerHTML = `
+                    <div class="img-container" id="img-container-${index}">
+                        <img src="${e.target.result}" alt="New Image" class="img-thumbnail">
+                        <button type="button" class="btn btn-remove btn-sm" onclick="removeImage(${index}, '')">Remove</button>
+                    </div>
                 `;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
     }
+}
 
-    function removeImage(index) {
-        document.getElementById(`img-container-${index}`).innerHTML = `
+
+    function removeImage(index, imagePath) {
+    const container = document.getElementById(`img-container-${index}`);
+    if (container) {
+        // Mark the image for removal and replace it with a file input
+        container.innerHTML = `
+            <input type="hidden" name="removeImages[]" value="${imagePath}">
             <div class="img-thumbnail add-image" onclick="triggerFileInput(${index})" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
                 <span style="color: #ccc;">Add Image</span>
             </div>
-            <input type="file" id="fileInput-${index}" name="productImage" class="form-control file-input" style="display: none;" onchange="previewImage(this, ${index})">
+            <input type="file" id="fileInput-${index}" name="newImages[]" class="form-control file-input" style="display: none;" onchange="previewImage(this, ${index})">
         `;
     }
+}
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
 <%- include("../../views/partials/admin/footer") %>
 </body>
 </html>

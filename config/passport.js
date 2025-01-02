@@ -46,7 +46,7 @@ async (accessToken,refreshToken,profile,done)=>{
 
 //Eni serialize cheyyanam//
 passport.serializeUser((user,done)=>{
-    done(null,user.id)
+    done(null,user)
 })
 //evide deseralize-user cheyyanam-------> session ill ninn user data fetch cheyth edukkan aanu
 passport.deserializeUser(async (id, done) => {
