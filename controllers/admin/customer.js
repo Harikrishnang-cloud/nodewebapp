@@ -2,7 +2,6 @@ const mongoose = require("mongoose")
 const user = require("../../models/userSchema")
 
 //customer Search data
-
 const searchCustomer = async(req,res)=>{
     let query = req.query.query.toLowerCase();
     try {
@@ -22,13 +21,13 @@ const searchCustomer = async(req,res)=>{
 //customer-page data
 const customerInfo = async (req, res) => {
     try {
-        let search = ""; // For the search bar
+        let search = ""; 
         if (req.query.search) {
             search = req.query.search;
         }
 
-        let page = parseInt(req.query.page) || 1; // Current page, default to 1
-        const limit = 6; // Number of records per page
+        let page = parseInt(req.query.page) || 1; 
+        const limit = 6;
 
         // Fetch user data with search and pagination
         const userData = await user.find({

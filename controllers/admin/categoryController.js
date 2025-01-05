@@ -1,6 +1,7 @@
 const Category = require("../../models/categorySchema");
 const mongoose = require("mongoose")
 
+//Category page + pagination
 const categoryInfo = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -18,7 +19,6 @@ const categoryInfo = async (req, res) => {
     res.render("category", {
       cat: categoryData,
       currentPage: page,
-
       totalPages: totalPages,
       totalCategories: totalCategories,
     });

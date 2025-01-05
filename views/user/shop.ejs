@@ -1,0 +1,169 @@
+<%- include('../partials/user/header', { user: user }) %>
+
+<div class="container-fluid py-5" style="background-color: #f5f5f5;">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar with filters -->
+            <div class="col-lg-3">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-4" style="color: #e94560;">Categories</h5>
+                        <div class="categories-list">
+                            <% if (categories && categories.length > 0) { %>
+                                <% categories.forEach(category => { %>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" value="<%= category._id %>" id="category<%= category._id %>">
+                                        <label class="form-check-label" for="category<%= category._id %>">
+                                            <%= category.name %>
+                                        </label>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p>No categories available</p>
+                            <% } %>
+                        </div>
+
+                        <h5 class="mb-4 mt-4" style="color: #e94560;">Price Range</h5>
+                        <div class="price-range mb-4">
+                            <input type="range" class="form-range" min="0" max="10000" id="priceRange">
+                            <div class="d-flex justify-content-between mt-2">
+                                <span>₹0</span>
+                                <span id="priceValue">₹5000</span>
+                                <span>₹10000</span>
+                            </div>
+                        </div>
+
+                        <button class="btn w-100" style="background-color: #e94560; color: white;" onclick="applyFilters()">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product grid -->
+            <div class="col-lg-9">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 style="color: #e94560;">All Books</h4>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">Sort by:</span>
+                                <select class="form-select" style="width: auto;" onchange="sortProducts(this.value)">
+                                    <option value="newest">Newest</option>
+                                    <option value="price-low">Price: Low to High</option>
+                                    <option value="price-high">Price: High to Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4" id="productsGrid">
+                    <% if (products && products.length > 0) { %>
+                        <% products.forEach(product => { %>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="card product-card border-0 shadow-sm h-100">
+                                    <img src="/uploads/<%= product.image %>" class="card-img-top" alt="<%= product.productName %>" style="height: 200px; object-fit: cover;">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title" style="color: #e94560;"><%= product.productName %></h5>
+                                        <p class="card-text text-muted mb-2">By <%= product.author || 'Unknown Author' %></p>
+                                        <div class="mt-auto">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div>
+                                                    <span class="fs-5 fw-bold" style="color: #e94560;">₹<%= product.salePrice || product.price %></span>
+                                                    <% if (product.regularPrice && product.regularPrice > (product.salePrice || product.price)) { %>
+                                                        <span class="text-muted text-decoration-line-through ms-2">₹<%= product.regularPrice %></span>
+                                                    <% } %>
+                                                </div>
+                                                <% if (product.offer && product.offer > 0) { %>
+                                                    <span class="badge" style="background-color: #e94560;"><%= product.offer %>% OFF</span>
+                                                <% } %>
+                                            </div>
+                                            <button class="btn w-100" style="background-color: #e94560; color: white;" onclick="addToCart('<%= product._id %>')">
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="col-12">
+                            <div class="alert alert-info">No products available</div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Price range slider
+    const priceRange = document.getElementById('priceRange');
+    const priceValue = document.getElementById('priceValue');
+    priceRange.addEventListener('input', (e) => {
+        priceValue.textContent = `₹${e.target.value}`;
+    });
+
+    // Add to cart function
+    async function addToCart(productId) {
+        try {
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: productId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (data.cartCount !== undefined) {
+                    const cartCountElements = document.querySelectorAll('.cart-count');
+                    cartCountElements.forEach(element => {
+                        const formattedCount = data.cartCount.toString().padStart(2, '0');
+                        element.textContent = `(${formattedCount})`;
+                    });
+                }
+                Swal.fire({
+                    position: "center",
+                    icon: "success",
+                    title: data.message,
+                    showConfirmButton: true,
+                    timer: 2000
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: data.message,
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+            });
+        }
+    }
+
+    // Apply filters
+    function applyFilters() {
+        const selectedCategories = Array.from(document.querySelectorAll('.categories-list input:checked'))
+            .map(input => input.value);
+        const maxPrice = priceRange.value;
+
+        // You can implement the filter logic here
+        console.log('Selected categories:', selectedCategories);
+        console.log('Max price:', maxPrice);
+    }
+
+    // Sort products
+    function sortProducts(value) {
+        // You can implement the sorting logic here
+        console.log('Sort by:', value);
+    }
+</script>
+
+<%- include('../partials/user/footer', { user: user }) %>

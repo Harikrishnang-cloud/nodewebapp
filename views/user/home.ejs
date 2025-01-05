@@ -1,4 +1,3 @@
-
 <%-include("../../views/partials/user/header")%>
 
     <section id="limited-offer" class="padding-large"
@@ -65,7 +64,7 @@
                 <div class="position-absolute">
                   <p class="bg-primary py-1 px-3 fs-6 text-white rounded-2">10% off</p>
                 </div>
-                <img src="uploads/<%= book[i].productImage[0] %>" class="img-fluid shadow-sm" alt="product item">
+                <a href="/productDetails/?id=<%=book[i]._id%>"><img src="uploads/<%= book[i].productImage[0] %>" class="img-fluid shadow-sm" alt="product item"></a>
                 <h6 class="mt-4 mb-0 fw-bold"><a href="index.html"><%= book[i].productName%></a></h6> 
                 <div class="review-content d-flex">
                   <p class="my-2 me-2 fs-6 text-black-50"><%= book[i].description %></p>
@@ -91,7 +90,7 @@
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<strike><%= book[i].regularPrice %></strike></span>
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<%= book[i].salePrice %></span>
                 <div class="card-concern position-absolute start-0 end-0 d-flex gap-2">
-                  <button type="button" href="#" class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="top"
+                  <button type="button" onclick="addToCart('<%=book[i]._id%>')" class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="top"
                     data-bs-title="Tooltip on top">
                     <svg class="cart">
                       <use xlink:href="#cart"></use>
@@ -228,5 +227,48 @@
         </div>
       </div>
     </section>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script>
+    async function addToCart(productId) {
+        try {
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: productId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                // Update cart count if available
+                if (data.cartCount !== undefined) {
+                    const cartCountElements = document.querySelectorAll('.cart-count');
+                    cartCountElements.forEach(element => {
+                        const formattedCount = data.cartCount.toString().padStart(2, '0');
+                        element.textContent = `(${formattedCount})`;
+                    });
+                }
+                Swal.fire({
+                    position: "center",
+                    icon: "success",
+                    title: data.message,
+                    showConfirmButton: true,
+                    timer: 2000
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: data.message,
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+            });
+        }
+    }
+</script>
 <%-include("../../views/partials/user/footer")%>

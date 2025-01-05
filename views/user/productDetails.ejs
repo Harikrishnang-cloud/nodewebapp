@@ -1,0 +1,331 @@
+<%- include('../partials/user/header') %>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .breadcrumbs {
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .breadcrumbs a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+        text-decoration: underline;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+
+    @media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .product-images {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .main-image-container {
+        position: relative;
+        width: 100%;
+        padding-top: 125%; /* 4:5 aspect ratio */
+        overflow: hidden;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .main-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .main-image.zoomed {
+        transform: scale(1.5);
+    }
+
+    .thumbnail-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .thumbnail {
+        aspect-ratio: 4/5;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .thumbnail.active {
+        border: 2px solid #007bff;
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-details {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .title {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .rating {
+        color: #ffc107;
+        font-size: 20px;
+    }
+
+    .price {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .description {
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .quantity {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    select {
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: opacity 0.3s;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .stock-alert {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+    .offer {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+    .reviews {
+        margin-top: 40px;
+    }
+
+    .review {
+        border-bottom: 1px solid #ddd;
+        padding: 20px 0;
+    }
+
+    .review:last-child {
+        border-bottom: none;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .review-rating {
+        color: #ffc107;
+    }
+</style>
+
+<div class="container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> &gt; 
+  
+    </div>
+
+    <div class="product-grid">
+        <!-- Left side - Images -->
+        <div class="product-images">
+            <div class="main-image-container">
+                <img src="/uploads/<%=data.productImage[0]%>" alt="Product" class="main-image" id="mainImage">
+            </div>
+            <div class="thumbnail-grid">
+                <% for(let i = 0; i < data.productImage.length; i++) { %>
+                <div class="thumbnail active">
+                    <img src="/uploads/<%=data.productImage[i]%>" alt="Thumbnail 1" onclick="changeImage(this.src, this)">
+                </div>
+                <%}%>
+            </div>
+        </div>
+
+        <!-- Right side - Product details -->
+        <div class="product-details">
+            <div class="header">
+                <h1 class="title"><%=data.productName%></h1>
+                <div class="rating">
+                    ★★★★☆
+                    <span style="color: #666; font-size: 14px">(4.0)</span>
+                </div>
+            </div>
+
+            <div class="price">₹<%=data.regularPrice%></div>
+
+            <div class="stock-alert">
+                Only 2 left in stock - order soon!
+            </div>
+
+            <div class="offer">
+                <strong>Product Offer:</strong> Get 10% off on your first purchase!
+            </div>
+
+            <div class="offer">
+                <strong>Category Offer:</strong> Buy any 2 books and get 15% off!
+            </div>
+
+            <p class="description"><%= data.description%></p>
+
+            <div class="quantity">
+                <label for="quantity">Quantity:</label>
+                <select id="quantity">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-primary">Add to Cart</button>
+                <button class="btn btn-secondary">Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="reviews">
+        <h2>Customer Reviews</h2>
+        <div class="review">
+            <div class="review-header">
+                <strong>John Doe</strong>
+                <div class="review-rating">★★★★★</div>
+            </div>
+            <p>Great product! Exactly what I was looking for. The quality is excellent and it arrived quickly.</p>
+        </div>
+        <div class="review">
+            <div class="review-header">
+                <strong>Jane Smith</strong>
+                <div class="review-rating">★★★☆☆</div>
+            </div>
+            <p>Good product overall, but the delivery was a bit slow. The packaging could be improved.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const mainImage = document.getElementById('mainImage');
+    const mainImageContainer = mainImage.parentElement;
+
+    // Handle image zoom
+    mainImageContainer.addEventListener('mouseenter', () => {
+        mainImage.classList.add('zoomed');
+    });
+
+    mainImageContainer.addEventListener('mouseleave', () => {
+        mainImage.classList.remove('zoomed');
+    });
+
+    // Handle image pan on mouse move
+    mainImageContainer.addEventListener('mousemove', (e) => {
+        if (mainImage.classList.contains('zoomed')) {
+            const rect = mainImageContainer.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+            
+            mainImage.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+        }
+    });
+
+    // Handle thumbnail click
+    function changeImage(src, thumbnail) {
+        mainImage.src = src;
+        // Remove active class from all thumbnails
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        // Add active class to clicked thumbnail
+        thumbnail.parentElement.classList.add('active');
+    }
+</script>
+<%- include('../partials/user/footer') %>

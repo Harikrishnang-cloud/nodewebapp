@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { type } = require('server/reply');
 const {Schema} = mongoose;
 
 const userSchema = new Schema({
@@ -39,6 +40,13 @@ const userSchema = new Schema({
         type : Boolean,
         default : false
     },
+    address : [{
+        name : {type:String,required:true},
+        street : {type:String,required:true},
+        city : {type:String,required:true},
+        state : {type:String,required:true},
+        zipCode : {type:String,required:true},
+    }],
     // cart : [{
     //     type : Schema.Types.ObjectId,
     //     ref:"Cart"

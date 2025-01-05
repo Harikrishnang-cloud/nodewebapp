@@ -1,4 +1,3 @@
-
 <footer id="footer" class="padding-large">
   <div class="container">
     <div class="row">
@@ -120,21 +119,21 @@
         <div class="shipping d-flex">
           <p>We ship with:</p>
           <div class="card-wrap ps-2">
-            <img src="images/dhl.png" alt="visa">
-            <img src="images/shippingcard.png" alt="mastercard">
+            <img src="/images/dhl.png" alt="visa">
+            <img src="/images/shippingcard.png" alt="mastercard">
           </div>
         </div>
         <div class="payment-method d-flex">
           <p>Payment options:</p>
           <div class="card-wrap ps-2">
-            <img src="images/visa.jpg" alt="visa">
-            <img src="images/mastercard.jpg" alt="mastercard">
-            <img src="images/paypal.jpg" alt="paypal">
+            <img src="/images/visa.jpg" alt="visa">
+            <img src="/images/mastercard.jpg" alt="mastercard">
+            <img src="/images/paypal.jpg" alt="paypal">
           </div>
         </div>
       </div>
       <div class="copyright">
-        <p>© Copyright 2024 Book_Love_International. HTML Template by <a href="https://templatesjungle.com/"
+        <p>  Copyright 2024 Book_Love_International. HTML Template by <a href="https://templatesjungle.com/"
             target="_blank">HK_INTERNATIONAL</a>
         </p>
       </div>
@@ -142,11 +141,202 @@
   </div>
 </div>
 
-<script src="js/jquery-1.11.0.min.js"></script>
+<style>
+  #footer {
+    background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 3rem 0 1rem;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+  }
+
+  .footer-menu h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+    transition: transform 0.3s ease;
+  }
+
+  .footer-menu h3:hover {
+    transform: translateY(-2px);
+  }
+
+  .footer-menu p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #636e72;
+    margin-bottom: 1.5rem;
+  }
+
+  .widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3436;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+
+  .menu-list {
+    margin: 0;
+    padding: 0;
+  }
+
+  .menu-item {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .menu-item a {
+    color: #636e72;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .menu-item a:hover {
+    color: #e94560;
+    transform: translateX(5px);
+  }
+
+  .menu-item a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: #e94560;
+    transition: width 0.3s ease;
+  }
+
+  .menu-item a:hover::after {
+    width: 100%;
+  }
+
+  .social-links ul {
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .social-links a:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .social-links svg {
+    width: 18px;
+    height: 18px;
+    fill: #636e72;
+    transition: fill 0.3s ease;
+  }
+
+  .social-links a:hover svg {
+    fill: #e94560;
+  }
+
+  .contact-item p {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .contact-item a {
+    color: #e94560;
+    transition: color 0.3s ease;
+  }
+
+  .contact-item a:hover {
+    color: #d63031;
+  }
+
+  #footer-bottom {
+    background-color: white;
+    padding: 1rem 0;
+    box-shadow: 0 -1px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .ship-and-payment {
+    align-items: center;
+  }
+
+  .ship-and-payment p {
+    color: #636e72;
+    font-size: 0.85rem;
+    margin: 0;
+    margin-right: 0.5rem;
+  }
+
+  .card-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-wrap img {
+    height: 25px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+
+  .card-wrap img:hover {
+    transform: translateY(-2px);
+  }
+
+  .copyright p {
+    font-size: 0.85rem;
+    color: #636e72;
+    margin: 0;
+  }
+
+  .copyright a {
+    color: #e94560;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .copyright a:hover {
+    color: #d63031;
+  }
+
+  @media (max-width: 768px) {
+    #footer {
+      padding: 2rem 0 1rem;
+    }
+
+    .footer-menu {
+      margin-bottom: 2rem;
+    }
+
+    .social-links ul {
+      justify-content: center;
+    }
+
+    #footer-bottom .d-flex {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+    }
+  }
+</style>
+
+<script src="/js/jquery-1.11.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
   integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
   crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
-<script type="text/javascript" src="js/script.js"></script>
+<script type="text/javascript" src="/js/script.js"></script>
 </body>
 </html>

@@ -1,0 +1,234 @@
+<%- include('../partials/user/header') %>
+<div class="row">
+    <%- include('../partials/user/sidebar')%>
+    
+    <div class="profile col-10">
+      <main class="main-content">
+        <div class="address-management">
+          <div class="header">
+            <h2>Manage Addresses</h2>
+            <button class="btn add-address-btn" onclick="openAddAddressModal()">+ Add Address</button>
+          </div>
+    
+          <!-- Address List -->
+          <div class="address-list">
+            <div class="address-card">
+              <h3>Address</h3>
+              <table class="address-table">
+                <tr>
+                  <td class="label">Name:</td>
+                  <td class="value">John Doe</td>
+                </tr>
+                <tr>
+                  <td class="label">Street:</td>
+                  <td class="value">123 Main St</td>
+                </tr>
+                <tr>
+                  <td class="label">City:</td>
+                  <td class="value">Springfield</td>
+                </tr>
+                <tr>
+                  <td class="label">State:</td>
+                  <td class="value">Illinois</td>
+                </tr>
+                <tr>
+                  <td class="label">Pin Code:</td>
+                  <td class="value">62704</td>
+                </tr>
+                <tr>
+                  <td class="label">Phone:</td>
+                  <td class="value">123-456-7890</td>
+                </tr>
+              </table>
+              <div class="actions">
+                <button class="btn edit-btn" onclick="openEditAddressModal()">Edit</button>
+                <button class="btn delete-btn" onclick="deleteAddress()">Delete</button>
+              </div>
+            </div>
+          </div>
+          <p>No addresses added yet. Use the "Add Address" button to get started.</p>
+        </div>
+      </main>
+    
+      <!-- Modals -->
+      <div id="addressModal" class="modal">
+        <div class="modal-content">
+          <h3 id="modalTitle">Add Address</h3>
+          <form id="addressForm" action="/userAddress" method="POST">
+            <input type="hidden" id="addressIndex" name="index" value="" />
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+            <div class="form-group">
+              <label for="street">Street</label>
+              <input type="text" id="street" name="street" required />
+            </div>
+            <div class="form-group">
+              <label for="city">City</label>
+              <input type="text" id="city" name="city" required />
+            </div>
+            <div class="form-group">
+              <label for="state">State</label>
+              <input type="text" id="state" name="state" required />
+            </div>
+            <div class="form-group">
+              <label for="zip">Zip Code</label>
+              <input type="text" id="zip" name="zip" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" required />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn save-btn">Save</button>
+              <button type="button" class="btn cancel-btn" onclick="closeAddressModal()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
+
+<style>
+  /* Overall Layout */
+  .profile {
+    padding: 1rem;
+  }
+  
+  .main-content {
+    background-color: #f5f5f5;
+    min-height: calc(100vh - 2rem);
+    border-radius: 8px;
+  }
+
+  .address-management {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .header h2 {
+    color: #333;
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  /* Address Cards */
+  .address-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .address-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .address-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .address-card h3 {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 0.4rem;
+    font-size: 1.1rem;
+  }
+
+  /* Address Table Styles */
+  .address-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .address-table tr {
+    line-height: 1.6;
+  }
+
+  .address-table td {
+    padding: 0.3rem 0;
+    vertical-align: top;
+  }
+
+  .address-table .label {
+    color: #333;
+    font-weight: 500;
+    width: 80px;
+    padding-right: 10px;
+  }
+
+  .address-table .value {
+    color: #666;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+  }
+
+  .add-address-btn {
+    background-color: #e94560;
+    color: white;
+  }
+
+  .add-address-btn:hover {
+    background-color: #d83a6f;
+  }
+
+  .edit-btn {
+    background-color: #4a90e2;
+    color: white;
+  }
+
+  .edit-btn:hover {
+    background-color: #357abd;
+  }
+
+  .delete-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .delete-btn:hover {
+    background-color: #c82333;
+  }
+
+  /* Empty State */
+  .address-management p {
+    text-align: center;
+    color: #666;
+    margin-top: 2rem;
+  }
+</style>
+
+<%- include('../partials/user/footer') %>

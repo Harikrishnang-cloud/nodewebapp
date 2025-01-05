@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign-Up Form</title>
   <link rel="stylesheet"> 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     /* styles.css */
 body {
@@ -173,50 +175,106 @@ body {
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
   
-    // Basic validation
-    if (fullName.trim() === '') {
-      isValid = false;
-      document.getElementById('nameError').textContent = 'Full Name is required.';
-    }
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      isValid = false;
-      document.getElementById('emailError').textContent = 'Enter a valid email address.';
-    }
-    if (!phone.match(/^[0-9]{10}$/)) {
-      isValid = false;
-      document.getElementById('phoneError').textContent = 'Enter a valid 10-digit phone number.';
-    }
-    if (password.length < 6) {
-      isValid = false;
-      document.getElementById('passwordError').textContent = 'Password must be at least 6 characters.';
-    }
-    if (password.trim() !== confirmPassword.trim()) {
-      isValid = false;
-      document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.';
-    }
-   
-    if (isValid) {
-      try {
-        const response = await fetch('/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, email, phone, password }),
-        });
-        if (response.ok) {
-        window.location.href = '/otp'; 
-      } else {
-        const errorData = await response.json();
-        alert('Error: ' + errorData.message); // Display server error
-      }
-    } catch (error) {
-      console.error('Network Error:', error);
-      alert('Failed to send data. Please try again later.');
-    }
-  
-     
-    // }else{
+    // Proper validation
+    if (!/^[A-Za-z\s]+$/.test(fullName.trim())) {
+  isValid = false;
+  document.getElementById('nameError').textContent = 
+    fullName.trim() === '' 
+      ? 'Full Name is required.' 
+      : 'Full Name can only include alphabets and spaces.';
+} else {
+  document.getElementById('nameError').textContent = ''; 
+}
+    if (!/^[a-z][a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email.trim())) {
+  isValid = false;
+  document.getElementById('emailError').textContent = 
+    'Enter a valid email address (must start with a lowercase letter, no special characters, and valid domain).';
+} else {
+  document.getElementById('emailError').textContent = ''; 
+}
 
+if (!/^(?!([0-9])\1{9})[6-9][0-9]{9}$/.test(phone.trim())) {
+  isValid = false;
+  document.getElementById('phoneError').textContent = 
+    'Enter a valid 10-digit phone number (must start with 6-9 and cannot have all digits the same).';
+} else {
+  document.getElementById('phoneError').textContent = '';
+}
+
+    if (password.trim().length < 6 || !/^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z0-9@$!%*?&]{6,}$/.test(password)) {
+  isValid = false;
+  document.getElementById('passwordError').textContent = 
+    'Password must be at least 6 characters, include at least one letter, one number, and one special character.';
+} else {
+  document.getElementById('passwordError').textContent = ''; 
+}
+
+if (password.trim() !== confirmPassword.trim()) {
+  isValid = false;
+  document.getElementById('confirmPasswordError').textContent = 'Passwords do not match.';
+} else {
+  document.getElementById('confirmPasswordError').textContent = ''; 
+}
+
+   
+  //   if (isValid) {
+  //     try {
+  //       const response = await fetch('/signup', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({ fullName, email, phone, password }),
+  //       });
+  //       if (response.ok) {
+  //         Swal.fire('Success', 'Sign up successful! Please check your email for verification.', 'success');
+  //         window.location.href = '/otp';
+  //     } else {
+  //       const errorData = await response.json();
+  //       Swal.fire('Error', errorData.message || 'Failed to sign up. Try again later.', 'error');
+  //     }
+  //   } catch (error) {
+  //     Swal.fire('Network Error', 'Failed to connect to the server. Please try again later.', 'error');
+  //   }
+  
+
+  // }
+  if (isValid) {
+  try {
+    const response = await fetch('/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullName, email, phone, password }),
+    });
+
+    if (response.ok) {
+      Swal.fire({
+        title: 'Success',
+        text: 'Sign up successful! Please check your email for verification.',
+        icon: 'success',
+        timer: 2000, 
+        timerProgressBar: true, 
+        showConfirmButton: false, 
+      }).then(() => {
+        window.location.href = '/otp'; 
+      });
+    } else {
+      const errorData = await response.json();
+      Swal.fire({
+        title: 'Error',
+        text: errorData.message || 'Failed to sign up. Try again later.',
+        icon: 'error',
+        confirmButtonText: 'OK', 
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      title: 'Network Error',
+      text: 'Failed to connect to the server. Please try again later.',
+      icon: 'error',
+      confirmButtonText: 'OK', 
+    });
   }
+}
+
   });
   
   </script>

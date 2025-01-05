@@ -28,17 +28,19 @@ app.use((req,res,next)=>{
     res.set('cache-control','no-store')
     next()
 })
+
 //View Engine
 app.set('view engine',"ejs");
 app.set('views',[path.join(__dirname,'views/user'),path.join(__dirname,'views/admin')])
 app.use(express.static(path.join(__dirname,"public")))
-app.use("/",userRouter);//request handling
 
 //oru user undo enn check cheyyan
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     next();
-  });
+});
+
+app.use("/",userRouter);//request handling
 
 // <---------- Admin parts ---------->
 app.use('/admin',adminRouter)

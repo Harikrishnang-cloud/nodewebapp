@@ -1,0 +1,236 @@
+<%- include('../partials/user/header') %>
+<div class="row">
+    <%- include('../partials/user/sidebar')%>
+    
+    <div class="profile col-10">
+        <main class="main-content">
+            <div class="page-header">
+                <a href="/userAddress" class="back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    <span>Back</span>
+                </a>
+            </div>
+            <div class="address-form-container">
+                <div class="card form-card">
+                    <h2 class="card-title">Add New Address</h2>
+                    <form id="addressForm">
+                        <div class="form-group">
+                            <label class="form-label" for="name">Full Name</label>
+                            <input type="text" id="name" name="name" class="form-input" placeholder="Enter your full name" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="street">Street Address</label>
+                            <input type="text" id="street" name="street" class="form-input" placeholder="Street address or P.O. Box" required />
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="city">City</label>
+                                <input type="text" id="city" name="city" class="form-input" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="state">State</label>
+                                <input type="text" id="state" name="state" class="form-input" required />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="pincode">PIN Code</label>
+                            <input type="text" id="pincode" name="pincode" class="form-input" pattern="[0-9]{6}" placeholder="6-digit PIN code" required />
+                        </div>
+
+                        <button type="submit" class="btn submit-btn">Save Address</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+.main-content {
+    background-color: #f5f5f5;
+    min-height: calc(100vh - 2rem);
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.back-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.back-btn:hover {
+    color: #e94560;
+}
+
+.back-btn:hover svg {
+    transform: translateX(-3px);
+}
+
+.address-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    position: relative;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 2px;
+    background: #e94560;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-label {
+    display: block;
+    color: #555;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #e94560;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: #e94560;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+    background-color: #d83a6f;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .address-form-container {
+        padding: 0.5rem;
+    }
+
+    .form-card {
+        padding: 1.5rem;
+    }
+
+    .main-content {
+        padding: 1rem;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('addressForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const addressData = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/addAddress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(addressData)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Address added successfully',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = '/userAddress';
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to add address'
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong while adding the address'
+        });
+    }
+});
+</script>
+
+<%- include('../partials/user/footer') %>

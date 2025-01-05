@@ -173,65 +173,66 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-      // login.js
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault(); // Prevent form submission
-          let isValid = true;
 
-          // Clear previous error messages
-          document
-            .querySelectorAll(".error")
-            .forEach((error) => (error.textContent = ""));
 
-          // Collect form data
-          const email = document.getElementById("email").value.trim();
-          const password = document.getElementById("password").value;
+document
+  .getElementById("loginForm")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault(); // Prevent form submission
+    let isValid = true;
 
-          // Basic validation
-          if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            isValid = false;
-            document.getElementById("emailError").textContent =
-              "Enter a valid email address.";
-          }
-          if (password.length < 6) {
-            isValid = false;
-            document.getElementById("passwordError").textContent =
-              "Password must be at least 6 characters.";
-          }
+    // Clear previous error messages
+    document
+      .querySelectorAll(".error")
+      .forEach((error) => (error.textContent = ""));
 
-          if (isValid) {
-            try {
-              const response = await fetch("/admin/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-              });
-              const data = await response.json();
-              console.log("hkhkh",data);
-              if (data.success) {
-                window.location.href = "/admin/dashboard"; // Redirect to dashboard or another page
-                return
-              } else { 
-                Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: data.message,
-                footer: '<a href="/signup">signup</a>',
-              });
-              }
-            } catch (error) {
-              console.error("Error:", error);
-              Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: "Something went wrong!",
-                footer: '<a href="#">Why do I have this issue?</a>',
-              });
-            }
-          }
+    // Collect form data
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    // Basic validation
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      isValid = false;
+      document.getElementById("emailError").textContent =
+        "Enter a valid email address.";
+    }
+    if (password.length < 6) {
+      isValid = false;
+      document.getElementById("passwordError").textContent =
+        "Password must be at least 6 characters.";
+    }
+
+    if (isValid) {
+      try {
+        const response = await fetch("/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
         });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          window.location.href = "/admin/dashboard"; 
+        } else {
+          // Show error message from the backend
+          Swal.fire({
+            icon: "error",
+            title: "Login Failed",
+            text: data.message || "Invalid email or password.",
+          });
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Something went wrong! Please try again later.",
+        });
+      }
+    }
+  });
+
+      
     </script>
   </body>
 </html>

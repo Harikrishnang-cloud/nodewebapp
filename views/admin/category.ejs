@@ -326,17 +326,18 @@ button.save-btn:hover {
         </tbody>
     </table>
     <!-- Pagination -->
+
 <ul class="pagination">
     <% if (currentPage > 1) { %>
-        <li><a href="?page=<%= currentPage - 1 %>&limit=10">Previous</a></li>
+        <li><a href="?page=<%= currentPage - 1 %>&limit=6">Previous</a></li>
     <% } %>
     <% for (let i = 1; i <= totalPages; i++) { %>
-        <li>
-            <a href="?page=<%= i %>&limit=10" class="<%= i === currentPage ? 'In-Stock' : '' %>"><%= i %></a>
+        <li class="<%= i === currentPage ? 'active' : '' %>">
+            <a href="?page=<%= i %>&limit=6"><%= i %></a>
         </li>
     <% } %>
     <% if (currentPage < totalPages) { %>
-        <li><a href="?page=<%= currentPage + 1 %>&limit=10">Next</a></li>
+        <li><a href="?page=<%= currentPage + 1 %>&limit=6">Next</a></li>
     <% } %>
 </ul>
 

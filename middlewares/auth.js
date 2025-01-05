@@ -1,14 +1,14 @@
 //user-auth
 const user = require("../models/userSchema")
 const userAuth = (req,res,next)=>{
-    if(req.session.user){
+    if(req.session.user){// user undo
         user.findById(req.session.user)
         .then(data=>{
             if(data && !data.isBlocked){//block aayittilla engil proceed cheyyam
                 next()
             }
             else{
-                res.redirect("/userlogin")
+                res.redirect("/login")
             }
         }).catch(error=>{
             console.log("Error in user auth middleware")
@@ -16,7 +16,7 @@ const userAuth = (req,res,next)=>{
         })
     }
     else{
-        res.redirect("/userlogin")
+        res.redirect("/login")
     }
 }
 

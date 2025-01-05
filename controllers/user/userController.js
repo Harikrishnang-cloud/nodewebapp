@@ -6,7 +6,8 @@ const userHelper = require('../../helpers/userHelper')
 const bcrypt = require('bcrypt')
 const Books = require("../../models/productSchema")
 const Category = require("../../models/categorySchema")
-
+const Product = require('../../models/productSchema');
+const { redirect } = require("server/reply");
 
 
 // Page Not Found Controller
@@ -25,9 +26,10 @@ const verifyOtp = async (req, res) => {
     // const validotp = await otpModel.findOne({otp:userOtp})
     const validotp = req.session.singupotp
     console.log("validotp",validotp)
-       
     if(validotp){
-     userHelper.createUser(req.session.userData)
+      console.log(req.session.userData)
+      const hashpass = await bcrypt.hash(req.session.userData.password,10)
+     userHelper.createUser({...req.session.userData,password:hashpass})
      .then((response)=>{
       res.json({success:true})
      }).catch((error)=>{
@@ -171,7 +173,7 @@ const resendotp = async (req, res) => {
 };
 // Load Homepage
 const loadHomepage = async (req, res) => {
-  console.log("Session", req.session.user)
+  // console.log("Session", req.session.user)
   try {
     const userbooks = await Books.find({isListed:true})
     .limit(5)
@@ -231,6 +233,7 @@ const otp = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
 //login page ne load akkan after otp
 const loadlogin = async(req,res)=>{
   try {
@@ -244,6 +247,7 @@ const loadlogin = async(req,res)=>{
     res.redirect("/pageNoteFound")
   }
 }
+
 //login pagilekk render cheyth pokan
 const login = async (req,res)=>{
   try {
@@ -258,7 +262,7 @@ const login = async (req,res)=>{
       return res.json({status:400,success:false,message:"No user Found with this EmailId"})
     }
 
-    const passwordMatch = password===findUser.password
+    const passwordMatch = bcrypt.compare(password, findUser.password)
     if(!passwordMatch){
       return res.json({success:false,message:"password mismatch"})//No user
     }
@@ -272,9 +276,130 @@ const login = async (req,res)=>{
     res.render("login",{message:"login failed.Please try again later..."})
   }
 }
+
 //login page nte passing prevent cheyyan
+const productDetails = async (req, res)=>{
+  try{
+    const productId = req.query.id
+    console.log("product", productId)
+    const productData =await Product.findOne({_id:productId})
+    console.log(productData)
+    res.render('productDetails', {data:productData, user:req.session.user})
+  }catch(err){
+    console.log(err)
+  }
+}
 
+//load userProfile
+const userProfile = async(req,res)=>{
+  try {
+    console.log(req.session.user)
+    res.render('userProfile',{user:req.session.user})
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
 
+//Update profile controller
+const updateProfile = async (req, res) => {
+  try {
+    const {fullName, email, phone } = req.body;
+    console.log("Request body", req.body);
+    
+    if ( !fullName || !email || !phone) {
+      return res.status(400).json({status: 'error',message: 'All fields are required.',});
+    }
+    const id = req.session.user._id;
+    console.log(id)
+    // Find the user and update
+    const updatedUser = await User.findByIdAndUpdate(id,{ fullName, email, phone },{ new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({status: 'error',message: 'User not found.',});
+    }
+
+    return res.status(200).json({status: 'success',message: 'Profile updated successfully!',
+      user: {
+        _id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+      },
+    });
+    return res.redirect('/userProfile')
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({status: 'error',message: 'Internal server error.',});
+  }
+};
+
+//update Password
+const updatePass = async(req,res)=>{
+  try {
+    console.log("This is req", req.body)
+    const{CurrentPassword,newPassword,}=req.body;
+    const user =await User.findOne({_id:req.session.user._id})
+    console.log("user" , user)
+    const isPasswordMatch = await bcrypt.compare(CurrentPassword,user.password)
+    if (isPasswordMatch === false) {
+      return res.status(400).json({success:false,message:"OLd password is incorrect"})
+    } else {
+      console.log("this is pass ", newPassword)
+      user.password = await bcrypt.hash(newPassword,10)
+      user.save()
+      return res.status(200).json({success:true,message:"Password updated succefuly"})
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+//load user Address
+const userAddress = async(req,res)=>{
+  try {
+    res.render('userAddress',{user:req.session.user})
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+//edit profile
+const editProfile = async(req,res)=>{
+  try {
+    res.render('editProfile',{user:req.session.user})
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+//add address
+const addAddress = async(req,res)=>{
+  try {
+    res.render('addAddress',{user:req.session.user})
+  } catch (error) {
+    console.log(error);
+    
+  }
+}
+
+//shop page controller
+const getShopPage = async (req, res) => {
+    try {
+        const productsList = await Product.find({ isListed: true }).populate('category');
+        const categoriesList = await Category.find({ isListed: true });
+        res.render('user/shop', {
+            products: productsList,
+            categories: categoriesList,
+            user: req.session.user || null
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+};
 
 module.exports = {
   loadHomepage,
@@ -288,5 +413,13 @@ module.exports = {
   resendotp,
   verifyOtp,
   login,
-  logoutpage
+  logoutpage,
+  productDetails,
+  userProfile,
+  updateProfile,
+  updatePass,
+  userAddress,
+  editProfile,
+  addAddress,
+  getShopPage,
 };

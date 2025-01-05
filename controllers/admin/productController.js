@@ -102,7 +102,6 @@ const productview = async (req, res) => {
             .populate('category')
             .populate('publication');
 
-        // Pass variables to the template
         res.render('productview', {
             products,
             currentPage: page,

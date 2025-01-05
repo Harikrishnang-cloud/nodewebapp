@@ -1,0 +1,458 @@
+<%- include('../partials/user/header') %>
+    <div class="row">
+        <%- include('../partials/user/sidebar')%>
+
+            <div class="profile col-10">
+                <main class="main-content">
+                    <div class="cart-container">
+                        <div class="cart-items">
+                            <h2 class="section-title">Shopping Cart</h2>
+                            <%for(let i=0;i<cart.books.length;i++){%>
+                                <div class="cart-item">
+
+                                    <div class="item-image">
+                                        <img src="/uploads/<%=cart.books[i].product.productImage[0]%>"
+                                            alt="Nike Sport Shoes">
+                                    </div>
+                                    <div class="item-details">
+                                        <h3 class="item-name">
+                                            <%= cart.books[i].product.productName %>
+                                        </h3>
+                                        <div class="price-details">
+                                            <span class="current-price">₹<%= cart.books[i].product.salePrice.toFixed(2)
+                                                    %></span>
+                                            <span class="original-price">₹<%=
+                                                    cart.books[i].product.regularPrice.toFixed(2) %></span>
+                                            <span class="discount">Save ₹<%= (cart.books[i].product.regularPrice -
+                                                    cart.books[i].product.salePrice).toFixed(2) %></span>
+                                            <span class="offer-percent">
+                                                <%= cart.books[i].product.offer %>% Off
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="quantity-controls">
+                                        <button class="qty-btn minus"
+                                            onclick="updateQuantity(this, -1, '<%=cart.books[i].product._id%>')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                        </button>
+                                        <span class="quantity">
+                                            <%=cart.books[i].quantity%>
+                                        </span>
+                                        <button class="qty-btn plus"
+                                            onclick="updateQuantity(this, 1, '<%=cart.books[i].product._id%>')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="item-total">₹
+                                        <%=(cart.books[i].product.salePrice)*(cart.books[i].product.quantity)%>
+                                    </div>
+                                    <button class="delete-btn" onclick="removeItem(this, '<%=cart.books[i].product._id%>')">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path
+                                                d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <%}%>
+                        </div>
+
+                        <div class="cart-summary">
+                            <h3 class="summary-title">Order Summary</h3>
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span>₹</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Discount</span>
+                                <span class="discount-amount">-₹</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total</span>
+                                <span class="total-amount">₹<%=cart.totalPrice%></span>
+                            </div>
+                            <button class="place-order-btn">Place Order</button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+    </div>
+
+    <style>
+        .main-content {
+            background-color: #f5f5f5;
+            min-height: calc(100vh - 2rem);
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        .cart-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .cart-items {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto auto;
+            gap: 1.5rem;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+            transition: transform 0.2s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateX(5px);
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-name {
+            font-size: 1rem;
+            color: #333;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .price-details {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .current-price {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .original-price {
+            color: #999;
+            text-decoration: line-through;
+            font-size: 0.9rem;
+        }
+
+        .discount {
+            color: #22c55e;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8f8f8;
+            padding: 0.3rem;
+            border-radius: 6px;
+        }
+
+        .qty-btn {
+            border: none;
+            background: none;
+            color: #666;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .qty-btn:hover {
+            background: #e94560;
+            color: white;
+        }
+
+        .quantity {
+            font-weight: 500;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .item-total {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .delete-btn {
+            border: none;
+            background: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            color: #e94560;
+            background: #fee2e2;
+        }
+
+        .cart-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .summary-title {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: #666;
+        }
+
+        .summary-row.total {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .discount-amount {
+            color: #22c55e;
+        }
+
+        .place-order-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .place-order-btn:hover {
+            background: #d83a6f;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .cart-container {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-item {
+                grid-template-columns: auto 1fr;
+                grid-template-areas:
+                    "image details"
+                    "image controls"
+                    "total total"
+                    "delete delete";
+                gap: 1rem;
+            }
+
+            .item-image {
+                grid-area: image;
+            }
+
+            .item-details {
+                grid-area: details;
+            }
+
+            .quantity-controls {
+                grid-area: controls;
+            }
+
+            .item-total {
+                grid-area: total;
+                justify-self: end;
+            }
+
+            .delete-btn {
+                grid-area: delete;
+                justify-self: end;
+            }
+        }
+    </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function updateCartCount(count) {
+            const cartCountElement = document.querySelector('.cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+            }
+        }
+
+        async function updateQuantity(button, change, productId) {
+            try {
+                const response = await fetch('/addToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id:productId, quantity:change })
+                })
+                const data = await response.json();
+                console.log(data)
+                if (data.success === true) {
+                    const quantityElement = button.parentElement.querySelector('.quantity');
+                    let quantity = parseInt(quantityElement.textContent);
+                    quantity = Math.max(1, quantity + change);
+                    quantityElement.textContent = quantity;
+                    updateItemTotal(button.closest('.cart-item'), quantity, productId);
+                    if (data.cartCount !== undefined) {
+                        updateCartCount(data.cartCount);
+                    }
+                }else{
+                    Swal.fire({
+                        icon:'error',
+                        title:'Error',
+                        text: data.message,
+                        showConfirmationButton:false,
+                        timer:2000
+                    })
+                }
+            }
+            catch (err) {
+                console.log("catch")
+                Swal.fire({
+                    icon:'error',
+                    title:'Error',
+                    text: 'Something went wrong while updating quantity',
+                    showConfirmationButton:false,
+                    timer:3000
+                })
+                console.log(err.message)
+            }
+            
+        }
+
+        function updateItemTotal(cartItem, quantity) {
+            const priceElement = cartItem.querySelector('.current-price');
+            const price = parseFloat(priceElement.textContent.replace('₹', ''));
+            const totalElement = cartItem.querySelector('.item-total');
+            totalElement.textContent = `₹${(price * quantity).toFixed(2)}`;
+
+            // Update discount for this item
+            const originalPrice = parseFloat(cartItem.querySelector('.original-price').textContent.replace('₹', ''));
+            const savingsPerItem = originalPrice - price;
+            const totalSavings = savingsPerItem * quantity;
+            cartItem.querySelector('.discount').textContent = `Save ₹${totalSavings.toFixed(2)}`;
+            
+            updateCartSummary();
+        }
+
+        async function removeItem(button, productId) {
+            try {
+                const response = await fetch('/removeFromCart', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: productId })
+                })
+                const data = await response.json();
+                if (data.success) {
+                    const cartItem = button.closest('.cart-item');
+                    cartItem.style.transform = 'translateX(-100%)';
+                    cartItem.style.opacity = '0';
+                    setTimeout(() => {
+                        cartItem.remove();
+                        updateCartSummary();
+                    }, 300);
+                    if (data.cartCount !== undefined) {
+                        updateCartCount(data.cartCount);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        function updateCartSummary() {
+            const totals = Array.from(document.querySelectorAll('.item-total'))
+                .map(el => parseFloat(el.textContent.replace('₹', '')));
+            const subtotal = totals.reduce((sum, total) => sum + total, 0);
+            
+            const discounts = Array.from(document.querySelectorAll('.discount'))
+                .map(el => parseFloat(el.textContent.replace('Save ₹', '')))
+                .reduce((sum, discount) => sum + discount, 0);
+
+            const total = subtotal - discounts;
+
+            document.querySelector('.summary-row:nth-child(2) span:last-child').textContent = `₹${subtotal.toFixed(2)}`;
+            document.querySelector('.discount-amount').textContent = `-₹${discounts.toFixed(2)}`;
+            document.querySelector('.total-amount').textContent = `₹${total.toFixed(2)}`;
+        }
+
+        function calculateSubtotal() {
+            const totals = Array.from(document.querySelectorAll('.item-total'))
+                .map(element => parseFloat(element.textContent.replace('₹', '')))
+            const subtotal = totals.reduce((sum, total) => sum + total, 0);
+            document.querySelector('.summary-row:nth-child(2) span:last-child').textContent = `₹${subtotal.toFixed(2)}`
+
+            const discount = Array.from(document.querySelectorAll('.discount'))
+                .map(element => parseFloat(element.textContent.replace('Save ₹', '')))
+                .reduce((sum, discount) => sum + discount, 0);
+            document.querySelector('.discount-amount').textContent = `-₹${discount.toFixed(2)}`;
+
+            const final = subtotal - discount;
+            document.querySelector('.summary-row.total span:last-child').textContent = `₹${final.toFixed(2)}`
+        }
+
+        function calculateitemPriceonload() {
+            const item = document.querySelectorAll('.cart-item');
+            item.forEach(element => {
+                const quantity = parseInt(element.querySelector('.quantity').textContent);
+                const price = parseFloat(element.querySelector('.current-price').textContent.replace('₹', ''));
+                const total = price * quantity;
+                element.querySelector('.item-total').textContent = `₹${total.toFixed(2)}`;
+            })
+        }
+        calculateitemPriceonload();
+        calculateSubtotal();
+    </script>
+
+    <%- include('../partials/user/footer') %>

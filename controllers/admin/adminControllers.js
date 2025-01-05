@@ -3,12 +3,12 @@ const mongoose = require("mongoose")
 const bcrypt = require('bcrypt')
 const Category = require('../../models/categorySchema')
 
-//page-error ne vendi
+//page-error ->
 const pageerror = async (req,res)=>{
   res.render("admin-error")
 }
 
-// login-page load cheyyan
+// login-page load ->
 const loadLogin = (req,res)=>{
     if(req.session.admin){
       return res.redirect("/admin/dashboard")
@@ -18,7 +18,7 @@ const loadLogin = (req,res)=>{
     }
 }
 
-// dashboard load cheyyan
+// dashboard load ->
 const loaddashboard = (req,res)=>{
   try {
     
@@ -32,26 +32,30 @@ const loaddashboard = (req,res)=>{
   }
 }
 
-//admin validation
-const adminLogin = async(req,res)=>{
-    try {
-         const  {email ,password} = req.body
-         console.log(req.body)
-        const admindata = await adminModel.findOne({email:email}) 
-        
-        if(admindata){
-          console.log(admindata.password===password);
-          if(admindata.password===password){
-            req.session.admin = admindata._id+""
-            res.status(200).json({success:true,message:"admin login successfully"})
-          }
-        }
-    } 
-    catch (error) {
-      console.log("login error",error);
+//admin validation ->
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log(req.body);
+    const admindata = await adminModel.findOne({ email: email });
+
+    if (admindata) {
+      if (admindata.password === password) {
+        req.session.admin = admindata._id + "";
+        return res.status(200).json({ success: true, message: "Admin login successful" });
+      } else {
+        return res.status(401).json({ success: false, message: "Incorrect password" });
+      }
+    } else {
+      return res.status(404).json({ success: false, message: "Admin not found" });
     }
-}
-//logout nte contro.
+  } catch (error) {
+    console.log("login error", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+//logout controller ->
 const logout = async(req,res)=>{
   try {
     console.log("A")
