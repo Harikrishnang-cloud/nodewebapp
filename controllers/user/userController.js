@@ -511,8 +511,17 @@ const filterProducts = async (req, res) => {
         // Build the sort query
         let sortQuery = {};
         switch (sort) {
+            case 'featured':
+                sortQuery = { isFeatured: -1, createdAt: -1 }; // Assuming you have an isFeatured field
+                break;
+            case 'rating':
+                sortQuery = { averageRating: -1 }; // Assuming you have an averageRating field
+                break;
+            case 'new_arrivals':
+                sortQuery = { createdAt: -1 };
+                break;
             case 'popularity':
-                sortQuery = { purchaseCount: -1 }; // Assuming you have a field tracking purchases
+                sortQuery = { purchaseCount: -1 }; // Assuming you have a purchaseCount field
                 break;
             case 'price_asc':
                 sortQuery = { salePrice: 1 };
@@ -520,9 +529,7 @@ const filterProducts = async (req, res) => {
             case 'price_desc':
                 sortQuery = { salePrice: -1 };
                 break;
-            case 'newest':
-                sortQuery = { createdAt: -1 };
-                break;
+                
             default:
                 sortQuery = { createdAt: -1 };
         }
@@ -530,7 +537,8 @@ const filterProducts = async (req, res) => {
         // Execute the query
         const products = await Product.find(query)
             .populate('category')
-            .sort(sortQuery);
+            .sort(sortQuery)
+            .lean();
 
         res.json({
             success: true,
