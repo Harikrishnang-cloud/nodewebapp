@@ -1,12 +1,12 @@
 const User = require("../../models/userSchema");
 const otpModel = require("../../models/otpSchema");
+const Product = require("../../models/productSchema");
+const Category = require("../../models/categorySchema");
 const dotenv = require("dotenv").config();
 const nodemailer = require("nodemailer");
 const userHelper = require('../../helpers/userHelper')
 const bcrypt = require('bcrypt')
 const Books = require("../../models/productSchema")
-const Category = require("../../models/categorySchema")
-const Product = require('../../models/productSchema');
 const { redirect } = require("server/reply");
 
 
@@ -356,14 +356,89 @@ const updatePass = async(req,res)=>{
 }
 
 //load user Address
-const userAddress = async(req,res)=>{
+const userAddress = async (req, res) => {
   try {
-    res.render('userAddress',{user:req.session.user})
-    
+    const user = await User.findById(req.session.user._id).populate('address');
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.render('userAddress', { user });
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    res.status(500).send('Server Error');
   }
-}
+};
+
+// add new address
+const addAddress = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const newAddress = {
+      fullName: req.body.fullName,
+      street: req.body.street,
+      city: req.body.city,
+      state: req.body.state,
+      pinCode: req.body.pinCode,
+      phone: req.body.phone
+    };
+
+    await User.findByIdAndUpdate(userId,{ $push: { address: newAddress } },{ new: true });
+    res.redirect('/userAddress');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+};
+
+// edit address
+const editAddress = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const addressIndex = req.body.index;
+    const updatedAddress = {
+      fullName: req.body.fullName,
+      street: req.body.street,
+      city: req.body.city,
+      state: req.body.state,
+      pinCode: req.body.pinCode,
+      phone: req.body.phone
+    };
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send('User is not found');
+    }
+
+    if (!user.address) {
+      user.address = [];
+    }
+
+    user.address[addressIndex] = updatedAddress;
+    await user.save();
+
+    res.redirect('/userAddress');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+// delete address
+const deleteAddress = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const addressIndex = req.body.index;
+    const addressId = req.body.id;
+    console.log(addressIndex)
+    // const response = await User.findByIdAndUpdate(userId,{ $unset: { ['address.' + addressIndex]: 1 } },{ new: true });
+    const response = await User.findByIdAndUpdate(userId,{ $pull: { address: { _id: addressId } } },{ new: true });
+    console.log(response)
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
 
 //edit profile
 const editProfile = async(req,res)=>{
@@ -375,25 +450,31 @@ const editProfile = async(req,res)=>{
   }
 }
 
-//add address
-const addAddress = async(req,res)=>{
-  try {
-    res.render('addAddress',{user:req.session.user})
-  } catch (error) {
-    console.log(error);
-    
-  }
-}
+
 
 //shop page controller
 const getShopPage = async (req, res) => {
     try {
-        const productsList = await Product.find({ isListed: true }).populate('category');
+        const page = parseInt(req.params.page) || 1;
+        const limit = 9; // Products per page
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await Product.countDocuments({ isListed: true });
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        const productsList = await Product.find({ isListed: true })
+            .populate('category')
+            .skip(skip)
+            .limit(limit);
+
         const categoriesList = await Category.find({ isListed: true });
-        res.render('user/shop', {
+        
+        res.render('shop', {
             products: productsList,
             categories: categoriesList,
-            user: req.session.user || null
+            user: req.session.user || null,
+            currentPage: page,
+            totalPages: totalPages
         });
     } catch (error) {
         console.error(error);
@@ -401,25 +482,92 @@ const getShopPage = async (req, res) => {
     }
 };
 
+// Filter products controller
+const filterProducts = async (req, res) => {
+    try {
+        const { categories, maxPrice, search, sort } = req.body;
+        
+        // Build the filter query
+        let query = { isListed: true };
+        
+        // Add category filter
+        if (categories && categories.length > 0) {
+            query.category = { $in: categories };
+        }
+        
+        // Add price filter
+        if (maxPrice) {
+            query.salePrice = { $lte: parseFloat(maxPrice) };
+        }
+        
+        // Add search filter
+        if (search) {
+            query.$or = [
+                { productName: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Build the sort query
+        let sortQuery = {};
+        switch (sort) {
+            case 'popularity':
+                sortQuery = { purchaseCount: -1 }; // Assuming you have a field tracking purchases
+                break;
+            case 'price_asc':
+                sortQuery = { salePrice: 1 };
+                break;
+            case 'price_desc':
+                sortQuery = { salePrice: -1 };
+                break;
+            case 'newest':
+                sortQuery = { createdAt: -1 };
+                break;
+            default:
+                sortQuery = { createdAt: -1 };
+        }
+
+        // Execute the query
+        const products = await Product.find(query)
+            .populate('category')
+            .sort(sortQuery);
+
+        res.json({
+            success: true,
+            products: products
+        });
+
+    } catch (error) {
+        console.error('Filter products error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error filtering products'
+        });
+    }
+};
+
 module.exports = {
-  loadHomepage,
-  loadShopping,
-  loadSignup,
-  loadlogin,
-  signup,
-  pageNotFound,
-  loginpage,
-  otp,
-  resendotp,
-  verifyOtp,
-  login,
-  logoutpage,
-  productDetails,
-  userProfile,
-  updateProfile,
-  updatePass,
-  userAddress,
-  editProfile,
-  addAddress,
-  getShopPage,
+    loadHomepage,
+    loadShopping,
+    loadSignup,
+    loadlogin,
+    signup,
+    pageNotFound,
+    loginpage,
+    otp,
+    resendotp,
+    verifyOtp,
+    login,
+    logoutpage,
+    productDetails,
+    userProfile,
+    updateProfile,
+    updatePass,
+    userAddress,
+    editProfile,
+    addAddress,
+    editAddress,
+    deleteAddress,
+    getShopPage,
+    filterProducts
 };

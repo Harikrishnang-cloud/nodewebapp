@@ -13,15 +13,22 @@ router.get('/login',auth.preventToLogin, userController.loginpage);
 router.get('/signup', userController.loadSignup);
 router.get('/otp', userController.otp);
 router.get('/resendotp', userController.resendotp);
+
 // Shop page route
-router.get('/user/shop', userController.getShopPage);
+router.get('/user/shop/:page', userController.getShopPage);
+router.post('/user/filter-products', userController.filterProducts);
+
 //user pages route
 router.get('/userProfile',loginauth.userAuth,userController.userProfile); //if user is login then go to that usrProfile page
 router.post('/userProfile',loginauth.userAuth,userController.updateProfile)
 router.post('/updatePass',loginauth.userAuth,userController.updatePass)
 router.get('/editProfile',loginauth.userAuth,userController.editProfile)
-router.get('/userAddress',loginauth.userAuth,userController.userAddress)
-router.get('/addAddress',loginauth.userAuth,userController.addAddress)
+
+// Address management routes
+router.get('/userAddress',loginauth.userAuth,userController.userAddress);
+router.post('/addAddress',loginauth.userAuth,userController.addAddress);
+router.post('/editAddress',loginauth.userAuth,userController.editAddress);
+router.post('/deleteAddress',loginauth.userAuth,userController.deleteAddress);
 
 // cart routes
 router.get('/user/cart',loginauth.userAuth,cartController.getCart)
@@ -36,13 +43,11 @@ router.post('/verify-otp', userController.verifyOtp);
 
 // Google Auth --> passport route
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signup' }),(req, res) => {
-    req.session.user = req.session.passport.user
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signup' }),(req, res) => {req.session.user = req.session.passport.user
   res.redirect('/');
 });
 
 //authentication//
-// router.get('/login',userController.loadlogin)
 router.post('/login',userController.login)
 router.get('/logout',userController.logoutpage)
 router.get("/productDetails", userController.productDetails)

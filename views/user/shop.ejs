@@ -28,12 +28,12 @@
                             <input type="range" class="form-range" min="0" max="10000" id="priceRange">
                             <div class="d-flex justify-content-between mt-2">
                                 <span>₹0</span>
-                                <span id="priceValue">₹5000</span>
-                                <span>₹10000</span>
+                                <span id="priceValue">₹2500</span>
+                                <span>₹5000</span>
                             </div>
                         </div>
 
-                        <button class="btn w-100" style="background-color: #e94560; color: white;" onclick="applyFilters()">
+                        <button class="btn w-100" style="background-color: #a62d43; color: white;" onclick="applyFilters()">
                             Apply Filters
                         </button>
                     </div>
@@ -48,10 +48,12 @@
                             <h4 style="color: #e94560;">All Books</h4>
                             <div class="d-flex align-items-center">
                                 <span class="me-2">Sort by:</span>
-                                <select class="form-select" style="width: auto;" onchange="sortProducts(this.value)">
-                                    <option value="newest">Newest</option>
-                                    <option value="price-low">Price: Low to High</option>
-                                    <option value="price-high">Price: High to Low</option>
+                                <select id="sortSelect" class="form-select" style="width: auto;">
+                                    <option value="">Select</option>
+                                    <option value="popularity">Popularity</option>
+                                    <option value="price_asc">Price: Low to High</option>
+                                    <option value="price_desc">Price: High to Low</option>
+                                    <option value="newest">Newest First</option>
                                 </select>
                             </div>
                         </div>
@@ -61,27 +63,18 @@
                 <div class="row g-4" id="productsGrid">
                     <% if (products && products.length > 0) { %>
                         <% products.forEach(product => { %>
-                            <div class="col-md-4 col-sm-6">
-                                <div class="card product-card border-0 shadow-sm h-100">
-                                    <img src="/uploads/<%= product.image %>" class="card-img-top" alt="<%= product.productName %>" style="height: 200px; object-fit: cover;">
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title" style="color: #e94560;"><%= product.productName %></h5>
-                                        <p class="card-text text-muted mb-2">By <%= product.author || 'Unknown Author' %></p>
-                                        <div class="mt-auto">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <div>
-                                                    <span class="fs-5 fw-bold" style="color: #e94560;">₹<%= product.salePrice || product.price %></span>
-                                                    <% if (product.regularPrice && product.regularPrice > (product.salePrice || product.price)) { %>
-                                                        <span class="text-muted text-decoration-line-through ms-2">₹<%= product.regularPrice %></span>
-                                                    <% } %>
-                                                </div>
-                                                <% if (product.offer && product.offer > 0) { %>
-                                                    <span class="badge" style="background-color: #e94560;"><%= product.offer %>% OFF</span>
-                                                <% } %>
+                            <div class="col-lg-4 col-xl-3 col-md-6">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <img src="/uploads/<%= product.productImage[0] %>" alt="<%= product.productName %>" class="img-fluid mb-3">
+                                        <h5><%= product.productName %></h5>
+                                        <p class="text-muted"><%= product.description %></p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-decoration-line-through text-muted">₹<%= product.regularPrice %></span>
+                                                <span class="text-danger fw-bold">₹<%= product.salePrice %></span>
                                             </div>
-                                            <button class="btn w-100" style="background-color: #e94560; color: white;" onclick="addToCart('<%= product._id %>')">
-                                                Add to Cart
-                                            </button>
+                                            <button class="btn btn-primary" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
                                         </div>
                                     </div>
                                 </div>
@@ -103,11 +96,82 @@
     // Price range slider
     const priceRange = document.getElementById('priceRange');
     const priceValue = document.getElementById('priceValue');
+    const sortSelect = document.getElementById('sortSelect');
+
     priceRange.addEventListener('input', (e) => {
         priceValue.textContent = `₹${e.target.value}`;
     });
 
-    // Add to cart function
+    sortSelect.addEventListener('change', applyFilters);
+
+    async function applyFilters() {
+        const selectedCategories = Array.from(document.querySelectorAll('.categories-list input:checked'))
+            .map(input => input.value);
+        const maxPrice = priceRange.value;
+        const sort = sortSelect.value;
+
+        try {
+            const response = await fetch('/user/filter-products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    categories: selectedCategories,
+                    maxPrice: maxPrice,
+                    sort: sort
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                updateProductGrid(data.products);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: data.message || 'Something went wrong!'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Failed to apply filters'
+            });
+        }
+    }
+
+    function updateProductGrid(products) {
+        const productGrid = document.querySelector('.row.g-4');
+        if (!productGrid) return;
+
+        let html = '';
+        products.forEach(product => {
+            html += `
+                <div class="col-lg-4 col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <img src="/uploads/${product.productImage[0]}" alt="${product.productName}" class="img-fluid mb-3">
+                            <h5>${product.productName}</h5>
+                            <p class="text-muted">${product.description}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-decoration-line-through text-muted">₹${product.regularPrice}</span>
+                                    <span class="text-danger fw-bold">₹${product.salePrice}</span>
+                                </div>
+                                <button onclick="addToCart('${product._id}')" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        productGrid.innerHTML = html;
+    }
+
     async function addToCart(productId) {
         try {
             const response = await fetch('/addToCart', {
@@ -146,23 +210,6 @@
                 text: "Something went wrong!",
             });
         }
-    }
-
-    // Apply filters
-    function applyFilters() {
-        const selectedCategories = Array.from(document.querySelectorAll('.categories-list input:checked'))
-            .map(input => input.value);
-        const maxPrice = priceRange.value;
-
-        // You can implement the filter logic here
-        console.log('Selected categories:', selectedCategories);
-        console.log('Max price:', maxPrice);
-    }
-
-    // Sort products
-    function sortProducts(value) {
-        // You can implement the sorting logic here
-        console.log('Sort by:', value);
     }
 </script>
 
