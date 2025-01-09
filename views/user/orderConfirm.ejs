@@ -1,0 +1,202 @@
+<%- include('../partials/user/header') %>
+    <div class="row">
+        <%- include('../partials/user/sidebar')%>
+            <div class="profile col-10">
+                <main class="main-content">
+                    <div class="order-confirm-container">
+                        <div class="order-success">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h1>Order Placed Successfully!</h1>
+                            <p>Thank you for your purchase. Your order has been confirmed.</p>
+                            <div class="order-details">
+                                <h3>Order Details</h3>
+                                <div class="details-row">
+                                    <span>Order ID:</span>
+                                    <span>#<%= order._id %></span>
+                                </div>
+                                <div class="details-row">
+                                    <span>Order Date:</span>
+                                    <span><%= new Date(order.orderDate).toLocaleDateString() %></span>
+                                </div>
+                                <div class="details-row">
+                                    <span>Payment Method:</span>
+                                    <span><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></span>
+                                </div>
+                                <div class="details-row">
+                                    <span>Total Amount:</span>
+                                    <span>₹<%= order.totalAmount.toFixed(2) %></span>
+                                </div>
+                            </div>
+
+                            <div class="shipping-address">
+                                <h3>Shipping Address</h3>
+                                <p>
+                                    <%= order.address.name %><br>
+                                    <%= order.address.street %><br>
+                                    <%= order.address.city %>, <%= order.address.state %><br>
+                                    <%= order.address.pincode %><br>
+                                    Phone: <%= order.address.mobile %>
+                                </p>
+                            </div>
+
+                            <div class="order-items">
+                                <h3>Items Ordered</h3>
+                                <% order.items.forEach(function(item) { %>
+                                    <div class="order-item">
+                                        <div class="item-image">
+                                            <img src="/uploads/<%= item.productImage %>" alt="<%= item.productName %>">
+                                        </div>
+                                        <div class="item-details">
+                                            <h4><%= item.productName %></h4>
+                                            <p>Quantity: <%= item.quantity %></p>
+                                            <p>Price: ₹<%= item.price.toFixed(2) %></p>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+
+                            <div class="action-buttons">
+                                <a href="/orders" class="btn view-orders-btn">View All Orders</a>
+                                <a href="/shop" class="btn continue-shopping-btn">Continue Shopping</a>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+    </div>
+
+    <style>
+        .order-confirm-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .order-success {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .order-success h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-success p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .order-details, .shipping-address, .order-items {
+            text-align: left;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .order-details h3, .shipping-address h3, .order-items h3 {
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .shipping-address p {
+            margin: 0;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            margin-right: 1rem;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .item-details h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .item-details p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .action-buttons {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .view-orders-btn {
+            background: #e94560;
+            color: white;
+        }
+
+        .view-orders-btn:hover {
+            background: #d83a6f;
+        }
+
+        .continue-shopping-btn {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .continue-shopping-btn:hover {
+            background: #e9ecef;
+        }
+    </style>
+<%- include('../partials/user/footer') %>

@@ -15,10 +15,11 @@ const { MongoUnexpectedServerResponseError } = require("mongodb");
 //cart view
 const getCart = async(req,res)=>{
     try {
+        console.log(req.session.user)
         const cart = await Cart.findOne({userId:req.session.user._id}).populate('books.product')
         console.log("This is cart Data",cart)
-
-      res.render('cart',{user:req.session.user,cart:cart})
+        
+      res.render('cart',{user:req.session.user,cart:cart||{books:[]}})
     } catch (error) {
       console.log(error);
       

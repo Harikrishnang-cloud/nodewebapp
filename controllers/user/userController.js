@@ -512,16 +512,16 @@ const filterProducts = async (req, res) => {
         let sortQuery = {};
         switch (sort) {
             case 'featured':
-                sortQuery = { isFeatured: -1, createdAt: -1 }; // Assuming you have an isFeatured field
+                sortQuery = { isFeatured: -1, createdAt: -1 }; 
                 break;
             case 'rating':
-                sortQuery = { averageRating: -1 }; // Assuming you have an averageRating field
+                sortQuery = { averageRating: -1 };
                 break;
             case 'new_arrivals':
                 sortQuery = { createdAt: -1 };
                 break;
             case 'popularity':
-                sortQuery = { purchaseCount: -1 }; // Assuming you have a purchaseCount field
+                sortQuery = { purchaseCount: -1 };
                 break;
             case 'price_asc':
                 sortQuery = { salePrice: 1 };
@@ -529,7 +529,12 @@ const filterProducts = async (req, res) => {
             case 'price_desc':
                 sortQuery = { salePrice: -1 };
                 break;
-                
+            case 'name_asc':
+                sortQuery = { productName: 1 };
+                break;
+            case 'name_desc':
+                sortQuery = { productName: -1 };
+                break;
             default:
                 sortQuery = { createdAt: -1 };
         }

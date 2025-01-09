@@ -3,8 +3,10 @@ const router = express.Router();
 const passport = require('passport');
 const userController = require('../controllers/user/userController');
 const cartController = require('../controllers/user/cartController')
+const orderController = require('../controllers/user/orderController')
 const auth = require('../middlewares/middle')
 const loginauth = require('../middlewares/auth')
+
 // Page routes----> oro page nteyum route
 router.get('/', userController.loadHomepage);
 router.get('/pageNotFound', userController.pageNotFound);
@@ -18,6 +20,11 @@ router.get('/resendotp', userController.resendotp);
 router.get('/user/shop/:page', userController.getShopPage);
 router.post('/user/filter-products', userController.filterProducts);
 
+//order routes
+router.get('/placeOrder',loginauth.userAuth,orderController.getPlaceOrderPage)
+router.post('/placeOrder',loginauth.userAuth,orderController.placeOrder)
+router.get('/orderConfirmation/:orderId',loginauth.userAuth,orderController.getOrderConfirmation)
+  
 //user pages route
 router.get('/userProfile',loginauth.userAuth,userController.userProfile); //if user is login then go to that usrProfile page
 router.post('/userProfile',loginauth.userAuth,userController.updateProfile)

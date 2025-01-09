@@ -7,62 +7,69 @@
                     <div class="cart-container">
                         <div class="cart-items">
                             <h2 class="section-title">Shopping Cart</h2>
-                            <%for(let i=0;i<cart.books.length;i++){%>
-                                <div class="cart-item">
-
-                                    <div class="item-image">
-                                        <img src="/uploads/<%=cart.books[i].product.productImage[0]%>"
-                                            alt="Nike Sport Shoes">
-                                    </div>
-                                    <div class="item-details">
-                                        <h3 class="item-name">
-                                            <%= cart.books[i].product.productName %>
-                                        </h3>
-                                        <div class="price-details">
-                                            <span class="current-price">₹<%= cart.books[i].product.salePrice.toFixed(2)
-                                                    %></span>
-                                            <span class="original-price">₹<%=
-                                                    cart.books[i].product.regularPrice.toFixed(2) %></span>
-                                            <span class="discount">Save ₹<%= (cart.books[i].product.regularPrice -
-                                                    cart.books[i].product.salePrice).toFixed(2) %></span>
-                                            <span class="offer-percent">
-                                                <%= cart.books[i].product.offer %>% Off
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="quantity-controls">
-                                        <button class="qty-btn minus"
-                                            onclick="updateQuantity(this, -1, '<%=cart.books[i].product._id%>')">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                        </button>
-                                        <span class="quantity">
-                                            <%=cart.books[i].quantity%>
-                                        </span>
-                                        <button class="qty-btn plus"
-                                            onclick="updateQuantity(this, 1, '<%=cart.books[i].product._id%>')">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="item-total">₹
-                                        <%=(cart.books[i].product.salePrice)*(cart.books[i].product.quantity)%>
-                                    </div>
-                                    <button class="delete-btn" onclick="removeItem(this, '<%=cart.books[i].product._id%>')">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path
-                                                d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2">
-                                            </path>
-                                        </svg>
-                                    </button>
+                            <%if(cart.books.length === 0){%>
+                                <div class="empty-cart-message">
+                                    <h3>Your cart is empty</h3>
+                                    <p>Add some products to your cart to see them here!</p>
                                 </div>
+                            <%} else {%>
+                                <%for(let i=0;i<cart.books.length;i++){%>
+                                    <div class="cart-item">
+
+                                        <div class="item-image">
+                                            <img src="/uploads/<%=cart.books[i].product.productImage[0]%>"
+                                                alt="Books">
+                                        </div>
+                                        <div class="item-details">
+                                            <h3 class="item-name">
+                                                <%= cart.books[i].product.productName %>
+                                            </h3>
+                                            <div class="price-details">
+                                                <span class="current-price">₹<%= cart.books[i].product.salePrice.toFixed(2)
+                                                        %></span>
+                                                <span class="original-price">₹<%=
+                                                        cart.books[i].product.regularPrice.toFixed(2) %></span>
+                                                <span class="discount">Save ₹<%= (cart.books[i].product.regularPrice -
+                                                        cart.books[i].product.salePrice).toFixed(2) %></span>
+                                                <span class="offer-percent">
+                                                    <%= cart.books[i].product.offer %>% Off
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="quantity-controls">
+                                            <button class="qty-btn minus"
+                                                onclick="updateQuantity(this, -1, '<%=cart.books[i].product._id%>')">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                            </button>
+                                            <span class="quantity">
+                                                <%=cart.books[i].quantity%>
+                                            </span>
+                                            <button class="qty-btn plus"
+                                                onclick="updateQuantity(this, 1, '<%=cart.books[i].product._id%>')">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="item-total">₹
+                                            <%=(cart.books[i].product.salePrice)*(cart.books[i].product.quantity)%>
+                                        </div>
+                                        <button class="delete-btn" onclick="removeItem(this, '<%=cart.books[i].product._id%>')">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path
+                                                    d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 <%}%>
+                            <%}%>
                         </div>
 
                         <div class="cart-summary">
@@ -79,7 +86,7 @@
                                 <span>Total</span>
                                 <span class="total-amount">₹<%=cart.totalPrice%></span>
                             </div>
-                            <button class="place-order-btn">Place Order</button>
+                            <a class="place-order-btn" href="/placeOrder">Check-Out</a>
                         </div>
                     </div>
                 </main>
@@ -279,6 +286,26 @@
         .place-order-btn:hover {
             background: #d83a6f;
             transform: translateY(-2px);
+        }
+
+        .empty-cart-message {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .empty-cart-message h3 {
+            color: #343a40;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .empty-cart-message p {
+            color: #6c757d;
+            font-size: 16px;
+            margin: 0;
         }
 
         @media (max-width: 768px) {
