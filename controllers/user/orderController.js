@@ -5,9 +5,9 @@ const User = require('../../models/userSchema');
 
 const getPlaceOrderPage = async (req, res) => {
     try {
-        // Check if user is logged in
+
         if (!req.session.user || !req.session.user._id) {
-            return res.redirect('/login'); // Redirect to login if not logged in
+            return res.redirect('/login'); 
         }
 
         const cart = await Cart.findOne({ userId: req.session.user._id }).populate('books.product');
@@ -15,10 +15,10 @@ const getPlaceOrderPage = async (req, res) => {
         const user = await User.findById(req.session.user._id);
         
         if (!user) {
-            return res.redirect('/login'); // Redirect if user not found in database
+            return res.redirect('/login'); 
         }
 
-        console.log("User data:", user); // Debug log
+        console.log("User data:", user); 
         
         res.render('placeOrder', { 
             products: cartItems.map(item => ({
@@ -42,7 +42,6 @@ const getPlaceOrderPage = async (req, res) => {
 
 const placeOrder = async (req, res) => {
     try {
-        console.log(req.body);
         const { items, addressIndex, paymentMethod } = req.body;
         const userId = req.session.user._id;
         const user = await User.findById(userId);
@@ -52,8 +51,7 @@ const placeOrder = async (req, res) => {
         }
 
         const selectedAddress = user.address[addressIndex];
-        console.log("ADdress", selectedAddress)
-        selectedAddress.country = "India"
+        
         // Fetch product details and calculate total
         let totalAmount = 40; // Base delivery fee
         const orderItems = [];
@@ -67,7 +65,7 @@ const placeOrder = async (req, res) => {
             orderItems.push({
                 product: item.productId,
                 productName: product.productName,
-                productDescription: product.description,    
+                productDescription: product.description,
                 productImage: product.productImage[0],
                 quantity: item.quantity,
                 price: product.salePrice
@@ -75,8 +73,8 @@ const placeOrder = async (req, res) => {
 
             totalAmount = totalAmount + (product.salePrice * item.quantity);
         }
-        console.log("orderItems",orderItems)
-        // Create new order with payment method
+
+        // Create new order with mapped address fields
         const newOrder = new Order({
             userId: userId,
             items: orderItems,
@@ -84,7 +82,15 @@ const placeOrder = async (req, res) => {
             status: 'Pending',
             deliveryFee: 40,
             orderDate: new Date(),
-            address: selectedAddress,
+            address: {
+                fullName: selectedAddress.fullName,
+                street: selectedAddress.street,
+                city: selectedAddress.city,
+                state: selectedAddress.state,
+                country: selectedAddress.country || 'India',
+                pinCode: selectedAddress.pinCode,
+                phone: selectedAddress.phone
+            },
             paymentMethod: paymentMethod
         });
 
@@ -96,7 +102,6 @@ const placeOrder = async (req, res) => {
             { $set: { books: [] } }
         );
 
-        // Redirect to order confirmation page
         res.status(200).json({
             success: true,
             message: 'Order placed successfully',
@@ -131,8 +136,89 @@ const getOrderConfirmation = async (req, res) => {
     }
 };
 
+const getOrders = async (req, res) => {
+    try {
+        const userId = req.session.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        const totalOrders = await Order.countDocuments({ userId: userId });
+        const totalPages = Math.ceil(totalOrders / limit);
+
+        const orders = await Order.find({ userId: userId })
+            .populate('items.product', 'productName productImage salePrice')
+            .sort({ orderDate: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.render('orders', {
+            title: 'My Orders',
+            orders: orders,
+            user: req.session.user,
+            currentPage: page,
+            totalPages: totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+            nextPage: page + 1,
+            prevPage: page - 1,
+            lastPage: totalPages
+        });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+const cancelOrder = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const userId = req.session.user._id;
+
+        const order = await Order.findOne({ _id: orderId, userId: userId });
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        if (order.status === 'Shipped' || order.status === 'Delivered') {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot cancel order that has been shipped or delivered'
+            });
+        }
+
+        // Update order status to cancelled
+        order.status = 'Cancelled';
+        await order.save();
+
+        // If payment was made, initiate refund process here
+        if (order.paymentMethod === 'online' && order.paymentStatus === 'Completed') {
+            // Implement refund logic here
+            order.paymentStatus = 'Refund Initiated';
+            await order.save();
+        }
+
+        res.json({
+            success: true,
+            message: 'Order cancelled successfully'
+        });
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to cancel order'
+        });
+    }
+};
+
 module.exports = {
     getPlaceOrderPage,
     placeOrder,
-    getOrderConfirmation
+    getOrderConfirmation,
+    getOrders,
+    cancelOrder
 };

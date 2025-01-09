@@ -30,7 +30,7 @@ const getCart = async(req,res)=>{
 const addToCart = async (req, res) => {
     try {
         const productId = req.body.id;
-        const quantity = req.body.quantity??1;
+        const quantity = parseInt(req.body.quantity) || 1;
         const user = await User.findOne({ _id: req.session.user._id });
         if(!user){
             return res.status(400).json({success:false,message:"No user Found with this EmailId"})
@@ -38,7 +38,23 @@ const addToCart = async (req, res) => {
 
         const cart = await Cart.findOne({userId:user._id});
         const product = await Product.findById(productId);
+        
+        // Check if product exists
+        if(!product) {
+            return res.status(404).json({success:false, message:"Product not found"});
+        }
+
+        // Check if product is in stock
+        if(product.Quantity <= 0) {
+            return res.status(400).json({success:false, message:"Product is out of stock"});
+        }
+
         if(!cart){
+            // Check if requested quantity is available
+            if(quantity > product.Quantity) {
+                return res.status(400).json({success:false, message:`Only ${product.Quantity} units available`});
+            }
+
             const newCart = new Cart({
                 userId:user._id,
                 books:[{product:productId, quantity:quantity}]
@@ -50,17 +66,16 @@ const addToCart = async (req, res) => {
             if (productIndex !== -1) {
                 const newQuantity = cart.books[productIndex].quantity + quantity;
                 if(newQuantity > product.Quantity){
-                    return res.status(400).json({success:false,message:"Out of stock"})
-                    
+                    return res.status(400).json({success:false, message:`Only ${product.Quantity} units available`})
                 }else if(newQuantity <= 0){
-                    return res.status(400).json({success:false,message:"Atleast one product is required"})
+                    return res.status(400).json({success:false,message:"At least one product is required"})
                 }else if(newQuantity > 5){
                     return res.status(400).json({success:false,message:"You can add only 5 products at a time"})
                 }
                 cart.books[productIndex].quantity += quantity;
             } else {
                 if(quantity > product.Quantity){
-                    return res.status(400).json({success:false,message:"Out of stock"})
+                    return res.status(400).json({success:false, message:`Only ${product.Quantity} units available`})
                 }
                 cart.books.push({ product: productId, quantity: quantity });
             }

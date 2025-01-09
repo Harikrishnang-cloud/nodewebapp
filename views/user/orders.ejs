@@ -1,0 +1,494 @@
+<%- include('../partials/user/header') %>
+<div class="row">
+    <%- include('../partials/user/sidebar')%>
+    <div class="profile col-10">
+        <main class="main-content">
+            <div class="orders-container">
+                <h2 class="orders-title">My Orders</h2>
+                
+                <% if (orders && orders.length > 0) { %>
+                    <div class="orders-list">
+                        <% orders.forEach(function(order) { %>
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div class="order-info">
+                                        <h3>Order #<%= order._id %></h3>
+                                        <p class="order-date">Ordered on <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                                    </div>
+                                    <div class="order-status <%= order.status.toLowerCase() %>">
+                                        <%= order.status %>
+                                    </div>
+                                </div>
+
+                                <div class="order-items">
+                                    <% order.items.forEach(function(item) { %>
+                                        <div class="order-item">
+                                            <div class="item-image">
+                                                <img src="/uploads/<%= item.productImage %>" alt="<%= item.productName %>">
+                                            </div>
+                                            <div class="item-details">
+                                                <h4><%= item.productName %></h4>
+                                                <p class="description"><%= item.productDescription %></p>
+                                                <p>Quantity: <%= item.quantity %></p>
+                                                <p>Price: ₹<%= item.price.toFixed(2) %></p>
+                                                <p>Total: ₹<%= (item.price * item.quantity).toFixed(2) %></p>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+
+                                <div class="order-footer">
+                                    <div class="delivery-address">
+                                        <h4>Delivery Address</h4>
+                                        <p>
+                                            <%= order.address.fullName %><br>
+                                            <%= order.address.street %><br>
+                                            <%= order.address.city %>, <%= order.address.state %><br>
+                                            <%= order.address.pinCode %><br>
+                                            Phone: <%= order.address.phone %>
+                                        </p>
+                                    </div>
+                                    <div class="order-summary">
+                                        <div class="summary-row">
+                                            <span>Total Items:</span>
+                                            <span><%= order.items.length %></span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span>Payment Method:</span>
+                                            <span><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span>Payment Status:</span>
+                                            <span class="<%= order.paymentStatus.toLowerCase() %>">
+                                                <%= order.paymentStatus %>
+                                            </span>
+                                        </div>
+                                        <div class="summary-row total">
+                                            <span>Total Amount:</span>
+                                            <span>₹<%= order.totalAmount.toFixed(2) %></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="order-actions">
+                                    <!-- <button onclick="trackOrder('<%= order._id %>')" class="btn track-btn">Track Order</button> -->
+                                    <button onclick="viewDetails('<%= order._id %>')" class="btn details-btn">View Details</button>
+                                    <% if (order.status === 'Pending' || order.status === 'Processing') { %>
+                                        <button onclick="cancelOrder('<%= order._id %>')" class="btn cancel-btn">Cancel Order</button>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="no-orders">
+                        <div class="empty-cart-message">
+                            <i class="fas fa-shopping-bag"></i>
+                            <h3>No Orders Yet</h3>
+                            <p>Looks like you haven't made any orders yet.</p>
+                            <a href="/user/shop/1" class="btn shop-now-btn">Start Shopping</a>
+                        </div>
+                    </div>
+                <% } %>
+
+                <% if (orders && orders.length > 0) { %>
+                    <div class="pagination">
+                        <% if (hasPrevPage) { %>
+                            <a href="/orders?page=<%= prevPage %>" class="page-link prev">&laquo;</a>
+                        <% } %>
+
+                        <% 
+                        let startPage = Math.max(1, currentPage - 1);
+                        let endPage = Math.min(totalPages, startPage + 2);
+                        if (endPage - startPage < 2) {
+                            startPage = Math.max(1, endPage - 2);
+                        }
+                        %>
+
+                        <% if (startPage > 1) { %>
+                            <a href="/orders?page=1" class="page-link">1</a>
+                            <% if (startPage > 2) { %>
+                                <span class="page-dots">...</span>
+                            <% } %>
+                        <% } %>
+
+                        <% for(let i = startPage; i <= endPage; i++) { %>
+                            <a href="/orders?page=<%= i %>" 
+                               class="page-link <%= currentPage === i ? 'active' : '' %>">
+                                <%= i %>
+                            </a>
+                        <% } %>
+
+                        <% if (endPage < totalPages) { %>
+                            <% if (endPage < totalPages - 1) { %>
+                                <span class="page-dots">...</span>
+                            <% } %>
+                            <a href="/orders?page=<%= totalPages %>" class="page-link"><%= totalPages %></a>
+                        <% } %>
+
+                        <% if (hasNextPage) { %>
+                            <a href="/orders?page=<%= nextPage %>" class="page-link next">&raquo;</a>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+    .orders-container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .orders-title {
+        font-size: 1.8rem;
+        color: #333;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e94560;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-info h3 {
+        margin: 0;
+        color: #333;
+        font-size: 1.2rem;
+    }
+
+    .order-date {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .order-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .order-status.processing {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .order-status.shipped {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .order-status.delivered {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .order-status.cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .order-items {
+        margin-bottom: 1.5rem;
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-image {
+        width: 80px;
+        height: 80px;
+        margin-right: 1rem;
+    }
+
+    .item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .item-details h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .item-details p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .order-footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .delivery-address h4, .order-summary h4 {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 0.8rem;
+    }
+
+    .delivery-address p {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .summary-row.total {
+        font-weight: bold;
+        color: #333;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .track-btn {
+        background: #e94560;
+        color: white;
+    }
+
+    .details-btn {
+        background: #f8f9fa;
+        color: #333;
+        border: 1px solid #dee2e6;
+    }
+
+    .cancel-btn {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+    }
+
+    .no-orders {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .empty-cart-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .empty-cart-message i {
+        font-size: 4rem;
+        color: #e94560;
+    }
+
+    .empty-cart-message h3 {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0;
+    }
+
+    .empty-cart-message p {
+        color: #666;
+        margin: 0;
+    }
+
+    .shop-now-btn {
+        background: #e94560;
+        color: white;
+        text-decoration: none;
+        margin-top: 1rem;
+    }
+
+    .shop-now-btn:hover {
+        background: #d83a6f;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.3rem;
+        margin-top: 1.5rem;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .page-link {
+        padding: 0.4rem 0.7rem;
+        min-width: 2rem;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        color: #e94560;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+
+    .page-link:hover {
+        background-color: #f8f9fa;
+        color: #d83a6f;
+    }
+
+    .page-link.active {
+        background-color: #e94560;
+        color: white;
+        border-color: #e94560;
+    }
+
+    .page-dots {
+        color: #6c757d;
+        padding: 0 0.3rem;
+    }
+
+    .page-link.prev,
+    .page-link.next {
+        background-color: white;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .order-footer {
+            grid-template-columns: 1fr;
+        }
+
+        .order-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .pagination {
+            gap: 0.2rem;
+        }
+
+        .page-link {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<script>
+    function trackOrder(orderId) {
+        // Implement order tracking functionality
+        Swal.fire({
+            title: 'Track Order',
+            text: 'Order tracking will be available soon!',
+            icon: 'info'
+        });
+    }
+
+    function viewDetails(orderId) {
+        window.location.href = `/orderDetails/${orderId}`;
+    }
+
+    async function cancelOrder(orderId) {
+        const result = await Swal.fire({
+            title: 'Cancel Order',
+            text: 'Are you sure you want to cancel this order?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, cancel it',
+            cancelButtonText: 'No, keep it'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/cancelOrder/${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Cancelled!',
+                        text: 'Your order has been cancelled.',
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message || 'Failed to cancel order',
+                    icon: 'error'
+                });
+            }
+        }
+    }
+</script>
+
+<%- include('../partials/user/footer') %>

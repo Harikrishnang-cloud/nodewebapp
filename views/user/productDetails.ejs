@@ -243,8 +243,8 @@
                 </div>
             </div>
 
-            <div class="price">₹<%=data.regularPrice%></div>
-
+            <div class="price">₹<strike><%=data.regularPrice%></strike></div>
+            <div class="price">₹<%=data.salePrice%></div>
             <div class="stock-alert">
                 Only 2 left in stock - order soon!
             </div>
@@ -262,15 +262,16 @@
             <div class="quantity">
                 <label for="quantity">Quantity:</label>
                 <select id="quantity">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
+                    <% for(let i = 1; i <= Math.min(5, data.Quantity); i++) { %>
+                        <option value="<%= i %>"><%= i %></option>
+                    <% } %>
                 </select>
             </div>
 
             <div class="buttons">
-                <button onclick="addToCart('<%=data._id%>')" class="btn btn-primary">Add to Cart</button>
-                <a href="/user/cart" class="btn btn-secondary">Go to Cart</a>
-                <button class="btn btn-secondary">Buy Now</button>
+                <button onclick="addToCart('<%= data._id %>')" class="btn btn-primary">Add to Cart</button>
+                <button onclick="goToCart()" class="btn btn-secondary">Go to Cart</button>
+                <button onclick="buyNow('<%= data._id %>')" class="btn btn-secondary">Buy Now</button>
             </div>
         </div>
     </div>
@@ -327,6 +328,98 @@
         });
         // Add active class to clicked thumbnail
         thumbnail.parentElement.classList.add('active');
+    }
+
+    // Cart and Purchase Functions
+    async function addToCart(productId) {
+        try {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            console.log('Adding to cart:', { id: productId, quantity: quantity }); 
+            
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: productId,
+                    quantity: quantity
+                })
+            });
+
+            const result = await response.json();
+            console.log('Server response:', result); 
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Go to Cart',
+                    cancelButtonText: 'Continue Shopping'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/user/cart';
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: result.message || 'Failed to add product to cart'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to add product to cart. Please try again.'
+            });
+        }
+    }
+
+    function goToCart() {
+        window.location.href = '/user/cart';
+    }
+
+    async function buyNow(productId) {
+        try {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            console.log('Buy now:', { id: productId, quantity: quantity }); 
+            
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: productId,
+                    quantity: quantity
+                })
+            });
+
+            const result = await response.json();
+            console.log('Server response:', result); 
+
+            if (result.success) {
+                window.location.href = '/placeOrder';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: result.message || 'Failed to process buy now request'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to process buy now request. Please try again.'
+            });
+        }
     }
 </script>
 <%- include('../partials/user/footer') %>

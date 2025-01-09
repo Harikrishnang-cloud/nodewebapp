@@ -24,7 +24,9 @@ router.post('/user/filter-products', userController.filterProducts);
 router.get('/placeOrder',loginauth.userAuth,orderController.getPlaceOrderPage)
 router.post('/placeOrder',loginauth.userAuth,orderController.placeOrder)
 router.get('/orderConfirmation/:orderId',loginauth.userAuth,orderController.getOrderConfirmation)
-  
+router.get('/orders',loginauth.userAuth,orderController.getOrders)
+router.post('/cancelOrder/:orderId',loginauth.userAuth,orderController.cancelOrder)
+
 //user pages route
 router.get('/userProfile',loginauth.userAuth,userController.userProfile); //if user is login then go to that usrProfile page
 router.post('/userProfile',loginauth.userAuth,userController.updateProfile)

@@ -8,7 +8,11 @@ const orderSchema = new mongoose.Schema({
         required: true
     },
     items: [{
-
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
         productName: {
             type: String,
             required: true
@@ -48,15 +52,37 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    address : {
-        fullName : {type:String,required:true},
-        street : {type:String,required:true},
-        city : {type:String,required:true},
-        state : {type:String,required:true},
-        country : {type:String,required:true},
-        pinCode : {type:String,required:true},
-        phone :{type:String,required:true},
+    address: {
+        fullName: {
+            type: String,
+            required: true
         },
+        street: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        country: {
+            type: String,
+            required: true,
+            default: 'India'
+        },
+        pinCode: {
+            type: String,
+            required: true
+        },
+        phone: {
+            type: String,
+            required: true
+        }
+    },
     paymentMethod: {
         type: String,
         enum: ['cod', 'online'],
@@ -64,7 +90,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['Pending', 'Completed', 'Failed'],
+        enum: ['Pending', 'Completed', 'Failed', 'Refund Initiated', 'Refunded'],
         default: 'Pending'
     }
 }, {
