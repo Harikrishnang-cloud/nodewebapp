@@ -1,0 +1,292 @@
+<%- include('../partials/admin/header.ejs') %>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Order Management</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Order Date</th>
+                                    <th>Total Amount</th>
+                                    <th>Payment Method</th>
+                                    <th>Payment Status</th>
+                                    <th>Order Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (orders && orders.length > 0) { %>
+                                    <% orders.forEach(function(order) { %>
+                                        <tr>
+                                            <td><%= order._id %></td>
+                                            <td>
+                                                <%= order.userId.name %><br>
+                                                <small><%= order.userId.email %></small>
+                                            </td>
+                                            <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+                                            <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                                            <td><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></td>
+                                            <td>
+                                                <span class="badge bg-<%= order.paymentStatus === 'Completed' ? 'success' : 
+                                                    order.paymentStatus === 'Pending' ? 'warning' : 
+                                                    order.paymentStatus === 'Failed' ? 'danger' : 
+                                                    'info' %>">
+                                                    <%= order.paymentStatus %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <select class="form-select order-status" 
+                                                        data-order-id="<%= order._id %>"
+                                                        <%= order.status === 'Delivered' || order.status === 'Cancelled' ? 'disabled' : '' %>>
+                                                    <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                                    <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                                    <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                    <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                    <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <button onclick="viewOrderDetails('<%= order._id %>')" 
+                                                        class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <% if (order.status !== 'Delivered' && order.status !== 'Cancelled') { %>
+                                                    <button onclick="cancelOrder('<%= order._id %>')" 
+                                                            class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="8" class="text-center">No orders found</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (orders && orders.length > 0) { %>
+                        <div class="pagination justify-content-center mt-4">
+                            <% if (hasPrevPage) { %>
+                                <a href="/admin/orders?page=<%= prevPage %>" class="page-link">&laquo;</a>
+                            <% } %>
+
+                            <% 
+                            let startPage = Math.max(1, currentPage - 1);
+                            let endPage = Math.min(totalPages, startPage + 2);
+                            if (endPage - startPage < 2) {
+                                startPage = Math.max(1, endPage - 2);
+                            }
+                            %>
+
+                            <% if (startPage > 1) { %>
+                                <a href="/admin/orders?page=1" class="page-link">1</a>
+                                <% if (startPage > 2) { %>
+                                    <span class="page-link dots">...</span>
+                                <% } %>
+                            <% } %>
+
+                            <% for(let i = startPage; i <= endPage; i++) { %>
+                                <a href="/admin/orders?page=<%= i %>" 
+                                   class="page-link <%= currentPage === i ? 'active' : '' %>">
+                                    <%= i %>
+                                </a>
+                            <% } %>
+
+                            <% if (endPage < totalPages) { %>
+                                <% if (endPage < totalPages - 1) { %>
+                                    <span class="page-link dots">...</span>
+                                <% } %>
+                                <a href="/admin/orders?page=<%= totalPages %>" class="page-link"><%= totalPages %></a>
+                            <% } %>
+
+                            <% if (hasNextPage) { %>
+                                <a href="/admin/orders?page=<%= nextPage %>" class="page-link">&raquo;</a>
+                            <% } %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    margin: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.order-status {
+    padding: 5px;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 150px;
+}
+
+.badge {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    margin: 0 2px;
+}
+
+.pagination {
+    gap: 5px;
+}
+
+.page-link {
+    padding: 0.5rem 0.75rem;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.page-link:hover {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.page-link.active {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.dots {
+    pointer-events: none;
+    background-color: transparent;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 0.2rem 0.4rem;
+    }
+}
+</style>
+
+<script>
+// Update order status
+document.querySelectorAll('.order-status').forEach(select => {
+    select.addEventListener('change', async function() {
+        const orderId = this.dataset.orderId;
+        const status = this.value;
+        
+        try {
+            const response = await fetch('/admin/orders/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ orderId, status })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message
+                });
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message || 'Failed to update order status'
+            });
+            // Reset select to previous value
+            this.value = this.getAttribute('data-previous-value');
+        }
+    });
+
+    // Store the previous value when focusing on select
+    select.addEventListener('focus', function() {
+        this.setAttribute('data-previous-value', this.value);
+    });
+});
+
+// View order details
+function viewOrderDetails(orderId) {
+    window.location.href = `/admin/orders/${orderId}`;
+}
+
+// Cancel order
+async function cancelOrder(orderId) {
+    const result = await Swal.fire({
+        title: 'Cancel Order',
+        text: 'Are you sure you want to cancel this order?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, cancel it',
+        cancelButtonText: 'No, keep it'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/admin/orders/${orderId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                Swal.fire({
+                    title: 'Cancelled!',
+                    text: data.message,
+                    icon: 'success'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: error.message || 'Failed to cancel order',
+                icon: 'error'
+            });
+        }
+    }
+}
+</script>
+
+<%- include('../partials/admin/footer.ejs') %>

@@ -1,0 +1,157 @@
+<%- include('./partials/admin/header.ejs') %>
+
+<div class="container-fluid">
+    <div class="row">
+        <%- include('./partials/admin/sidebar.ejs') %>
+        
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Order Management</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Order Date</th>
+                                    <th>Total Amount</th>
+                                    <th>Payment Method</th>
+                                    <th>Payment Status</th>
+                                    <th>Order Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (orders && orders.length > 0) { %>
+                                    <% orders.forEach(function(order) { %>
+                                        <tr>
+                                            <td><%= order._id %></td>
+                                            <td>
+                                                <%= order.userId.name %><br>
+                                                <small><%= order.userId.email %></small>
+                                            </td>
+                                            <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
+                                            <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                                            <td><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></td>
+                                            <td>
+                                                <span class="badge bg-<%= order.paymentStatus === 'Completed' ? 'success' : 
+                                                    order.paymentStatus === 'Pending' ? 'warning' : 
+                                                    order.paymentStatus === 'Failed' ? 'danger' : 
+                                                    'info' %>">
+                                                    <%= order.paymentStatus %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <select class="form-select order-status" 
+                                                        data-order-id="<%= order._id %>"
+                                                        <%= order.status === 'Delivered' || order.status === 'Cancelled' ? 'disabled' : '' %>>
+                                                    <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                                    <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                                    <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                    <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                    <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <a href="/admin/order-details/<%= order._id %>" 
+                                                   class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="8" class="text-center">No orders found</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (totalPages > 1) { %>
+                    <nav aria-label="Orders pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <!-- First Page -->
+                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                <a class="page-link" href="/admin/orders?page=1" tabindex="-1">First</a>
+                            </li>
+
+                            <!-- Previous -->
+                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                <a class="page-link" href="/admin/orders?page=<%= currentPage - 1 %>" tabindex="-1">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            <% for(let i = 1; i <= totalPages; i++) { %>
+                                <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                        <a class="page-link" href="/admin/orders?page=<%= i %>"><%= i %></a>
+                                    </li>
+                                <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <% } %>
+                            <% } %>
+
+                            <!-- Next -->
+                            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                <a class="page-link" href="/admin/orders?page=<%= currentPage + 1 %>">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+
+                            <!-- Last Page -->
+                            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                <a class="page-link" href="/admin/orders?page=<%= totalPages %>">Last</a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Page Info -->
+                    <div class="text-center text-muted small mt-2">
+                        Showing page <%= currentPage %> of <%= totalPages %>
+                    </div>
+                    <% } %>
+
+                    <style>
+                        .pagination {
+                            margin-bottom: 0;
+                        }
+                        .pagination .page-link {
+                            padding: 0.5rem 0.75rem;
+                            color: #333;
+                            border-radius: 0;
+                        }
+                        .pagination .page-item.active .page-link {
+                            background-color: #007bff;
+                            border-color: #007bff;
+                            color: white;
+                        }
+                        .pagination .page-item.disabled .page-link {
+                            color: #6c757d;
+                            pointer-events: none;
+                            background-color: #fff;
+                        }
+                    </style>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Add SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Add custom orders.js -->
+<script src="/js/admin/orders.js"></script>
+
+<%- include('./partials/admin/footer.ejs') %>
