@@ -59,35 +59,37 @@
       <div id="addressModal" class="modal">
         <div class="modal-content">
           <h3 id="modalTitle">Add Address</h3>
-          <form id="addressForm" action="/addAddress" method="POST">
+          <form id="addressForm" action="/addAddress" method="POST" onsubmit="return validateForm()">
             <input type="hidden" id="addressIndex" name="index" value="" />
             <div class="form-group">
               <label for="fullName">Full Name</label>
-              <input type="text" id="fullName" name="fullName" required />
+              <input type="text" id="fullName" name="fullName" required minlength="3" maxlength="50" />
+              <small class="error-message" id="fullNameError"></small>
             </div>
             <div class="form-group">
               <label for="street">Street</label>
-              <input type="text" id="street" name="street" required />
+              <input type="text" id="street" name="street" required minlength="5" maxlength="100" />
+              <small class="error-message" id="streetError"></small>
             </div>
             <div class="form-group">
               <label for="city">City</label>
-              <input type="text" id="city" name="city" required />
+              <input type="text" id="city" name="city" required minlength="3" maxlength="50" pattern="[A-Za-z\s]+" />
+              <small class="error-message" id="cityError"></small>
             </div>
             <div class="form-group">
               <label for="state">State</label>
-              <input type="text" id="state" name="state" required />
+              <input type="text" id="state" name="state" required minlength="3" maxlength="50" pattern="[A-Za-z\s]+" />
+              <small class="error-message" id="stateError"></small>
             </div>
-            <!-- <div class="form-group">
-              <label for="Country">Country</label>
-              <input type="text" id="Country" name="country" required />
-            </div> -->
             <div class="form-group">
               <label for="pinCode">Pin Code</label>
               <input type="text" id="pinCode" name="pinCode" pattern="[0-9]{6}" maxlength="6" required />
+              <small class="error-message" id="pinCodeError"></small>
             </div>
             <div class="form-group">
               <label for="phone">Phone</label>
               <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" maxlength="10" required />
+              <small class="error-message" id="phoneError"></small>
             </div>
             <div class="form-actions">
               <button type="submit" class="btn save-btn">Save</button>
@@ -227,20 +229,49 @@
   }
   
   .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
+    position: relative;
   }
   
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
     color: #666;
+    font-weight: 500;
   }
   
   .form-group input {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.7rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+    transition: border-color 0.3s ease;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #e94560;
+    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.1);
+  }
+
+  .form-group input:invalid {
+    border-color: #f44336;
+  }
+
+  .error-message {
+    color: #f44336;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    display: block;
+    min-height: 1rem;
+  }
+
+  .form-group input.error {
+    border-color: #f44336;
+  }
+
+  .form-group.success input {
+    border-color: #4CAF50;
   }
   
   .form-actions {
@@ -354,6 +385,118 @@
       closeAddressModal();
     }
   }
+
+  function validateForm() {
+    let isValid = true;
+    const errors = {
+      fullName: '',
+      street: '',
+      city: '',
+      state: '',
+      pinCode: '',
+      phone: ''
+    };
+
+    // Full Name validation
+    const fullName = document.getElementById('fullName');
+    if (!fullName.value.trim()) {
+      errors.fullName = 'Full name is required';
+      isValid = false;
+    } else if (fullName.value.length < 3) {
+      errors.fullName = 'Name must be at least 3 characters long';
+      isValid = false;
+    } else if (!/^[A-Za-z\s]+$/.test(fullName.value)) {
+      errors.fullName = 'Name should only contain letters and spaces';
+      isValid = false;
+    }
+
+    // Street validation
+    const street = document.getElementById('street');
+    if (!street.value.trim()) {
+      errors.street = 'Street address is required';
+      isValid = false;
+    } else if (street.value.length < 5) {
+      errors.street = 'Street address must be at least 5 characters long';
+      isValid = false;
+    }
+
+    // City validation
+    const city = document.getElementById('city');
+    if (!city.value.trim()) {
+      errors.city = 'City is required';
+      isValid = false;
+    } else if (!/^[A-Za-z\s]+$/.test(city.value)) {
+      errors.city = 'City should only contain letters and spaces';
+      isValid = false;
+    }
+
+    // State validation
+    const state = document.getElementById('state');
+    if (!state.value.trim()) {
+      errors.state = 'State is required';
+      isValid = false;
+    } else if (!/^[A-Za-z\s]+$/.test(state.value)) {
+      errors.state = 'State should only contain letters and spaces';
+      isValid = false;
+    }
+
+    // Pin Code validation
+    const pinCode = document.getElementById('pinCode');
+    if (!pinCode.value.trim()) {
+      errors.pinCode = 'Pin code is required';
+      isValid = false;
+    } else if (!/^[0-9]{6}$/.test(pinCode.value)) {
+      errors.pinCode = 'Pin code must be exactly 6 digits';
+      isValid = false;
+    }
+
+    // Phone validation
+    const phone = document.getElementById('phone');
+    if (!phone.value.trim()) {
+      errors.phone = 'Phone number is required';
+      isValid = false;
+    } else if (!/^[0-9]{10}$/.test(phone.value)) {
+      errors.phone = 'Phone number must be exactly 10 digits';
+      isValid = false;
+    }
+
+    // Display errors
+    Object.keys(errors).forEach(field => {
+      const errorElement = document.getElementById(`${field}Error`);
+      const inputElement = document.getElementById(field);
+      
+      if (errors[field]) {
+        errorElement.textContent = errors[field];
+        inputElement.classList.add('error');
+        inputElement.classList.remove('success');
+      } else {
+        errorElement.textContent = '';
+        inputElement.classList.remove('error');
+        inputElement.classList.add('success');
+      }
+    });
+
+    return isValid;
+  }
+
+  // Add real-time validation
+  const formInputs = ['fullName', 'street', 'city', 'state', 'pinCode', 'phone'];
+  formInputs.forEach(field => {
+    const input = document.getElementById(field);
+    input.addEventListener('input', () => {
+      const errorElement = document.getElementById(`${field}Error`);
+      
+      // Clear error when user starts typing
+      errorElement.textContent = '';
+      input.classList.remove('error');
+      
+      // Validate after a short delay
+      clearTimeout(input.validateTimeout);
+      input.validateTimeout = setTimeout(() => {
+        validateForm();
+      }, 500);
+    });
+  });
 </script>
 
 <%- include('../partials/user/footer') %>

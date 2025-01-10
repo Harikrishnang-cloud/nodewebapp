@@ -162,6 +162,7 @@ body {
   <script>
     // script.js
     document.getElementById('signupForm').addEventListener('submit', async function (e) {
+      
     e.preventDefault(); // Prevent form submission
     let isValid = true;
   
@@ -237,6 +238,8 @@ if (password.trim() !== confirmPassword.trim()) {
   
 
   // }
+  console.log(isValid);
+  
   if (isValid) {
   try {
     const response = await fetch('/signup', {

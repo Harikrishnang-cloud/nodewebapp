@@ -312,10 +312,10 @@ button.save-btn:hover {
                     <td><%= cat[i].description %></td>
                     <td><%= cat[i].offer || "None" %></td>
                     <td><%= cat[i].offerPrice || "N/A" %></td>
-                    <td class="editable"><%= cat[i].status || "In-Stock" %></td>
+                    <td class="editable"><%= !cat[i].isListed ? "Block" : "unblock" %></td>
                     <td>
-                        <button class="<%= cat[i].status === 'In-Stock' ? 'unlist-btn' : 'list-btn' %>">
-                            <%= cat[i].status === 'In-Stock' ? 'Unlist' : 'List' %>
+                        <button class="<%= cat[i].isListed ? 'unlist-btn' : 'list-btn' %>" onclick="updateStatus('<%= cat[i]._id %>', '<%= cat[i].isListed %>')">
+                            <%= cat[i].isListed  ? 'Unlist' : 'List' %>
                         </button>
                     </td>
                     <td>
@@ -534,4 +534,26 @@ button.save-btn:hover {
         }
     });
     
+
+    function updateStatus(id, isListed) {
+        
+        fetch(`/admin/category/updateStatus/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({isListed}),
+        })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                
+                if (result.success) {
+                    // const statusCell = document.querySelector(`tr[data-id="${id}"] .status`);
+                    // statusCell.textContent = isListed ? "In-Stock" : "Out of Stock";
+                    window.location.reload();   
+                } else {
+                    console.error("Status update failed:", result.error);
+                }
+            })
+            .catch(error => console.error("Error updating status:", error));
+    }       
 </script>

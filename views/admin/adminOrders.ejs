@@ -9,7 +9,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
+                        <table id="ordersTable" class="table table-bordered table-hover">
                             <thead>
                                 <tr>
                                     <th>Order ID</th>
@@ -39,12 +39,11 @@
                                                     order.paymentStatus === 'Pending' ? 'warning' : 
                                                     order.paymentStatus === 'Failed' ? 'danger' : 
                                                     'info' %>">
-                                                    <%= order.paymentStatus %>
+                                                    <%= order.status %>
                                                 </span>
                                             </td>
                                             <td>
-                                                <select class="form-select order-status" 
-                                                        data-order-id="<%= order._id %>"
+                                                <select onchange="updateOrderStatus('<%= order._id %>', this.value)" class="form-select order-status" 
                                                         <%= order.status === 'Delivered' || order.status === 'Cancelled' ? 'disabled' : '' %>>
                                                     <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                                                     <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
@@ -55,7 +54,7 @@
                                             </td>
                                             <td>
                                                 <button class="btn btn-primary view-details-btn" 
-                                                    onclick='viewOrderDetails(<%= JSON.stringify(order).replace(/'/g, "\\'") %>)'>Details</button>
+                                                    onclick="viewOrderDetails('<%= order._id %>')">Details</button>
                                             </td>
                                         </tr>
                                     <% }); %>
@@ -265,168 +264,69 @@
     text-align: right;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-// Update order status
-document.querySelectorAll('.order-status').forEach(select => {
-    select.addEventListener('change', async function() {
-        const orderId = this.dataset.orderId;
-        const status = this.value;
-        
+    async function updateOrderStatus(orderId, status) {
         try {
-            const response = await fetch('/admin/orders/update-status', {
-                method: 'POST',
+            const response = await fetch('/admin/update-order-status', {
+                method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ orderId, status })
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: result.message
-                });
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: error.message || 'Failed to update order status'
-            });
-            // Reset select to previous value
-            this.value = this.getAttribute('data-previous-value');
-        }
-    });
-
-    // Store the previous value when focusing on select
-    select.addEventListener('focus', function() {
-        this.setAttribute('data-previous-value', this.value);
-    });
-});
-
-// View order details
-function viewOrderDetails(orderData) {
-    const modal = document.getElementById('orderDetailsModal');
-    const modalContent = document.getElementById('modalContent');
-    const closeBtn = document.querySelector('.close-modal');
-    const orderDate = new Date(orderData.orderDate).toLocaleString();
-    
-    modalContent.innerHTML = `
-        <div class="order-grid">
-            <div>
-                <h6>Order Information</h6>
-                <div class="order-info">
-                    <p><strong>Order ID:</strong> ${orderData._id}</p>
-                    <p><strong>Date:</strong> ${orderDate}</p>
-                    <p><strong>Email:</strong> ${orderData.userId.email}</p>
-                    <p><strong>Payment:</strong> ${orderData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</p>
-                    <p><strong>Payment Status:</strong> ${orderData.paymentStatus}</p>
-                    <p><strong>Order Status:</strong> ${orderData.status}</p>
-                </div>
-            </div>
-            <div>
-                <h6>Delivery Address</h6>
-                <div class="order-info">
-                    <p><strong>Name:</strong> ${orderData.address.fullName}</p>
-                    <p><strong>Address:</strong> ${orderData.address.street}, ${orderData.address.city}, ${orderData.address.state}</p>
-                    <p><strong>Phone:</strong> ${orderData.address.phone}</p>
-                </div>
-            </div>
-        </div>
-        <table class="order-table">
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${orderData.items.map(item => `
-                    <tr>
-                        <td>${item.productName}</td>
-                        <td>${item.quantity}</td>
-                        <td>₹${item.price}</td>
-                        <td>₹${item.quantity * item.price}</td>
-                    </tr>
-                `).join('')}
-                <tr>
-                    <td colspan="3" class="text-end"><strong>Delivery Fee:</strong></td>
-                    <td>₹${orderData.deliveryFee}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
-                    <td>₹${orderData.totalAmount}</td>
-                </tr>
-            </tbody>
-        </table>
-    `;
-    
-    // Show modal
-    modal.style.display = 'block';
-    
-    // Close modal when clicking X
-    closeBtn.onclick = function() {
-        modal.style.display = 'none';
-    }
-    
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    }
-}
-
-// Cancel order
-async function cancelOrder(orderId) {
-    const result = await Swal.fire({
-        title: 'Cancel Order',
-        text: 'Are you sure you want to cancel this order?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, cancel it',
-        cancelButtonText: 'No, keep it'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            const response = await fetch(`/admin/orders/${orderId}/cancel`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
             });
 
             const data = await response.json();
             
             if (data.success) {
                 Swal.fire({
-                    title: 'Cancelled!',
-                    text: data.message,
-                    icon: 'success'
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Order status updated successfully',
+                    showConfirmButton: false,
+                    timer: 1500
                 }).then(() => {
                     window.location.reload();
                 });
             } else {
-                throw new Error(data.message);
+                throw new Error(data.message || 'Failed to update order status');
             }
         } catch (error) {
+            console.error('Error updating order status:', error);
+            // Swal.fire({
+            //     icon: 'error',
+            //     title: 'Error',
+            //     text: error.message || 'Failed to update order status'
+            // });
+        }
+    }
+
+    async function viewOrderDetails(orderId) {
+        try {
+            window.location.href = `/admin/order-details/${orderId}`;
+        } catch (error) {
+            console.error('Error viewing order details:', error);
             Swal.fire({
-                title: 'Error!',
-                text: error.message || 'Failed to cancel order',
-                icon: 'error'
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to view order details'
             });
         }
     }
-}
+
+    // Initialize DataTable
+    $(document).ready(function() {
+        $('#ordersTable').DataTable({
+            order: [[0, 'desc']], // Sort by first column (Order ID) descending
+            pageLength: 10,
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
+        });
+    });
 </script>
 
 <%- include('../partials/admin/footer.ejs') %>

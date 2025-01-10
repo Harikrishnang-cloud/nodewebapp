@@ -83,7 +83,7 @@ const getOrderDetails = async (req, res) => {
             return res.status(404).send('Order not found');
         }
 
-        res.render('admin/orderDetails', {
+        res.render('orderDetails', {
             order,
             title: 'Order Details',
         });
@@ -131,9 +131,29 @@ const cancelOrder = async (req, res) => {
     }
 };
 
+
+const updateStatus = async (req, res) => {
+    try {
+        const  { orderId, status } = req.body;
+        console.log("orderId, status",orderId, status);
+        
+        const update = await Order.updateOne({ _id: orderId }, { $set: { status: status } });
+        if (update.modifiedCount > 0) {
+         return   res.status(200).json({ success: true, message: 'Order status updated successfully' });
+        }else{
+           return res.status(400).json({ success: false, message: 'Failed to update order status' });
+        }
+        
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+}
+
 module.exports = {
     getOrders,
     updateOrderStatus,
     getOrderDetails,
-    cancelOrder
+    cancelOrder,
+    updateStatus
 };

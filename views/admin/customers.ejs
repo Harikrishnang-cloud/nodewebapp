@@ -136,33 +136,35 @@
             background-color: #388e3c;
         }
 
+        .pagination-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
         .pagination {
-        margin: 20px 0;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
+            display: flex;
+            gap: 5px;
+        }
 
-    .pagination a {
-        text-decoration: none;
-        padding: 8px 12px;
-        background: #e91e63;
-        color: #fff;
-        border-radius: 5px;
-        transition: background 0.3s;
-    }
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid #e94560;
+            color: #e94560;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
 
-    .pagination a.active {
-        background: #7e3b51;
-    }
+        .page-link:hover {
+            background-color: #e94560;
+            color: white;
+        }
 
-    .pagination a:hover {
-        background: #7e3b51;
-    }
-
-
-
-
+        .page-link.active {
+            background-color: #e94560;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -221,24 +223,27 @@
             </tbody>
         </table>
 
-        <!-- Pagination Controls -->
-<div class="pagination">
-    <% if (currentPage > 1) { %>
-        <a href="/admin/customers?page=<%= currentPage - 1 %>">Previous</a>
-    <% } %>
-
-    <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="/admin/customers?page=<%= i %>" 
-           class="<%= currentPage === i ? 'active' : '' %>">
-           <%= i %>
-        </a>
-    <% } %>
-
-    <% if (currentPage < totalPages) { %>
-        <a href="/admin/customers?page=<%= currentPage + 1 %>">Next</a>
-    <% } %>
-</div>
-
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% if (currentPage > 1) { %>
+                        <a href="?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-link">&laquo; Previous</a>
+                    <% } %>
+                    
+                    <% for(let i = 1; i <= totalPages; i++) { %>
+                        <a href="?page=<%= i %><%= search ? '&search=' + search : '' %>" 
+                           class="page-link <%= i === currentPage ? 'active' : '' %>">
+                            <%= i %>
+                        </a>
+                    <% } %>
+                    
+                    <% if (currentPage < totalPages) { %>
+                        <a href="?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="page-link">Next &raquo;</a>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
     </div>
 
     <script>

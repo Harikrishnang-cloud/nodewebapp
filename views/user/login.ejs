@@ -131,6 +131,162 @@
           padding: 8px;
         }
       }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .cancel-btn {
+        background-color: #ccc;
+        color: #333;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .cancel-btn:hover {
+        background-color: #bbb;
+      }
+
+      .links {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+      }
+
+      .forgot-link,
+      .signup-link {
+        color: #e94560;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .forgot-link:hover,
+      .signup-link:hover {
+        text-decoration: underline;
+      }
+
+      /* Modal button styles */
+      .modal .login-btn {
+        background-color: #e94560;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .modal .login-btn:hover {
+        background-color: #d63d56;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+      }
+
+      .modal .cancel-btn {
+        background-color: #f5f5f5;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .modal .cancel-btn:hover {
+        background-color: #e8e8e8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .modal .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        justify-content: flex-end;
+      }
+
+      .modal .form-actions button {
+        min-width: 120px;
+      }
+
+      .modal button:active {
+        transform: translateY(0);
+      }
+
+      .modal button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Modal input styles */
+      .modal .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+
+      .modal .form-group input:focus {
+        border-color: #e94560;
+        box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.1);
+        outline: none;
+      }
+
+      /* Modal header styles */
+      .modal h3 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .modal p {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+
+      /* Modal content padding */
+      .modal .modal-content {
+        padding: 30px;
+      }
     </style>
   </head>
   <body>
@@ -163,16 +319,57 @@
         <div class="alert alert-danger text-center"><%=message%></div>
         <%}%>
         <button type="submit" class="btn">Login</button>
-        <div class="divider">OR Sign up with</div>
-        <a href="/auth/google">
-        <button type="button" class="btn google-btn">
-          <img src="../Books/Google-G.svg" alt="Google G" class="google-icon" />
-        </button></a>
-        <p class="login-link">
-          Don't have an account? <a href="/signup">Sign Up</a>
-        </p>
+        <div class="links">
+          <a href="#" onclick="showForgotPasswordModal()" class="forgot-link"
+            >Forgot Password?</a
+          >
+          <a href="/signup" class="signup-link">Sign Up</a>
+        </div>
       </form>
     </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+      <div class="modal-content">
+        <h3>Forgot Password</h3>
+        <form id="forgotPasswordForm">
+          <div class="form-group">
+            <label for="forgotEmail">Email</label>
+            <input type="email" id="forgotEmail" name="email" required />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="login-btn">Send OTP</button>
+            <button type="button" class="cancel-btn" onclick="closeForgotPasswordModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- OTP Verification Modal -->
+    <div id="otpVerificationModal" class="modal">
+      <div class="modal-content">
+        <h3>Enter OTP</h3>
+        <p>Please enter the OTP sent to your email</p>
+        <form id="otpVerificationForm">
+          <div class="form-group">
+            <input type="text" id="otp" name="otp" required maxlength="6" placeholder="Enter 6-digit OTP" />
+          </div>
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" name="newPassword" required minlength="6" />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="login-btn">Reset Password</button>
+            <button type="button" class="cancel-btn" onclick="closeOtpModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       // login.js
@@ -211,16 +408,16 @@
                 body: JSON.stringify({ email, password }),
               });
               const data = await response.json();
-              console.log("hkhkh",data);
+              console.log("hkhkh", data);
               if (data.success) {
                 window.location.href = "/"; // Redirect to dashboard or another page
-              } else { 
+              } else {
                 Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: data.message,
-                footer: '<a href="/signup">signup</a>',
-              });
+                  icon: "error",
+                  title: "Oops...",
+                  text: data.message,
+                  footer: '<a href="/signup">signup</a>',
+                });
               }
             } catch (error) {
               console.error("Error:", error);
@@ -231,6 +428,117 @@
                 footer: '<a href="#">Why do I have this issue?</a>',
               });
             }
+          }
+        });
+
+      // Modal functions
+      function showForgotPasswordModal() {
+        document.getElementById("forgotPasswordModal").style.display = "block";
+      }
+
+      function closeForgotPasswordModal() {
+        document.getElementById("forgotPasswordModal").style.display = "none";
+      }
+
+      function showOtpModal() {
+        document.getElementById("forgotPasswordModal").style.display = "none";
+        document.getElementById("otpVerificationModal").style.display = "block";
+      }
+
+      function closeOtpModal() {
+        document.getElementById("otpVerificationModal").style.display = "none";
+      }
+
+      // Handle forgot password form submission
+      document
+        .getElementById("forgotPasswordForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("forgotEmail").value;
+
+          try {
+            const response = await fetch("/forgot-password", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              showOtpModal();
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.message || "Failed to send OTP",
+              });
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "Something went wrong. Please try again.",
+            });
+          }
+        });
+
+      // Handle OTP verification form submission
+      document
+        .getElementById("otpVerificationForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const otp = document.getElementById("otp").value;
+          const newPassword = document.getElementById("newPassword").value;
+          const confirmPassword = document.getElementById("confirmPassword").value;
+
+          if (newPassword !== confirmPassword) {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "Passwords do not match",
+            });
+            return;
+          }
+
+          try {
+            const response = await fetch("/reset-password", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: document.getElementById("forgotEmail").value,
+                otp,
+                newPassword,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: "Password reset successfully",
+              }).then(() => {
+                closeOtpModal();
+                document.getElementById("forgotPasswordForm").reset();
+                document.getElementById("otpVerificationForm").reset();
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.message || "Failed to reset password",
+              });
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "Something went wrong. Please try again.",
+            });
           }
         });
     </script>

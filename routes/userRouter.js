@@ -19,6 +19,7 @@ router.get('/resendotp', userController.resendotp);
 // Shop page route
 router.get('/user/shop/:page', userController.getShopPage);
 router.post('/user/filter-products', userController.filterProducts);
+router.get('/user/search-products', userController.searchProducts);
 
 //order routes
 router.get('/placeOrder',loginauth.userAuth,orderController.getPlaceOrderPage)
@@ -49,6 +50,10 @@ router.get('/cartCount',loginauth.userAuth,cartController.getCartCount)
 // Signup and OTP routes
 router.post('/signup', userController.signup);
 router.post('/verify-otp', userController.verifyOtp);
+
+// Password reset routes
+router.post('/forgot-password', userController.forgotPassword);
+router.post('/reset-password', userController.resetPassword);
 
 // Google Auth --> passport route
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

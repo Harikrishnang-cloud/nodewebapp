@@ -109,7 +109,8 @@ const { fullName, email, phone, password} = req.body;
       //   otp: otp,
       // });
       req.session.singupotp = otp;
-      console.log("otp",otp);
+      // console.log("otp",otp);
+      console.log(`Mail send to ${email} otp is ${otp}`);
       
     }
     console.log(req.body);
@@ -154,18 +155,19 @@ const loadShopping = async (req, res) => {
 //resend otp
 const resendotp = async (req, res) => {
   try {
-
-    if (req.session.userData.email) {
+    console.log("session",req.session.userData)
+    if (req.session.userData  && req.session.userData.email) {
+      console.log("generating otp")
       const otp = generateOtp();
+      console.log(req.session.userData.email,otp);
       const emailSent = await sendVerificationEmail(
         req.session.userData.email,otp
       );
-
-      if(emailSent){
-        const res = await otpModel.create({otp:otp})
-      }
       console.log(emailSent);
       res.status(200).send("OTP resent successfully!");
+    }
+    else{
+      res.status(404).send("User not found")
     }
   } catch (error) {
     console.log("resendOtp is error", error);
@@ -175,23 +177,38 @@ const resendotp = async (req, res) => {
 const loadHomepage = async (req, res) => {
   // console.log("Session", req.session.user)
   try {
-    const userbooks = await Books.find({isListed:true})
+    const userbooks = await Books.find({status :"Unblock"})
     .limit(5)
 
     const categoryBooks = await Category.aggregate([
-      {$match:{ isListed : true}},
+      { $match: { isListed: true } },
+      { $limit: 4 },
       {
-        $limit:4,
-      },{
-        $lookup:{from:"products",localField:"_id",foreignField:"category",as:"products"}
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "category",
+          as: "products"
+        }
       },
-      {$addFields:{topProducts:{$slice:["$products",5]}}},
       {
-        $project:{
-          products:0
+        $addFields: {
+          products: {
+            $filter: {
+              input: "$products",
+              as: "product",
+              cond: { $eq: ["$$product.status", "Unblock"] }
+            }
+          }
+        }
+      },
+      { $addFields: { topProducts: { $slice: ["$products", 5] } } },
+      {
+        $project: {
+          products: 0
         }
       }
-    ]) 
+    ]);
 
     // console.log(categoryBooks)
     res.render("home",{
@@ -559,6 +576,130 @@ const filterProducts = async (req, res) => {
     }
 };
 
+// Search products controller
+const searchProducts = async (req, res) => {
+    try {
+        const query = req.query.query;
+        
+        if (!query) {
+            return res.json({ products: [] });
+        }
+
+        // Create a case-insensitive search regex
+        const searchRegex = new RegExp(query, 'i');
+
+        // Search in product name and description
+        const products = await Product.find({
+            $or: [
+                { productName: { $regex: searchRegex } },
+                { description: { $regex: searchRegex } }
+            ]
+        });
+
+        res.json({ products });
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).json({ error: 'Failed to search products' });
+    }
+};
+
+// Forgot Password Controller
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No account found with this email' 
+            });
+        }
+
+        // Generate OTP
+        const otp = generateOtp();
+        console.log("otp is : ",otp);
+        
+        // Save OTP to session
+        req.session.resetPasswordOtp = {
+            email,
+            otp,
+            timestamp: Date.now()
+        };
+
+        // Send OTP via email
+        await sendVerificationEmail(email, otp);
+
+        res.json({ 
+            success: true, 
+            message: 'OTP sent successfully' 
+        });
+
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to process request' 
+        });
+    }
+};
+
+// Reset Password Controller
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        // Verify OTP
+        if (!req.session.resetPasswordOtp || 
+            req.session.resetPasswordOtp.email !== email || 
+            req.session.resetPasswordOtp.otp !== otp) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid OTP' 
+            });
+        }
+
+        // Check OTP expiry (10 minutes)
+        const otpAge = Date.now() - req.session.resetPasswordOtp.timestamp;
+        if (otpAge > 10 * 60 * 1000) {
+            delete req.session.resetPasswordOtp;
+            return res.status(400).json({ 
+                success: false, 
+                message: 'OTP has expired' 
+            });
+        }
+
+        // Update password
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        // Clear the OTP from session
+        delete req.session.resetPasswordOtp;
+
+        res.json({ 
+            success: true, 
+            message: 'Password reset successfully' 
+        });
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to reset password' 
+        });
+    }
+};
+
 module.exports = {
     loadHomepage,
     loadShopping,
@@ -582,5 +723,8 @@ module.exports = {
     editAddress,
     deleteAddress,
     getShopPage,
-    filterProducts
+    filterProducts,
+    searchProducts,
+    forgotPassword,
+    resetPassword
 };

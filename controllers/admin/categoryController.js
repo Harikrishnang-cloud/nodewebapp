@@ -1,3 +1,4 @@
+const { json } = require("server/reply");
 const Category = require("../../models/categorySchema");
 const mongoose = require("mongoose")
 
@@ -97,10 +98,31 @@ const updateCategory = async (req, res) => {
   }
 };
 
+const updateCategoryStatus = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const isListed  = JSON.parse(req.body.isListed);
+    console.log(id, typeof isListed);
+    
+    const update = await Category.updateOne({ _id: id }, { $set: { isListed: !isListed } });
+    console.log(update);
+    
+    if (update.modifiedCount > 0) {
+      return res.status(200).json({ success: true, message: 'Category status updated successfully' });
+    } else {
+      return res.status(400).json({ success: false, message: 'Failed to update category status' });
+    }
+  } catch (error) {
+    console.error('Error updating category status:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 
 module.exports = {
   categoryInfo,
   addCategory,
   editCategory,
-  updateCategory
+  updateCategory,
+  updateCategoryStatus
 };

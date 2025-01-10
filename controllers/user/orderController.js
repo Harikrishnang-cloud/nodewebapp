@@ -31,7 +31,7 @@ const getPlaceOrderPage = async (req, res) => {
             //     address: user.address || '',
             //     pincode: user.pincode || ''
             // },
-            user:req.session.user,
+            user:user,
             title: 'Place Order'  
         });
     } catch (error) {
@@ -215,10 +215,12 @@ const cancelOrder = async (req, res) => {
     }
 };
 
+
 module.exports = {
     getPlaceOrderPage,
     placeOrder,
     getOrderConfirmation,
     getOrders,
-    cancelOrder
+    cancelOrder,
+   
 };

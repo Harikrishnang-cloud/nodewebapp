@@ -785,7 +785,9 @@
                     const orderItems = '<%- JSON.stringify(products.map(p => ({ productId: p._id, quantity: p.quantity }))) %>';
                     const selectedAddressIndex = document.querySelector('input[name="selectedAddress"]:checked').value;
                     const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-                    
+                    console.log(selectedAddressIndex);
+            
+                    return
                     try {
                         const response = await fetch('/placeOrder', {
                             method: 'POST',

@@ -28,6 +28,7 @@ router.get("/category",adminAuth,categoryController.categoryInfo)
 router.post("/addCategory",adminAuth,categoryController.addCategory)
 router.get("/editCategory/:id",adminAuth,categoryController.editCategory)
 router.post("/category/edit/:id",adminAuth,categoryController.updateCategory)
+router.patch("/category/updateStatus/:id",adminAuth,categoryController.updateCategoryStatus)
 
 //Publication Management
 router.get("/publication",adminAuth,publicationController.publicationInfo)
@@ -49,5 +50,6 @@ router.get('/orders', adminAuth,  orderController.getOrders);
 router.get('/order-details/:orderId',adminAuth,  orderController.getOrderDetails);
 router.post('/update-order-status',adminAuth, orderController.updateOrderStatus);
 router.post('/orders/:orderId/cancel', adminAuth, orderController.cancelOrder);
+router.patch('/update-order-status', adminAuth, orderController.updateStatus);
 
 module.exports = router;
