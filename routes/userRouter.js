@@ -28,7 +28,7 @@ router.get('/orders',loginauth.userAuth,orderController.getOrders)
 router.post('/cancelOrder/:orderId',loginauth.userAuth,orderController.cancelOrder)
 
 //user pages route
-router.get('/userProfile',loginauth.userAuth,userController.userProfile); //if user is login then go to that usrProfile page
+router.get('/userProfile',loginauth.userAuth,userController.userProfile); 
 router.post('/userProfile',loginauth.userAuth,userController.updateProfile)
 router.post('/updatePass',loginauth.userAuth,userController.updatePass)
 router.get('/editProfile',loginauth.userAuth,userController.editProfile)

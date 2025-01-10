@@ -575,20 +575,6 @@
     <body>
         <div class="container order-container">
             <div class="order-steps">
-                <!-- Login Step -->
-                <!-- <div class="step-box">
-                    <div class="step-header">
-                        <div class="step-number">1</div>
-                        <h2 class="step-title">LOGIN ✓</h2>
-                        <a href="/editProfile" class="change-btn">CHANGE</a>
-                    </div>
-                    <div class="step-content">
-                        <div style="font-weight: 500;">
-                            <%= user.fullName %>
-                            +<%= user.phone %>
-                        </div>
-                    </div>
-                </div> -->
 
                 <!-- Delivery Address Step -->
                 <div class="step-box">
@@ -604,10 +590,7 @@
                                     <% for(let i=0; i < user.address.length; i++) { %>
                                         <div class="address-option mt-4 p-4 border rounded <%= i === 0 ? 'border-primary' : '' %>">
                                             <div class="d-flex align-items-start">
-                                                <input type="radio" 
-                                                       name="selectedAddress" 
-                                                       id="address<%= i %>" 
-                                                       value="<%= i %>"
+                                                <input type="radio" name="selectedAddress" id="address<%= i %>" value="<%= i %>"
                                                        <%= i === 0 ? 'checked' : '' %> 
                                                        class="form-check-input me-3 mt-2">
                                                 <div class="flex-grow-1">
@@ -619,7 +602,7 @@
                                                         <p class="mb-1"><strong>Street:</strong> <%= user.address[i].street %></p>
                                                         <p class="mb-1"><strong>City:</strong> <%= user.address[i].city %></p>
                                                         <p class="mb-1"><strong>State:</strong> <%= user.address[i].state %></p>
-                                                        <p class="mb-1"><strong>Country:</strong> <%= user.address[i].country %></p>
+                                                        <!-- <p class="mb-1"><strong>Country:</strong> <%= user.address[i].country %></p> -->
                                                         <p class="mb-0"><strong>PIN Code:</strong> <%= user.address[i].pinCode %></p>
                                                     </div>
                                                 </div>
@@ -657,8 +640,7 @@
                                                         <h3 class="product-title">
                                                             <%= product.productName %>
                                                         </h3>
-                                                        <p class="seller">Seller: <%= product.seller || 'Book Store' %>
-                                                        </p>
+                                                        <p class="seller">Seller: <%= product.seller || 'Book Store' %></p>
                                                     </div>
                                                     <div class="product-info-right">
                                                         <div class="price-line">
@@ -723,12 +705,7 @@
                         <span>Sale Price</span>
                         <span>₹<%= subtotal.toFixed(2) %></span>
                     </div>
-
-
-                
                     <div class="price-details-divider"></div>
-                    
-
 
                     <!-- Additional Charges -->
                     <div class="charges-section">
@@ -774,12 +751,7 @@
                 <div class="payment-options">
                     <div class="payment-option">
                         <div class="payment-option-content">
-                            <input type="radio" 
-                                   name="paymentMethod" 
-                                   id="cod" 
-                                   value="cod" 
-                                   checked 
-                                   class="form-check-input">
+                            <input type="radio" name="paymentMethod" id="cod" value="cod" checked class="form-check-input">
                             <label for="cod" class="payment-label">
                                 <i class="fas fa-money-bill-wave"></i>
                                 <div class="payment-text">
@@ -791,11 +763,7 @@
                     </div>
                     <div class="payment-option">
                         <div class="payment-option-content">
-                            <input type="radio" 
-                                   name="paymentMethod" 
-                                   id="online" 
-                                   value="online" 
-                                   class="form-check-input">
+                            <input type="radio" name="paymentMethod" id="online" value="online" class="form-check-input">
                             <label for="online" class="payment-label">
                                 <i class="fas fa-credit-card"></i>
                                 <div class="payment-text">

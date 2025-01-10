@@ -399,6 +399,181 @@
         alert(`Image ${index + 1} deleted!`);
     }
 
+    // Form validation
+    const form = document.querySelector('form');
+    const productName = document.getElementById('productName');
+    const description = document.getElementById('description');
+    const category = document.getElementById('category');
+    const stock = document.getElementById('stock');
+    const publication = document.getElementById('publication');
+    const regularPrice = document.getElementById('regularPrice');
+    const salePrice = document.getElementById('salePrice');
+
+    // Error message elements
+    const errorElements = {
+        productName: document.getElementById('productNameError'),
+        description: document.createElement('div'),
+        category: document.createElement('div'),
+        stock: document.createElement('div'),
+        publication: document.createElement('div'),
+        regularPrice: document.createElement('div'),
+        salePrice: document.createElement('div')
+    };
+
+    // Add error elements to the DOM
+    Object.keys(errorElements).forEach(key => {
+        if (key !== 'productName') { // productName error div already exists
+            errorElements[key].style.color = 'red';
+            errorElements[key].style.fontSize = '12px';
+            document.getElementById(key).parentElement.appendChild(errorElements[key]);
+        }
+    });
+
+    // Validation rules
+    const validations = {
+        productName: {
+            required: true,
+            minLength: 3,
+            maxLength: 50,
+            pattern: /^[A-Za-z0-9 ]+$/,
+            message: 'Product name should only contain letters, numbers, and spaces (3-50 characters)'
+        },
+        description: {
+            required: true,
+            minLength: 10,
+            maxLength: 500,
+            message: 'Description must be between 10 and 500 characters'
+        },
+        category: {
+            required: true,
+            message: 'Please select a category'
+        },
+        stock: {
+            required: true,
+            pattern: /^\d+$/,
+            min: 0,
+            message: 'Stock must be a positive number'
+        },
+        publication: {
+            required: true,
+            message: 'Please select a publication'
+        },
+        regularPrice: {
+            required: true,
+            pattern: /^\d+(\.\d{1,2})?$/,
+            min: 0,
+            message: 'Regular price must be a valid positive number'
+        },
+        salePrice: {
+            pattern: /^\d+(\.\d{1,2})?$/,
+            min: 0,
+            message: 'Sale price must be a valid positive number and less than regular price'
+        }
+    };
+
+    // Validate single field
+    function validateField(field, rules) {
+        const value = field.value.trim();
+        const errorElement = errorElements[field.id];
+        
+        // Reset error
+        errorElement.textContent = '';
+        field.style.borderColor = '';
+
+        // Required check
+        if (rules.required && !value) {
+            errorElement.textContent = `This field is required`;
+            field.style.borderColor = 'red';
+            return false;
+        }
+
+        // MinLength check
+        if (rules.minLength && value.length < rules.minLength) {
+            errorElement.textContent = `Minimum ${rules.minLength} characters required`;
+            field.style.borderColor = 'red';
+            return false;
+        }
+
+        // MaxLength check
+        if (rules.maxLength && value.length > rules.maxLength) {
+            errorElement.textContent = `Maximum ${rules.maxLength} characters allowed`;
+            field.style.borderColor = 'red';
+            return false;
+        }
+
+        // Pattern check
+        if (rules.pattern && !rules.pattern.test(value)) {
+            errorElement.textContent = rules.message;
+            field.style.borderColor = 'red';
+            return false;
+        }
+
+        // Min value check for numbers
+        if (rules.min !== undefined && Number(value) < rules.min) {
+            errorElement.textContent = `Value must be greater than or equal to ${rules.min}`;
+            field.style.borderColor = 'red';
+            return false;
+        }
+
+        // Special check for sale price
+        if (field.id === 'salePrice' && value) {
+            const regularPriceValue = Number(regularPrice.value);
+            const salePriceValue = Number(value);
+            if (salePriceValue >= regularPriceValue) {
+                errorElement.textContent = 'Sale price must be less than regular price';
+                field.style.borderColor = 'red';
+                return false;
+            }
+        }
+
+        // Validation passed
+        field.style.borderColor = '#4CAF50';
+        return true;
+    }
+
+    // Add input event listeners for real-time validation
+    Object.keys(validations).forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        field.addEventListener('input', () => {
+            validateField(field, validations[fieldName]);
+        });
+        field.addEventListener('blur', () => {
+            validateField(field, validations[fieldName]);
+        });
+    });
+
+    // Form submit validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate all fields
+        Object.keys(validations).forEach(fieldName => {
+            const field = document.getElementById(fieldName);
+            if (!validateField(field, validations[fieldName])) {
+                isValid = false;
+            }
+        });
+
+        // Check if at least one image is uploaded
+        let hasImage = false;
+        for (let i = 0; i < 4; i++) {
+            const preview = document.getElementById(`previewContainer${i}`);
+            if (preview.querySelector('img')) {
+                hasImage = true;
+                break;
+            }
+        }
+
+        if (!hasImage) {
+            alert('Please upload at least one product image');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

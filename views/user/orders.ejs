@@ -71,8 +71,6 @@
                                 </div>
 
                                 <div class="order-actions">
-                                    <!-- <button onclick="trackOrder('<%= order._id %>')" class="btn track-btn">Track Order</button> -->
-                                    <button onclick="viewDetails('<%= order._id %>')" class="btn details-btn">View Details</button>
                                     <% if (order.status === 'Pending' || order.status === 'Processing') { %>
                                         <button onclick="cancelOrder('<%= order._id %>')" class="btn cancel-btn">Cancel Order</button>
                                     <% } %>
@@ -82,57 +80,24 @@
                     </div>
                 <% } else { %>
                     <div class="no-orders">
-                        <div class="empty-cart-message">
-                            <i class="fas fa-shopping-bag"></i>
-                            <h3>No Orders Yet</h3>
-                            <p>Looks like you haven't made any orders yet.</p>
-                            <a href="/user/shop/1" class="btn shop-now-btn">Start Shopping</a>
-                        </div>
-                    </div>
-                <% } %>
-
-                <% if (orders && orders.length > 0) { %>
-                    <div class="pagination">
-                        <% if (hasPrevPage) { %>
-                            <a href="/orders?page=<%= prevPage %>" class="page-link prev">&laquo;</a>
-                        <% } %>
-
-                        <% 
-                        let startPage = Math.max(1, currentPage - 1);
-                        let endPage = Math.min(totalPages, startPage + 2);
-                        if (endPage - startPage < 2) {
-                            startPage = Math.max(1, endPage - 2);
-                        }
-                        %>
-
-                        <% if (startPage > 1) { %>
-                            <a href="/orders?page=1" class="page-link">1</a>
-                            <% if (startPage > 2) { %>
-                                <span class="page-dots">...</span>
-                            <% } %>
-                        <% } %>
-
-                        <% for(let i = startPage; i <= endPage; i++) { %>
-                            <a href="/orders?page=<%= i %>" 
-                               class="page-link <%= currentPage === i ? 'active' : '' %>">
-                                <%= i %>
-                            </a>
-                        <% } %>
-
-                        <% if (endPage < totalPages) { %>
-                            <% if (endPage < totalPages - 1) { %>
-                                <span class="page-dots">...</span>
-                            <% } %>
-                            <a href="/orders?page=<%= totalPages %>" class="page-link"><%= totalPages %></a>
-                        <% } %>
-
-                        <% if (hasNextPage) { %>
-                            <a href="/orders?page=<%= nextPage %>" class="page-link next">&raquo;</a>
-                        <% } %>
+                        <p>You haven't placed any orders yet.</p>
                     </div>
                 <% } %>
             </div>
         </main>
+    </div>
+</div>
+
+<!-- Custom Modal -->
+<div id="customModal" class="custom-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Success!</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Order cancelled successfully</p>
+        </div>
     </div>
 </div>
 
@@ -411,6 +376,66 @@
         font-weight: bold;
     }
 
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        animation: fadeIn 0.3s;
+    }
+
+    .custom-modal .modal-content {
+        position: relative;
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 0;
+        width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s;
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+        background-color: #e94560;
+        color: white;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-body {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .close-modal {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close-modal:hover {
+        color: #f1f1f1;
+    }
+
+    @keyframes fadeIn {
+        from {opacity: 0}
+        to {opacity: 1}
+    }
+
+    @keyframes slideIn {
+        from {transform: translateY(-100px); opacity: 0}
+        to {transform: translateY(0); opacity: 1}
+    }
+
     @media (max-width: 768px) {
         .order-footer {
             grid-template-columns: 1fr;
@@ -436,30 +461,8 @@
 </style>
 
 <script>
-    function trackOrder(orderId) {
-        // Implement order tracking functionality
-        Swal.fire({
-            title: 'Track Order',
-            text: 'Order tracking will be available soon!',
-            icon: 'info'
-        });
-    }
-
-    function viewDetails(orderId) {
-        window.location.href = `/orderDetails/${orderId}`;
-    }
-
     async function cancelOrder(orderId) {
-        const result = await Swal.fire({
-            title: 'Cancel Order',
-            text: 'Are you sure you want to cancel this order?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, cancel it',
-            cancelButtonText: 'No, keep it'
-        });
-
-        if (result.isConfirmed) {
+        if (confirm('Are you sure you want to cancel this order?')) {
             try {
                 const response = await fetch(`/cancelOrder/${orderId}`, {
                     method: 'POST',
@@ -467,25 +470,40 @@
                         'Content-Type': 'application/json'
                     }
                 });
-
+                
                 const data = await response.json();
+                
                 if (data.success) {
-                    Swal.fire({
-                        title: 'Cancelled!',
-                        text: 'Your order has been cancelled.',
-                        icon: 'success'
-                    }).then(() => {
-                        window.location.reload();
-                    });
+                    // Show custom modal
+                    const modal = document.getElementById('customModal');
+                    modal.style.display = 'block';
+                    
+                    // Close modal when clicking the close button
+                    const closeBtn = document.querySelector('.close-modal');
+                    closeBtn.onclick = function() {
+                        modal.style.display = 'none';
+                        location.reload();
+                    }
+                    
+                    // Close modal when clicking outside
+                    window.onclick = function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = 'none';
+                            location.reload();
+                        }
+                    }
+                    
+                    // Auto close after 2 seconds
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                        location.reload();
+                    }, 2000);
                 } else {
-                    throw new Error(data.message);
+                    alert(data.message || 'Failed to cancel order');
                 }
             } catch (error) {
-                Swal.fire({
-                    title: 'Error!',
-                    text: error.message || 'Failed to cancel order',
-                    icon: 'error'
-                });
+                console.error('Error:', error);
+                alert('An error occurred while cancelling the order');
             }
         }
     }

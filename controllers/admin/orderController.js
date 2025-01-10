@@ -1,7 +1,7 @@
 const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
 
-// Get all orders with pagination
+//orders with pagination
 const getOrders = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -10,7 +10,6 @@ const getOrders = async (req, res) => {
 
         const totalOrders = await Order.countDocuments();
         const totalPages = Math.ceil(totalOrders / limit);
-
         const orders = await Order.find()
             .populate('userId', 'name email')
             .populate('items.product', 'name images price')
@@ -19,8 +18,7 @@ const getOrders = async (req, res) => {
             .limit(limit)
             .lean(); 
 
-        res.render('adminOrders', {
-            orders,
+        res.render('adminOrders', {orders,
             currentPage: page,
             totalPages,
             hasNextPage: page < totalPages,
@@ -36,29 +34,21 @@ const getOrders = async (req, res) => {
     }
 };
 
-// Update order status
+// status update cheyyan
 const updateOrderStatus = async (req, res) => {
     try {
         const { orderId, status } = req.body;
-        
         const order = await Order.findById(orderId);
         if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'Order not found'
-            });
+            return res.status(404).json({success: false,message: 'Order is not found'});
         }
 
-        // Validate status transition
         const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
         if (!validStatuses.includes(status)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid status'
-            });
+            return res.status(400).json({success: false,message: 'Invalid status'});
         }
 
-        // Prevent status change if order is already delivered or cancelled
+        //  already delivered or cancelled --> no change
         if (order.status === 'Delivered' || order.status === 'Cancelled') {
             return res.status(400).json({
                 success: false,
@@ -66,14 +56,12 @@ const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // Update order status
+        // update aayath db ill save cheyyanam
         order.status = status;
         await order.save();
 
-        res.json({
-            success: true,
-            message: 'Order status updated successfully'
-        });
+        res.json({success: true,message: 'Order status updated successfully'});
+
     } catch (error) {
         console.error('Error updating order status:', error);
         res.status(500).json({
@@ -98,7 +86,6 @@ const getOrderDetails = async (req, res) => {
         res.render('admin/orderDetails', {
             order,
             title: 'Order Details',
-            moment: require('moment')
         });
     } catch (error) {
         console.error('Error fetching order details:', error);
@@ -110,19 +97,19 @@ const getOrderDetails = async (req, res) => {
 const cancelOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
-        
         const order = await Order.findById(orderId);
+        
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found'
+                message: 'Order is not found'
             });
         }
-
+        
         if (order.status === 'Delivered') {
             return res.status(400).json({
                 success: false,
-                message: 'Cannot cancel delivered order'
+                message: 'Cannot cancel a delivered order'
             });
         }
 
@@ -132,11 +119,9 @@ const cancelOrder = async (req, res) => {
         }
         
         await order.save();
-
-        res.json({
-            success: true,
-            message: 'Order cancelled successfully'
-        });
+        
+        res.json({success: true,message: 'Order cancelled successfully'});
+        
     } catch (error) {
         console.error('Error cancelling order:', error);
         res.status(500).json({
