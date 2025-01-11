@@ -626,10 +626,10 @@ const forgotPassword = async (req, res) => {
             otp,
             timestamp: Date.now()
         };
-
+ 
         // Send OTP via email
         await sendVerificationEmail(email, otp);
-
+  
         res.json({ 
             success: true, 
             message: 'OTP sent successfully' 
