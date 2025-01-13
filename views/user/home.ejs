@@ -90,19 +90,19 @@
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<strike><%= book[i].regularPrice %></strike></span>
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<%= book[i].salePrice %></span>
                 <div class="card-concern position-absolute start-0 end-0 d-flex gap-2">
-                  <button type="button" onclick="addToCart('<%=book[i]._id%>')" class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="top"
-                    data-bs-title="Tooltip on top">
+                  <!-- Add to Cart Button -->
+                  <button type="button" onclick="addToCart('<%=book[i]._id%>')" class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add to Cart">
                     <svg class="cart">
                       <use xlink:href="#cart"></use>
                     </svg>
                   </button>
-                  <a href="#" class="btn btn-dark">
-                    <span>
-                      <svg class="wishlist">
-                        <use xlink:href="#heart"></use>
-                      </svg>
-                    </span>
-                  </a>
+                
+                  <!-- Add to Wishlist Button -->
+                  <button type="button" onclick="addToWishlist('<%=book[i]._id%>')" class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add to Wishlist">
+                    <svg class="wishlist">
+                      <use xlink:href="#heart"></use>
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -226,6 +226,43 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+  async function addToWishlist(productId) {
+    try {
+        const response = await fetch('/addToWishlist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId: productId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            Swal.fire({
+                position: "center",
+                icon: "success",
+                title: data.message || "Added to wishlist!",
+                showConfirmButton: true,
+                timer: 2000
+            });
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: data.message || "Failed to add to wishlist",
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong!",
+        });
+    }
+}
+
     async function addToCart(productId) {
         try {
             const response = await fetch('/addToCart', {

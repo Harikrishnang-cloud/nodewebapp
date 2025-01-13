@@ -50,10 +50,7 @@ const updateOrderStatus = async (req, res) => {
 
         //  already delivered or cancelled --> no change
         if (order.status === 'Delivered' || order.status === 'Cancelled') {
-            return res.status(400).json({
-                success: false,
-                message: `Cannot change status of ${order.status.toLowerCase()} order`
-            });
+            return res.status(400).json({success: false,message: `Cannot change status of ${order.status.toLowerCase()} order`});
         }
 
         // update aayath db ill save cheyyanam
@@ -64,10 +61,7 @@ const updateOrderStatus = async (req, res) => {
 
     } catch (error) {
         console.error('Error updating order status:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to update order status'
-        });
+        res.status(500).json({success: false,message: 'Failed to update order status'});
     }
 };
 
@@ -100,17 +94,11 @@ const cancelOrder = async (req, res) => {
         const order = await Order.findById(orderId);
         
         if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'Order is not found'
-            });
+            return res.status(404).json({success: false,message: 'Order is not found'});
         }
         
         if (order.status === 'Delivered') {
-            return res.status(400).json({
-                success: false,
-                message: 'Cannot cancel a delivered order'
-            });
+            return res.status(400).json({success: false,message: 'Cannot cancel a delivered order'});
         }
 
         order.status = 'Cancelled';
@@ -119,15 +107,11 @@ const cancelOrder = async (req, res) => {
         }
         
         await order.save();
-        
         res.json({success: true,message: 'Order cancelled successfully'});
         
     } catch (error) {
         console.error('Error cancelling order:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to cancel order'
-        });
+        res.status(500).json({success: false,message: 'Failed to cancel order'});
     }
 };
 
@@ -139,7 +123,7 @@ const updateStatus = async (req, res) => {
         
         const update = await Order.updateOne({ _id: orderId }, { $set: { status: status } });
         if (update.modifiedCount > 0) {
-         return   res.status(200).json({ success: true, message: 'Order status updated successfully' });
+         return res.status(200).json({ success: true, message: 'Order status updated successfully' });
         }else{
            return res.status(400).json({ success: false, message: 'Failed to update order status' });
         }

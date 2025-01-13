@@ -15,20 +15,20 @@ const productAdd = async (req, res) => {
     try {
         const { productName, description, category, Quantity, publication, regularPrice, salePrice } = req.body;
 
-        // Validate required fields
+    
         if (!productName || !category || !Quantity || !regularPrice) {
             return res.status(400).send('Missing required fields. Please check your input.');
         }
         console.log("Data vannu",req.files)
 
-        // Check if files were uploaded
+        
         if (!req.files || req.files.length === 0) {
             return res.status(400).send('At least one product image is required.');
         }
 
         const uploadDir = path.join(__dirname, '../public/uploads');
 
-        // Ensure the uploads directory exists
+        
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -120,7 +120,6 @@ const deleteProduct = async (req, res) => {
     console.log('deleteProduct controller ill enter aayi');
     try {
         const id = req.params.id;
-        // Find product and toggle the status
         const product = await Product.findById(id);
         console.log('this is the product :',product);
         

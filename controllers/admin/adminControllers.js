@@ -3,12 +3,23 @@ const mongoose = require("mongoose")
 const bcrypt = require('bcrypt')
 const Category = require('../../models/categorySchema')
 
-//page-error ->
-const pageerror = async (req,res)=>{
-  res.render("admin-error")
-}
+//page-error controller --->
+const pageerror = async (req, res) => {
+    try {
+        const errorMessage = req.query.error || 'An error occurred';
+        const statusCode = req.query.status || 500;
+        res.status(statusCode).render("admin-error", {
+            error: errorMessage,
+            status: statusCode,
+            layout: 'admin-layout'
+        });
+    } catch (error) {
+        console.error('Error in admin error page:', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
 
-// login-page load ->
+// login-page load --->
 const loadLogin = (req,res)=>{
     if(req.session.admin){
       return res.redirect("/admin/dashboard")
@@ -23,7 +34,7 @@ const loaddashboard = (req,res)=>{
   try {
     
     if(req.session.admin){
-        console.log("call vannu");
+        console.log("dashboard call vannu");
         return res.render("dashboard")
     }
   } 
@@ -43,13 +54,17 @@ const adminLogin = async (req, res) => {
       if (admindata.password === password) {
         req.session.admin = admindata._id + "";
         return res.status(200).json({ success: true, message: "Admin login successful" });
-      } else {
+      } 
+      else 
+      {
         return res.status(401).json({ success: false, message: "Incorrect password" });
       }
-    } else {
+    } 
+    else {
       return res.status(404).json({ success: false, message: "Admin not found" });
     }
-  } catch (error) {
+  } 
+  catch (error) {
     console.log("login error", error);
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -63,6 +78,7 @@ const logout = async(req,res)=>{
     res.redirect("/admin/login")
   } catch (error) {
     console.log("unexpected error during logout",error);
+    // return res.status(500).json({ success: false, message: "Internal server error" });
     res.redirect("/pageerror")
   }
 }
@@ -72,7 +88,6 @@ module.exports = {
     loadLogin,
     loaddashboard,
     adminLogin,
-    pageerror,
     logout,
-    
+    pageerror
 }

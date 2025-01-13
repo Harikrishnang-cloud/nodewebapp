@@ -180,15 +180,11 @@
     const newpassword = document.getElementById("new-password").value;
     console.log(currentpassword);
     console.log(newpassword);
+
     const response = await fetch("/updatePass", {
-    headers: {
-        "Content-Type": "application/json",
-    },
+    headers: {"Content-Type": "application/json",},
     method: "POST",
-    body: JSON.stringify({
-        CurrentPassword: currentpassword,
-        newPassword: newpassword,
-    }),
+    body: JSON.stringify({CurrentPassword:currentpassword, newPassword:newpassword,}),
 });
 
 const data = await response.json();

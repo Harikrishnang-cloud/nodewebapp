@@ -10,7 +10,6 @@ const productController = require("../controllers/admin/productController")
 const publicationController =require("../controllers/admin/publicationController")
 const orderController = require("../controllers/admin/orderController")
 const { upload } = require('../middlewares/multer'); 
-// const auth = require('../middleware/adminAuth');
 
 //admin pages
 router.get("/pageerror",adminController.pageerror)

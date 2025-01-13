@@ -4,6 +4,7 @@ const passport = require('passport');
 const userController = require('../controllers/user/userController');
 const cartController = require('../controllers/user/cartController')
 const orderController = require('../controllers/user/orderController')
+const wishlistController = require('../controllers/user/wishlistController')
 const auth = require('../middlewares/middle')
 const loginauth = require('../middlewares/auth')
 
@@ -46,6 +47,10 @@ router.post('/addToCart',loginauth.userAuth,cartController.addToCart)
 router.delete('/removeFromCart',loginauth.userAuth,cartController.removeFromCart)
 router.get('/cartCount',loginauth.userAuth,cartController.getCartCount)
 
+//wishlist routes
+router.get('/wishlist',loginauth.userAuth,wishlistController.getWishlist)
+router.post('/addToWishlist',loginauth.userAuth,wishlistController.addToWishlist)
+router.delete('/removeFromWishlist',loginauth.userAuth,wishlistController.removeFromWishlist)
 
 // Signup and OTP routes
 router.post('/signup', userController.signup);
