@@ -1,0 +1,375 @@
+<%- include('../partials/admin/header') %>
+
+<style>
+    .btn-primary {
+        background-color: #e91e63 !important;
+        border-color: #e91e63 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #d81b90 !important;
+        border-color: #d81b90 !important;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-control:focus {
+        border-color: #e91e63;
+        box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+    }
+
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .breadcrumb-item a {
+        color: #e91e63;
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: green;
+    }
+
+    .error-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .form-control.is-valid {
+        border-color: #198754;
+    }
+
+    .form-control.is-valid:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container-fluid px-4">
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/admin/coupon">Coupons</a></li>
+                    <li class="breadcrumb-item active">Add New Coupon</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h4 class="card-title mb-0">Create New Coupon</h4>
+                </div>
+                <div class="card-body">
+                    <form id="addCouponForm" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Coupon Code*</label>
+                                <input type="text" class="form-control" name="code" required 
+                                       placeholder="e.g., SUMMER2025"
+                                       pattern="^[A-Za-z0-9]{4,16}$"
+                                       minlength="4"
+                                       maxlength="16">
+                                <div class="error-feedback" data-error="code-required">Coupon code is required</div>
+                                <div class="error-feedback" data-error="code-pattern">Code must be 4-16 characters long and contain only letters and numbers</div>
+                                <small class="text-muted">4-16 characters, letters and numbers only</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Discount Type*</label>
+                                <select class="form-select" name="discountType" required>
+                                    <option value="">Select discount type</option>
+                                    <option value="percentage">Percentage Off</option>
+                                    <option value="fixed">Fixed Amount Off</option>
+                                </select>
+                                <div class="error-feedback" data-error="discountType-required">Please select a discount type</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Discount Amount*</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="discountAmount" 
+                                           required min="0" max="100" step="0.01"
+                                           placeholder="Enter amount">
+                                    <span class="input-group-text discount-symbol">₹</span>
+                                </div>
+                                <div class="error-feedback" data-error="discountAmount-required">Discount amount is required</div>
+                                <div class="error-feedback" data-error="discountAmount-range">
+                                    Amount must be between 0-100 for percentage, or greater than 0 for fixed amount
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Minimum Purchase Amount*</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="minimumPurchase" 
+                                           required min="0" step="0.01"
+                                           placeholder="Minimum cart value">
+                                    <span class="input-group-text">₹</span>
+                                </div>
+                                <div class="error-feedback" data-error="minimumPurchase-required">Minimum purchase amount is required</div>
+                                <div class="error-feedback" data-error="minimumPurchase-min">Amount must be greater than 0</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Usage Limit*</label>
+                                <input type="number" class="form-control" name="usageLimit" 
+                                       required min="1" max="1000"
+                                       placeholder="Maximum times coupon can be used">
+                                <div class="error-feedback" data-error="usageLimit-required">Usage limit is required</div>
+                                <div class="error-feedback" data-error="usageLimit-range">Limit must be between 1 and 1000</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Expiry Date*</label>
+                                <input type="date" class="form-control" name="expiryDate" 
+                                       required
+                                       min="<%= new Date().toISOString().split('T')[0] %>">
+                                <div class="error-feedback" data-error="expiryDate-required">Expiry date is required</div>
+                                <div class="error-feedback" data-error="expiryDate-future">Date must be in the future</div>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Description*</label>
+                                <textarea class="form-control" name="description" rows="3" 
+                                          required minlength="10" maxlength="200"
+                                          placeholder="Enter coupon description and terms"></textarea>
+                                <div class="error-feedback" data-error="description-required">Description is required</div>
+                                <div class="error-feedback" data-error="description-length">Description must be between 10 and 200 characters</div>
+                                <small class="text-muted">10-200 characters</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/admin/coupon" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Coupons
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Coupon
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addCouponForm');
+    
+    // Helper function to show error
+    function showError(input, errorType) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        const errorElement = input.parentElement.querySelector(`[data-error="${input.name}-${errorType}"]`);
+        if (errorElement) {
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // Helper function to hide error
+    function hideError(input) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        const errorElements = input.parentElement.querySelectorAll('.error-feedback');
+        errorElements.forEach(el => el.style.display = 'none');
+    }
+
+    // Convert coupon code to uppercase
+    document.querySelector('input[name="code"]').addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    // Update discount symbol based on type
+    document.querySelector('select[name="discountType"]').addEventListener('change', function() {
+        const symbol = this.value === 'percentage' ? '%' : '₹';
+        document.querySelector('.discount-symbol').textContent = symbol;
+        
+        // Update max value for discount amount
+        const discountInput = document.querySelector('input[name="discountAmount"]');
+        if (this.value === 'percentage') {
+            discountInput.max = '100';
+        } else {
+            discountInput.removeAttribute('max');
+        }
+    });
+
+    // Validate individual fields
+    form.querySelectorAll('input, select, textarea').forEach(input => {
+        input.addEventListener('input', function() {
+            validateField(this);
+        });
+
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+    });
+
+    function validateField(input) {
+        // Reset validation state
+        hideError(input);
+
+        // Required validation
+        if (input.required && !input.value) {
+            showError(input, 'required');
+            return false;
+        }
+
+        // Specific validations based on field
+        switch(input.name) {
+            case 'code':
+                if (!input.value.match(/^[A-Za-z0-9]{4,16}$/)) {
+                    showError(input, 'pattern');
+                    return false;
+                }
+                break;
+
+            case 'discountAmount':
+                const discountType = form.querySelector('[name="discountType"]').value;
+                if (discountType === 'percentage' && (input.value < 0 || input.value > 100)) {
+                    showError(input, 'range');
+                    return false;
+                }
+                if (discountType === 'fixed' && input.value <= 0) {
+                    showError(input, 'range');
+                    return false;
+                }
+                break;
+
+            case 'minimumPurchase':
+                if (input.value < 0) {
+                    showError(input, 'min');
+                    return false;
+                }
+                break;
+
+            case 'usageLimit':
+                if (input.value < 1 || input.value > 1000) {
+                    showError(input, 'range');
+                    return false;
+                }
+                break;
+
+            case 'expiryDate':
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const selectedDate = new Date(input.value);
+                if (selectedDate <= today) {
+                    showError(input, 'future');
+                    return false;
+                }
+                break;
+
+            case 'description':
+                if (input.value.length < 10 || input.value.length > 200) {
+                    showError(input, 'length');
+                    return false;
+                }
+                break;
+        }
+
+        return true;
+    }
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validate all fields
+        let isValid = true;
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+            if (!validateField(input)) {
+                isValid = false;
+            }
+        });
+
+        if (!isValid) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please check the form for errors',
+                confirmButtonColor: '#e91e63'
+            });
+            return;
+        }
+
+        try {
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            // Show loading
+            Swal.fire({
+                title: 'Creating Coupon...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await fetch('/admin/addCoupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Coupon created successfully',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Go to Coupons List',
+                    confirmButtonColor: '#e91e63'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/admin/coupon';
+                    }
+                });
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error.message || 'Failed to create coupon',
+                confirmButtonColor: '#e91e63'
+            });
+        }
+    });
+});
+</script>
+
+<%- include('../partials/admin/footer') %>

@@ -87,6 +87,12 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Function to update counts
+    const updateCounts = () => {
+        // Dispatch event to update wishlist count
+        window.dispatchEvent(new Event('wishlistUpdated'));
+    };
+
     // Add to Cart
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', async function() {
@@ -129,13 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const wishlistData = await wishlistResponse.json();
 
                     if (wishlistData.success) {
-                        // Update cart count if available
-                        if (cartData.cartCount !== undefined) {
-                            const cartCountElement = document.querySelector('.cart-count');
-                            if (cartCountElement) {
-                                cartCountElement.textContent = cartData.cartCount;
-                            }
-                        }
+                        // Update counts
+                        updateCounts();
 
                         // Remove the row with animation
                         row.style.transition = 'opacity 0.5s';
@@ -150,10 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Show success message
                         Swal.fire({
-                            position: "center",
-                            icon: "success",
-                            title: "Product added to cart!",
-                            text: "Item removed from wishlist",
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Product added to cart and removed from wishlist',
                             showConfirmButton: true,
                             confirmButtonText: "OK",
                             timer: 1500
@@ -165,9 +165,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error:', error);
                 Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: error.message || "Failed to process your request",
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.message || 'Failed to process your request'
                 });
             }
         });
@@ -195,6 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (data.success) {
+                    // Update counts
+                    updateCounts();
+
                     // Remove the row with animation
                     row.style.transition = 'opacity 0.5s';
                     row.style.opacity = '0';
@@ -207,9 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 500);
 
                     Swal.fire({
-                        position: "center",
-                        icon: "success",
-                        title: "Product removed from wishlist!",
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Product removed from wishlist',
                         showConfirmButton: true,
                         confirmButtonText: "OK",
                         timer: 1500
@@ -220,9 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error:', error);
                 Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: error.message || "Failed to remove product from wishlist",
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.message || 'Failed to remove product from wishlist'
                 });
             }
         });

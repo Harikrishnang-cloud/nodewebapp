@@ -51,6 +51,7 @@ router.get('/cartCount',loginauth.userAuth,cartController.getCartCount)
 router.get('/wishlist',loginauth.userAuth,wishlistController.getWishlist)
 router.post('/addToWishlist',loginauth.userAuth,wishlistController.addToWishlist)
 router.delete('/removeFromWishlist',loginauth.userAuth,wishlistController.removeFromWishlist)
+router.get('/wishlistCount',loginauth.userAuth,wishlistController.getWishlistCount)
 
 // Signup and OTP routes
 router.post('/signup', userController.signup);

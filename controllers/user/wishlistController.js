@@ -112,8 +112,26 @@ const removeFromWishlist = async (req, res) => {
     }
 };
 
+// Get wishlist count
+const getWishlistCount = async (req, res) => {
+    try {
+        const userId = req.session.user._id;
+        if (!userId) {
+            return res.json({ success: true, count: 0 });
+        }
+
+        const wishlist = await Wishlist.findOne({ userId });
+        const count = wishlist ? wishlist.products.length : 0;
+        return res.json({ success: true, count });
+    } catch (error) {
+        console.error('Error getting wishlist count:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
 module.exports = {
     getWishlist,
     addToWishlist,
-    removeFromWishlist
+    removeFromWishlist,
+    getWishlistCount
 };
