@@ -5,6 +5,7 @@ const userController = require('../controllers/user/userController');
 const cartController = require('../controllers/user/cartController')
 const orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
+const couponController = require('../controllers/user/couponController')
 const auth = require('../middlewares/middle')
 const loginauth = require('../middlewares/auth')
 
@@ -52,6 +53,10 @@ router.get('/wishlist',loginauth.userAuth,wishlistController.getWishlist)
 router.post('/addToWishlist',loginauth.userAuth,wishlistController.addToWishlist)
 router.delete('/removeFromWishlist',loginauth.userAuth,wishlistController.removeFromWishlist)
 router.get('/wishlistCount',loginauth.userAuth,wishlistController.getWishlistCount)
+
+// Coupon routes
+router.get('/getAvailableCoupons', loginauth.userAuth, couponController.getAvailableCoupons);
+router.post('/applyCoupon', loginauth.userAuth, couponController.applyCoupon);
 
 // Signup and OTP routes
 router.post('/signup', userController.signup);

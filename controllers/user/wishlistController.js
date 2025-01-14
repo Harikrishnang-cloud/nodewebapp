@@ -11,31 +11,55 @@ const getWishlist = async (req, res) => {
             return res.redirect('/login');
         }
 
+        // Pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
+        const skip = (page - 1) * limit;
+
+        // Get wishlist with all items
         const wishlist = await Wishlist.findOne({ userId }).populate({
             path: 'products.productId',
             model: 'Product',
             select: 'productName description regularPrice salePrice productImage'
         });
 
-        // Transform the data to match your view expectations
-        const wishlistItems = wishlist ? wishlist.products.map(item => ({
+        const allProducts = wishlist ? wishlist.products : [];
+        const totalItems = allProducts.length;
+        const totalPages = Math.ceil(totalItems / limit);
+
+        // Get items for current page
+        const paginatedProducts = allProducts.slice(skip, skip + limit);
+
+        // Transform the data
+        const wishlistItems = paginatedProducts.map(item => ({
             _id: item.productId._id,
             productName: item.productId.productName,
             description: item.productId.description,
             regularPrice: item.productId.regularPrice,
             salePrice: item.productId.salePrice,
             productImage: item.productId.productImage
-        })) : [];
+        }));
 
-        console.log('Wishlist items:', wishlistItems);
-        
+        // Debug logging
+        console.log('Debug Info:', {
+            totalItems,
+            totalPages,
+            currentPage: page,
+            itemsPerPage: limit,
+            currentPageItems: wishlistItems.length
+        });
+
         res.render('wishlist', {
             wishlistItems,
-            user: req.session.user
+            user: req.session.user,
+            pagination: {page,totalPages,
+                hasNext: page < totalPages,hasPrev: page > 1,
+                nextPage: page + 1,prevPage: page - 1
+            }
         });
     } catch (error) {
         console.error('Error fetching wishlist:', error);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({success: false,message: 'Failed to fetch wishlist'});
     }
 };
 
@@ -58,10 +82,7 @@ const addToWishlist = async (req, res) => {
         let wishlist = await Wishlist.findOne({ userId });
 
         if (!wishlist) {
-            wishlist = new Wishlist({
-                userId,
-                products: []
-            });
+            wishlist = new Wishlist({userId,products: []});
         }
 
         // Check if product already exists in wishlist

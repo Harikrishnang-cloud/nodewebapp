@@ -76,33 +76,59 @@
                                     <img src="/uploads/<%= product.productImage[0] %>" class="card-img-top" alt="<%= product.productName %>" style="height: 200px; object-fit: cover;">
                                     <div class="card-body d-flex flex-column">
                                         <h5 class="card-title" style="color: #e94560;"><%= product.productName %></h5>
-                                        <p class="card-text  mb-2">By <%= product.description || 'Unknown description' %></p>
+                                        <p class="card-text mb-2">By <%= product.description || 'Unknown description' %></p>
                                         <div class="mt-auto">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <div>
-                                                    <span class="fs-5 fw-bold" style="color: #e94560;">₹<%= product.salePrice || product.price %></span>
-                                                    <% if (product.regularPrice && product.regularPrice > (product.salePrice || product.price)) { %>
-                                                        <span class="text-decoration-line-through ms-2">₹<%= product.regularPrice %></span>
-                                                    <% } %>
+                                                <div>
+                                                    <p class="mb-0"><strike class="text-muted">₹<%= product.regularPrice %></strike></p>
+                                                    <h5 class="text-primary mb-0">₹<%= product.salePrice %></h5>
                                                 </div>
-                                                <% if (product.offer && product.offer > 0) { %>
-                                                    <span class="badge" style="background-color: #e94560;"><%= product.offer %>% OFF</span>
-                                                <% } %>
+                                                <div class="d-flex gap-2">
+                                                    <button class="btn btn-outline-danger btn-sm wishlist-btn" onclick="event.preventDefault(); handleWishlist('<%= product._id %>', this)">
+                                                        <i class="fa-heart"></i>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <button class="btn w-100" style="background-color: #e94560; color: white;" onclick="addToCart('<%= product._id %>')">
-                                                Add to Cart
-                                            </button>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-outline-primary flex-grow-1 add-to-cart-btn" onclick="event.preventDefault(); addToCart('<%= product._id %>')">
+                                                    <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                                                </button>
+                                                <button class="btn btn-primary flex-grow-1 buy-now-btn" onclick="event.preventDefault(); buyNow('<%= product._id %>')">
+                                                    <i class="fas fa-bolt me-1"></i> Buy Now
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </a>
                         <% }); %>
                     <% } else { %>
-                        <div class="col-12">
-                            <div class="alert alert-info">No products available</div>
+                        <div class="col-12 text-center">
+                            <p>No products found</p>
                         </div>
                     <% } %>
                 </div>
+
+                <!-- Pagination -->
+                <% if (totalPages > 1) { %>
+                    <nav aria-label="Shop pagination" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                <a class="page-link" href="/user/shop/<%= currentPage - 1 %>" <%= currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : '' %>>Previous</a>
+                            </li>
+                            
+                            <% for(let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                    <a class="page-link" href="/user/shop/<%= i %>"><%= i %></a>
+                                </li>
+                            <% } %>
+                            
+                            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                <a class="page-link" href="/user/shop/<%= currentPage + 1 %>" <%= currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : '' %>>Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                <% } %>
             </div>
         </div>
     </div>
@@ -111,44 +137,206 @@
 <style>
     /* Existing styles */
 
-    .search-box {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        border: 0px solid #e94560;
-        border-radius: 35px;
-        overflow: hidden;
-        width: 350px;
-        /* padding: 5px 12px; */
+    /* Product Card Styles */
+    .product-card {
         transition: all 0.3s ease;
     }
 
-    .search-box:focus-within {
-        border-color: #d63384;
-        box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.1);
-        width: 220px;
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
     }
 
-    .search-input {
-        border: none;
-        padding: 5px 8px;
-        outline: none;
-        width: 100%;
-        font-size: 15px;
-        background: transparent;
+    .add-to-cart-btn, .buy-now-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 6px;
     }
 
-    .search-icon {
+    .add-to-cart-btn {
+        background-color: transparent;
+        border: 2px solid #e94560;
         color: #e94560;
-        font-size: 14px;
     }
 
+    .add-to-cart-btn:hover {
+        background-color: #e94560;
+        border-color: #e94560;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .buy-now-btn {
+        background: linear-gradient(135deg, #e94560, #d83a6f);
+        border: none;
+        color: white;
+    }
+
+    .buy-now-btn:hover {
+        background: linear-gradient(135deg, #d83a6f, #e94560);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+    }
+
+    .wishlist-btn {
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 2px solid #e94560;
+        color: #e94560;
+        background-color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 10;
+    }
+
+    .wishlist-btn i {
+        font-size: 1rem;
+    }
+
+    .wishlist-btn i::before {
+        content: "\f004";  /* Empty heart */
+    }
+
+    .wishlist-btn.active {
+        background-color: #e94560;
+        color: white;
+    }
+
+    .wishlist-btn.active i::before {
+        content: "\f004";  /* Filled heart */
+    }
+
+    .wishlist-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+    }
+
+    /* Heart beat animation */
+    @keyframes heartBeat {
+        0% { transform: scale(1); }
+        15% { transform: scale(1.25); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.25); }
+        60% { transform: scale(1); }
+    }
+
+    .heart-beat {
+        animation: heartBeat 1s ease-in-out;
+    }
+
+    /* Make product links not look like links */
+    a.col-md-4 {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* Responsive adjustments */
     @media (max-width: 768px) {
-        .search-box {
-            width: 180px;
+        .add-to-cart-btn, .buy-now-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
         }
-        .search-box:focus-within {
-            width: 200px;
+    }
+
+    /* Pagination Styles */
+    .pagination {
+        margin: 2rem 0;
+        gap: 5px;
+    }
+
+    .page-item {
+        margin: 0 2px;
+    }
+
+    .page-link {
+        color: #333;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-link:hover {
+        color: #fff;
+        background: linear-gradient(135deg, #e94560, #d83a6f);
+        border-color: #d83a6f;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+    }
+
+    .page-item.active .page-link {
+        color: #fff;
+        background: linear-gradient(135deg, #e94560, #d83a6f);
+        border-color: #d83a6f;
+        box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+    }
+
+    .page-item.disabled .page-link {
+        color: #adb5bd;
+        background-color: #f8f9fa;
+        border-color: #e9ecef;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    /* Previous/Next buttons special styling */
+    .page-item:first-child .page-link,
+    .page-item:last-child .page-link {
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        color: #e94560;
+        font-weight: 600;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .page-item:first-child .page-link:hover,
+    .page-item:last-child .page-link:hover {
+        background: linear-gradient(135deg, #e94560, #d83a6f);
+        color: #fff;
+    }
+
+    /* Add pulse animation to active page */
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(233, 69, 96, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(233, 69, 96, 0);
+        }
+    }
+
+    .page-item.active .page-link {
+        animation: pulse 2s infinite;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+        .pagination {
+            gap: 3px;
+        }
+
+        .page-link {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        .page-item:first-child .page-link,
+        .page-item:last-child .page-link {
+            min-width: 80px;
         }
     }
 </style>
@@ -227,16 +415,23 @@
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
-                                        <span class="fs-5 fw-bold" style="color: #e94560;">₹${product.salePrice || product.price}</span>
-                                        ${product.regularPrice && product.regularPrice > (product.salePrice || product.price) ? 
-                                            `<span class="text-decoration-line-through ms-2">₹${product.regularPrice}</span>` : ''}
+                                        <p class="mb-0"><strike class="text-muted">₹${product.regularPrice}</strike></p>
+                                        <h5 class="text-primary mb-0">₹${product.salePrice}</h5>
                                     </div>
-                                    ${product.offer && product.offer > 0 ? 
-                                        `<span class="badge" style="background-color: #e94560;">${product.offer}% OFF</span>` : ''}
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-danger btn-sm wishlist-btn" onclick="event.preventDefault(); handleWishlist('${product._id}', this)">
+                                            <i class="fa-heart"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <button class="btn w-100" style="background-color: #e94560; color: white;" onclick="addToCart('${product._id}')">
-                                    Add to Cart
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-primary flex-grow-1 add-to-cart-btn" onclick="event.preventDefault(); addToCart('${product._id}')">
+                                        <i class="fas fa-shopping-cart me-1"></i> Add to Cart
+                                    </button>
+                                    <button class="btn btn-primary flex-grow-1 buy-now-btn" onclick="event.preventDefault(); buyNow('${product._id}')">
+                                        <i class="fas fa-bolt me-1"></i> Buy Now
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -253,7 +448,7 @@
             const response = await fetch('/addToCart', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id: productId })
+                body: JSON.stringify({ productId })
             });
             const data = await response.json();
             if (data.success) {
@@ -288,7 +483,116 @@
         }
     }
 
-    function searchBooks() {
+    async function buyNow(productId) {
+        try {
+            // First add to cart
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Redirect to checkout page
+                window.location.href = '/checkout';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: data.message || 'Failed to process buy now'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong!'
+            });
+        }
+    }
+
+    // Function to handle wishlist actions
+    async function handleWishlist(productId, button) {
+        try {
+            const isInWishlist = button.classList.contains('active');
+            const endpoint = isInWishlist ? '/removeFromWishlist' : '/addToWishlist';
+            const method = isInWishlist ? 'DELETE' : 'POST';
+
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ productId: productId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Toggle active class
+                button.classList.toggle('active');
+                
+                // Add heart beat animation
+                button.classList.add('heart-beat');
+                setTimeout(() => button.classList.remove('heart-beat'), 1000);
+
+                // Show success message
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: isInWishlist ? 'Product Removed from Wishlist!' : 'Product Added to Wishlist!',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#e94560'
+                });
+            } else {
+                throw new Error(data.message || 'Failed to update wishlist');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                position: 'center',
+                icon: 'error',
+                title: 'Oops...',
+                text: error.message || 'Something went wrong!',
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#e94560'
+            });
+        }
+    }
+
+    // Function to check and update initial wishlist states
+    async function checkWishlistStates() {
+        try {
+            const response = await fetch('/wishlist');
+            const data = await response.json();
+            
+            if (data && data.wishlistItems) {
+                const wishlistIds = new Set(data.wishlistItems.map(item => item._id));
+                
+                // Update all wishlist buttons
+                document.querySelectorAll('.wishlist-btn').forEach(button => {
+                    const productId = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    if (wishlistIds.has(productId)) {
+                        button.classList.add('active');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error checking wishlist states:', error);
+        }
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        checkWishlistStates();
+    });
+
+    async function searchBooks() {
         const searchTerm = document.getElementById('searchInput').value.trim();
         if (!searchTerm) return;
 
@@ -312,14 +616,18 @@
                                         <div class="mt-auto">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <div>
-                                                    <span class="fs-5 fw-bold" style="color: #e94560;">₹${product.salePrice || product.price}</span>
-                                                    ${product.regularPrice && product.regularPrice > (product.salePrice || product.price) ? 
-                                                        `<span class="text-decoration-line-through text-muted ms-2">₹${product.regularPrice}</span>` : ''}
+                                                    <p class="mb-0"><strike class="text-muted">₹${product.regularPrice}</strike></p>
+                                                    <h5 class="text-primary mb-0">₹${product.salePrice}</h5>
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <button class="btn btn-outline-primary btn-sm add-to-cart" data-product-id="${product._id}">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-sm wishlist-btn" data-product-id="${product._id}">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <button onclick="addToCart('${product._id}')" class="btn w-100" style="background-color: #e94560; color: white;">
-                                                Add to Cart
-                                            </button>
                                         </div>
                                     </div>
                                 </div>

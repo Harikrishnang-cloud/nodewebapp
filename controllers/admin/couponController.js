@@ -24,22 +24,11 @@ const getAddCouponPage = async (req, res) => {
 // Add new coupon
 const addCoupon = async (req, res) => {
     try {
-        const {
-            code,
-            description,
-            discountType,
-            discountAmount,
-            minimumPurchase,
-            usageLimit,
-            expiryDate
-        } = req.body;
+        const {code,description,discountType,discountAmount,minimumPurchase,usageLimit,expiryDate} = req.body;
 
         // Validate discount amount
         if (discountType === 'percentage' && (discountAmount < 0 || discountAmount > 100)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Percentage discount must be between 0 and 100'
-            });
+            return res.status(400).json({success: false,message: 'Percentage discount must be between 0 and 100' });
         }
 
         // Check if coupon code already exists
@@ -104,15 +93,7 @@ const getEditCouponPage = async (req, res) => {
 const updateCoupon = async (req, res) => {
     try {
         const couponId = req.params.id;
-        const {
-            code,
-            description,
-            discountType,
-            discountAmount,
-            minimumPurchase,
-            usageLimit,
-            expiryDate
-        } = req.body;
+        const {code,description,discountType,discountAmount,minimumPurchase,usageLimit,expiryDate} = req.body;
 
         // Validate discount amount
         if (discountType === 'percentage' && (discountAmount < 0 || discountAmount > 100)) {
@@ -123,19 +104,13 @@ const updateCoupon = async (req, res) => {
         }
 
         if (discountType === 'fixed' && discountAmount <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Fixed discount must be greater than 0'
-            });
+            return res.status(400).json({success: false,message: 'Fixed discount must be greater than 0'});
         }
 
         // Check if coupon exists
         const existingCoupon = await Coupon.findById(couponId);
         if (!existingCoupon) {
-            return res.status(404).json({
-                success: false,
-                message: 'Coupon not found'
-            });
+            return res.status(404).json({success: false,message: 'Coupon not found'});
         }
 
         // Check if code is unique (excluding current coupon)
@@ -146,10 +121,7 @@ const updateCoupon = async (req, res) => {
             });
 
             if (duplicateCoupon) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Coupon code already exists'
-                });
+                return res.status(400).json({success: false,message: 'Coupon code already exists'});
             }
         }
 
@@ -168,17 +140,10 @@ const updateCoupon = async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        res.json({
-            success: true,
-            message: 'Coupon updated successfully',
-            coupon: updatedCoupon
-        });
+        res.json({success: true,message: 'Coupon updated successfully',coupon: updatedCoupon});
     } catch (error) {
         console.error('Error updating coupon:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to update coupon'
-        });
+        res.status(500).json({success: false,message: error.message || 'Failed to update coupon'});
     }
 };
 
@@ -193,10 +158,7 @@ const toggleCouponStatus = async (req, res) => {
         coupon.status = !coupon.status;
         await coupon.save();
 
-        res.json({
-            success: true,
-            message: `Coupon ${coupon.status ? 'activated' : 'deactivated'} successfully`
-        });
+        res.json({success: true,message: `Coupon ${coupon.status ? 'activated' : 'deactivated'} successfully`});
     } catch (error) {
         console.error('Error toggling coupon status:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
@@ -211,25 +173,16 @@ const deleteCoupon = async (req, res) => {
         // Check if coupon exists
         const coupon = await Coupon.findById(couponId);
         if (!coupon) {
-            return res.status(404).json({
-                success: false,
-                message: 'Coupon not found'
-            });
+            return res.status(404).json({success: false,message: 'Coupon not found'});
         }
 
         // Delete the coupon
         await Coupon.findByIdAndDelete(couponId);
 
-        res.json({
-            success: true,
-            message: 'Coupon deleted successfully'
-        });
+        res.json({success: true,message: 'Coupon deleted successfully'});
     } catch (error) {
         console.error('Error deleting coupon:', error);
-        res.status(500).json({
-            success: false,
-            message: error.message || 'Failed to delete coupon'
-        });
+        res.status(500).json({success: false,message: error.message || 'Failed to delete coupon'});
     }
 };
 

@@ -569,6 +569,346 @@
             font-weight: 500;
             margin: 15px 0;
         }
+
+        /* Coupon Styles */
+        .coupon-section {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .coupon-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .coupon-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .coupon-input button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .coupon-input button:hover {
+            background: #d83a6f;
+        }
+
+        /* Coupon Modal Styles */
+        .coupon-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .coupon-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .coupon-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .coupon-modal-header h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .coupon-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .coupon-item {
+            border: 1px dashed #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f9f9f9;
+        }
+
+        .coupon-code {
+            font-weight: bold;
+            color: #e94560;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .coupon-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .coupon-validity {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .copy-code {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            float: right;
+        }
+
+        .copy-code:hover {
+            background: #d83a6f;
+        }
+
+        /* Updated Coupon Section Styles */
+        .coupon-section {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .coupon-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .coupon-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .coupon-input input:focus {
+            border-color: #e94560;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.1);
+        }
+
+        .apply-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .apply-btn:hover {
+            background: #d83a6f;
+            transform: translateY(-1px);
+        }
+
+        .available-coupons-btn {
+            width: 100%;
+            background: #f8f9fa;
+            border: 1px dashed #e94560;
+            color: #e94560;
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .available-coupons-btn:hover {
+            background: #fff1f3;
+            transform: translateY(-1px);
+        }
+
+        .available-coupons-btn i {
+            font-size: 16px;
+        }
+
+        /* Updated Price Details Styles */
+        .price-details-content {
+            padding: 15px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .price-label {
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .price-value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .discount-row .price-value {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .info-icon {
+            color: #999;
+            font-size: 14px;
+            cursor: help;
+        }
+
+        .price-divider {
+            height: 1px;
+            background: #eee;
+            margin: 15px 0;
+        }
+
+        .total-row {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .total-row .price-label {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .total-row .price-value {
+            color: #e94560;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .savings-banner {
+            margin-top: 15px;
+            background: #f8fff9;
+            border: 1px dashed #28a745;
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .savings-banner i {
+            font-size: 18px;
+        }
+
+        .coupon-item {
+            border: 1px dashed #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f9f9f9;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .coupon-item:hover {
+            border-color: #e94560;
+            box-shadow: 0 2px 8px rgba(233, 69, 96, 0.1);
+        }
+
+        .coupon-code {
+            font-weight: bold;
+            color: #e94560;
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .coupon-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .coupon-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .discount-badge {
+            background: #e9ecef;
+            color: #e94560;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .min-purchase {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .coupon-validity {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .copy-code {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .copy-code:hover {
+            background: #d83a6f;
+        }
     </style>
     </head>
 
@@ -682,70 +1022,83 @@
                     <h3 class="price-details-title">PRICE DETAILS</h3>
                     <% let subtotal = 0, regularTotal = 0, savings = 0; %>
                     <% products.forEach(function(product) { %>
-                        <% subtotal += product.salePrice * product.quantity; %>
-                        <% regularTotal += product.regularPrice * product.quantity; %>
-                        <% savings += (product.regularPrice - product.salePrice) * product.quantity; %>
-                    
+                        <% subtotal += product.salePrice * product.quantity %>
+                        <% regularTotal += product.regularPrice * product.quantity %>
                     <% }); %>
+                    <% savings = regularTotal - subtotal %>
 
-                    <!-- Regular Price -->
-                    <div class="price-details-row">
-                        <span>Regular Price (<%= products.length %> items)</span>
-                        <span class="text-decoration-line-through">₹<%= regularTotal.toFixed(2) %></span>
+                    <!-- Add Coupon Section -->
+                    <div class="coupon-section">
+                        <div class="coupon-input">
+                            <input type="text" id="couponCode" class="form-control" placeholder="Enter Coupon Code">
+                            <button onclick="applyCoupon()" class="btn btn-primary apply-btn">Apply</button>
+                        </div>
+                        <button onclick="showAvailableCoupons()" class="available-coupons-btn">
+                            <i class="fas fa-ticket-alt"></i> View Available Coupons
+                        </button>
                     </div>
 
-                    
-                    <!-- Discount -->
-                    <div class="price-details-row text-success">
-                        <span>Discount</span>
-                        <span>- ₹<%= savings.toFixed(2) %></span>
-                    </div>
-                    <!-- Sale Price -->
-                    <div class="price-details-row">
-                        <span>Sale Price</span>
-                        <span>₹<%= subtotal.toFixed(2) %></span>
-                    </div>
-                    <div class="price-details-divider"></div>
-
-                    <!-- Additional Charges -->
-                    <div class="charges-section">
-                        <div class="price-details-row">
-                            <div class="d-flex align-items-center">
-                                <span>Delivery Fee</span>
-                                <i class="fas fa-info-circle ms-2" data-bs-toggle="tooltip" title="Standard delivery charges"></i>
-                            </div>
-                            <span>₹40.00</span>
+                    <!-- Price Details Section -->
+                    <div class="price-details-content">
+                        <!-- Regular Price -->
+                        <div class="price-row">
+                            <span class="price-label">Regular Price (<%= products.length %> items)</span>
+                            <span class="price-value text-decoration-line-through">₹<%= regularTotal.toFixed(2) %></span>
                         </div>
 
-                        <div class="price-details-row">
-                            <div class="d-flex align-items-center">
-                                <span>Packaging Fee</span>
-                                <i class="fas fa-info-circle ms-2" data-bs-toggle="tooltip" title="Secure packaging charges"></i>
-                            </div>
-                            <span>₹10.00</span>
+                        <!-- Sale Price -->
+                        <div class="price-row">
+                            <span class="price-label">Sale Price</span>
+                            <span class="price-value">₹<%= subtotal.toFixed(2) %></span>
                         </div>
 
-                        <div class="price-details-row">
-                            <div class="d-flex align-items-center">
-                                <span>GST (18%)</span>
-                                <i class="fas fa-info-circle ms-2" data-bs-toggle="tooltip" title="Goods and Services Tax"></i>
-                            </div>
-                            <span>₹<%= (subtotal * 0.18).toFixed(2) %></span>
+                        <!-- Discount -->
+                        <div class="price-row discount-row">
+                            <span class="price-label">Discount</span>
+                            <span class="price-value text-success">- ₹<%= savings.toFixed(2) %></span>
                         </div>
-                    </div>
 
-                    <div class="price-details-divider"></div>
 
-                    <!-- Total Amount -->
-                    <div class="price-details-row total-row">
-                        <span>Total Amount</span>
-                        <span class="total-amount">₹<%= (subtotal + 50 + (subtotal * 0.18)).toFixed(2) %></span>
-                    </div>
+                        <!-- Coupons -->
+                        <div class="price-row discount-row">
+                            <span class="price-label">Coupons for you</span>
+                            <span class="price-value text-success">- ₹0.00</span>
+                        </div>
 
-                    <!-- Savings Banner -->
-                    <div class="savings-banner">
-                        <i class="fas fa-piggy-bank me-2"></i>
-                        You Save ₹<%= savings.toFixed(2) %> on this order
+                        <div class="price-divider"></div>
+
+                        <!-- Additional Charges -->
+                        <div class="charges-section">
+                            <div class="price-row">
+                                <span class="price-label">
+                                    Delivery Fee
+                                    <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Standard delivery charges"></i>
+                                </span>
+                                <span class="price-value">₹40.00</span>
+                            </div>
+
+                            <div class="price-row">
+                                <span class="price-label">
+                                    Packaging Fee
+                                    <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Secure packaging charges"></i>
+                                </span>
+                                <span class="price-value">₹10.00</span>
+                            </div>
+                        </div>
+
+                        <div class="price-divider"></div>
+
+                        <!-- Total Amount -->
+                        <div class="price-row total-row">
+                            <span class="price-label">Total Amount</span>
+                            <span class="price-value total-amount">₹<%= (subtotal + 50).toFixed(2) %></span>
+                        </div>
+
+                        <!-- Savings Banner -->
+                        <div class="savings-banner">
+                            <i class="fas fa-piggy-bank"></i>
+                            <span>Total Savings: ₹<%= savings.toFixed(2) %></span>
+                        </div>
                     </div>
                 </div>
                 <div class="payment-options">
@@ -775,6 +1128,19 @@
                     </div>
                 </div>
                 <button onclick="placeOrder()" class="place-order-btn">PLACE ORDER</button>
+            </div>
+        </div>
+
+        <!-- Add Coupon Modal -->
+        <div id="couponModal" class="coupon-modal">
+            <div class="coupon-modal-content">
+                <div class="coupon-modal-header">
+                    <h4>Available Coupons</h4>
+                    <button class="close-modal" onclick="closeCouponModal()">&times;</button>
+                </div>
+                <div class="coupon-list" id="couponList">
+                    <!-- Coupons will be loaded here dynamically -->
+                </div>
             </div>
         </div>
 
@@ -837,6 +1203,174 @@
                     });
                 }
             }
+
+            // Coupon related functions
+            async function applyCoupon() {
+                const couponCode = document.getElementById('couponCode').value.trim();
+                if (!couponCode) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Please enter a coupon code',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Okay',
+                        timer: 2000
+                    });
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/applyCoupon', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ couponCode })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Coupon Applied!',
+                            text: `Discount: ₹${data.discount}`,
+                            showConfirmButton: true,
+                            confirmButtonText: 'Okay',
+                            timer: 2000
+                        });
+                        // Update price details
+                        updatePriceDetails(data.discount);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.message || 'Invalid coupon code',
+                            showConfirmButton: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error applying coupon:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                        showConfirmButton: true
+                    });
+                }
+            }
+
+            function updatePriceDetails(discount) {
+                // Update the price details section with the applied discount
+                const subtotalElement = document.querySelector('.subtotal');
+                const discountElement = document.querySelector('.discount');
+                const totalElement = document.querySelector('.total');
+
+                const subtotal = parseFloat(subtotalElement.textContent.replace('₹', ''));
+                const newTotal = subtotal - discount;
+
+                discountElement.textContent = `- ₹${discount.toFixed(2)}`;
+                totalElement.textContent = `₹${newTotal.toFixed(2)}`;
+            }
+
+            async function showAvailableCoupons() {
+                try {
+                    const response = await fetch('/getAvailableCoupons');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const couponList = document.getElementById('couponList');
+                        couponList.innerHTML = '';
+
+                        if (!data.coupons || data.coupons.length === 0) {
+                            couponList.innerHTML = `
+                                <div class="text-center p-4">
+                                    <i class="fas fa-ticket-alt text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mt-2">No coupons available at the moment</p>
+                                </div>`;
+                            return;
+                        }
+
+                        data.coupons.forEach(coupon => {
+                            const discountText = coupon.discountType === 'percentage' 
+                                ? `${coupon.discountAmount}% OFF` 
+                                : `₹${coupon.discountAmount} OFF`;
+
+                            const couponItem = document.createElement('div');
+                            couponItem.className = 'coupon-item';
+                            couponItem.innerHTML = `
+                                <div class="coupon-code">
+                                    ${coupon.code}
+                                    <button class="copy-code" onclick="copyCouponCode('${coupon.code}', ${coupon.discountAmount}, '${coupon.discountType}')">
+                                        Copy Code
+                                    </button>
+                                </div>
+                                <div class="coupon-description">${coupon.description}</div>
+                                <div class="coupon-details">
+                                    <div class="discount-badge">${discountText}</div>
+                                    <div class="min-purchase">Min. Purchase: ₹${coupon.minimumPurchase}</div>
+                                </div>
+                                <div class="coupon-validity">Valid till: ${new Date(coupon.expiryDate).toLocaleDateString()}</div>
+                            `;
+                            couponList.appendChild(couponItem);
+                        });
+
+                        document.getElementById('couponModal').style.display = 'flex';
+                    } else {
+                        throw new Error(data.message || 'Failed to fetch coupons');
+                    }
+                } catch (error) {
+                    console.error('Error fetching coupons:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to load available coupons',
+                        showConfirmButton: true
+                    });
+                }
+            }
+
+            function copyCouponCode(code, discount, discountType) {
+                navigator.clipboard.writeText(code).then(() => {
+                    document.getElementById('couponCode').value = code;
+                    closeCouponModal();
+                    
+                    // Calculate discount based on type
+                    let discountText = discountType === 'percentage' 
+                        ? `${discount}%` 
+                        : `₹${discount}`;
+                        
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Coupon code copied!',
+                        text: `${discountText} discount will be applied after clicking Apply`,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Apply Now',
+                        showCancelButton: true,
+                        cancelButtonText: 'Later'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            applyCoupon();
+                        }
+                    });
+                }).catch(err => {
+                    console.error('Error copying code:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to copy coupon code',
+                        showConfirmButton: true
+                    });
+                });
+            }
+
+            function closeCouponModal() {
+                document.getElementById('couponModal').style.display = 'none';
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('couponModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeCouponModal();
+                }
+            });
         </script>
         <%- include('../partials/user/footer.ejs') %>
     </body>
