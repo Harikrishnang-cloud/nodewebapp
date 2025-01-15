@@ -6,7 +6,8 @@ const cartController = require('../controllers/user/cartController')
 const orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
 const couponController = require('../controllers/user/couponController')
-const paymentController = require('../controllers/user/paymentController');
+const paymentController = require('../controllers/user/paymentController')
+const walletController = require('../controllers/user/walletController')
 const auth = require('../middlewares/middle')
 const loginauth = require('../middlewares/auth')
 
@@ -82,6 +83,13 @@ router.get("/productDetails", userController.productDetails)
 //Razorpay routes
 router.post('/razorpay/createOrder',loginauth.userAuth, paymentController.createOrder);
 router.post('/razorpay/verify', loginauth.userAuth, paymentController.verifyPayment);
+
+//wallet routes
+router.get('/wallet',loginauth.userAuth,walletController.getWallet);
+router.post('/addMoney',loginauth.userAuth,walletController.createAddMoneyOrder);
+router.post('/verifyAdd',loginauth.userAuth,walletController.verifyAndAddMoney);
+router.get('/transactions',loginauth.userAuth,walletController.getTransactions);
+
 
 
 module.exports = router;

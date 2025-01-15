@@ -40,7 +40,7 @@ const getWishlist = async (req, res) => {
             productImage: item.productId.productImage
         }));
 
-        // Debug logging
+        
         console.log('Debug Info:', {
             totalItems,
             totalPages,

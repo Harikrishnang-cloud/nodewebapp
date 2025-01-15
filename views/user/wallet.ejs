@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <%- include('../partials/user/header.ejs') %>
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        .wallet-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+        }
+        
+        .wallet-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .balance-section {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #3498db, #2ecc71);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .add-money-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .add-money-btn:hover {
+            background: #27ae60;
+        }
+        
+        .transaction-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .transaction-amount {
+            font-weight: bold;
+        }
+        
+        .credit {
+            color: #2ecc71;
+        }
+        
+        .debit {
+            color: #e74c3c;
+        }
+        
+        .transaction-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container wallet-container">
+        <div class="wallet-card">
+            <div class="balance-section">
+                <h3>Wallet Balance</h3>
+                <div class="balance-amount">₹<%= wallet.balance.toFixed(2) %></div>
+                <button class="add-money-btn" onclick="showAddMoneyModal()">Add Money</button>
+            </div>
+            
+            <div class="transactions-section">
+                <h4>Recent Transactions</h4>
+                <ul class="transaction-list">
+                    <% wallet.transactions.sort((a, b) => b.timestamp - a.timestamp).slice(0, 10).forEach(transaction => { %>
+                        <li class="transaction-item">
+                            <div>
+                                <div><%= transaction.description %></div>
+                                <div class="transaction-date">
+                                    <%= new Date(transaction.timestamp).toLocaleDateString('en-IN', { 
+                                        day: 'numeric', 
+                                        month: 'short', 
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) %>
+                                </div>
+                            </div>
+                            <div class="transaction-amount <%= transaction.type %>">
+                                <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                            </div>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Money Modal -->
+    <div class="modal fade" id="addMoneyModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Money to Wallet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Enter Amount (₹)</label>
+                        <input type="number" class="form-control" id="amount" min="1" step="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addMoney()">Add Money</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAddMoneyModal() {
+            new bootstrap.Modal(document.getElementById('addMoneyModal')).show();
+        }
+
+        async function addMoney() {
+            try {
+                const amount = document.getElementById('amount').value;
+                if (!amount || amount < 1) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Amount',
+                        text: 'Please enter a valid amount'
+                    });
+                    return;
+                }
+
+                // Create Razorpay order
+                const orderResponse = await fetch('/addMoney', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: parseFloat(amount) })
+                });
+
+                const orderResult = await orderResponse.json();
+                if (!orderResult.success) {
+                    throw new Error(orderResult.error || 'Failed to create order');
+                }
+
+                // Configure Razorpay
+                const options = {
+                    key: orderResult.key,
+                    amount: orderResult.order.amount,
+                    currency: "INR",
+                    name: "Your Store",
+                    description: "Add Money to Wallet",
+                    order_id: orderResult.order.id,
+                    handler: async function(response) {
+                        try {
+                            const verifyResponse = await fetch('/wallet/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    amount: amount
+                                })
+                            });
+
+                            const verifyResult = await verifyResponse.json();
+                            if (verifyResult.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Money Added Successfully!',
+                                    text: `₹${amount} has been added to your wallet.`,
+                                    showConfirmButton: true,
+                                    confirmButtonText: 'Okay'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error('Payment verification failed');
+                            }
+                        } catch (error) {
+                            console.error('Verification error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Payment Failed',
+                                text: 'Failed to add money to wallet. Please try again.'
+                            });
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Payment Cancelled',
+                                text: 'You cancelled the payment process.'
+                            });
+                        }
+                    },
+                    prefill: {
+                        name: '<%= user?.name %>',
+                        email: '<%= user?.email %>',
+                        contact: '<%= user?.phone %>'
+                    },
+                    theme: {
+                        color: "#3498db"
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+                
+                // Close the add money modal
+                bootstrap.Modal.getInstance(document.getElementById('addMoneyModal')).hide();
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to process request'
+                });
+            }
+        }
+    </script>
+    <%- include('../partials/user/footer.ejs') %>
+</body>
+</html>
+
