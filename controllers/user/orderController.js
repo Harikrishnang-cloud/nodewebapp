@@ -25,14 +25,9 @@ const getPlaceOrderPage = async (req, res) => {
                 ...item.product.toObject(),
                 quantity: item.quantity
             })),
-            // user: {
-            //     name: user.name || '',
-            //     mobile: user.mobile || '',
-            //     address: user.address || '',
-            //     pincode: user.pincode || ''
-            // },
             user:user,
-            title: 'Place Order'  
+            title: 'Place Order',
+            couponDiscount: 0  // Initialize coupon discount as 0
         });
     } catch (error) {
         console.error('Error fetching cart items:', error);
@@ -93,7 +88,7 @@ const placeOrder = async (req, res) => {
             },
             paymentMethod: paymentMethod
         });
-
+   
         await newOrder.save();
         
         // Clear the user's cart after successful order
@@ -101,11 +96,13 @@ const placeOrder = async (req, res) => {
             { userId: userId },
             { $set: { books: [] } }
         );
-
+  
         res.status(200).json({
             success: true,
             message: 'Order placed successfully',
-            orderId: newOrder._id
+            orderId: newOrder._id,
+            paymentMethod,
+            totalAmount
         });
 
     } catch (error) {

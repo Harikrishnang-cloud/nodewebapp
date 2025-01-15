@@ -1,4 +1,8 @@
+<head>
 <%- include('../partials/user/header.ejs') %>
+    <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
     <style>
         .order-container {
             max-width: 1200px;
@@ -910,7 +914,6 @@
             background: #d83a6f;
         }
     </style>
-    </head>
 
     <body>
         <div class="container order-container">
@@ -1020,10 +1023,10 @@
             <div class="order-sidebar">
                 <div class="price-details-card">
                     <h3 class="price-details-title">PRICE DETAILS</h3>
-                    <% let subtotal = 0, regularTotal = 0, savings = 0; %>
+                    <% let subtotal = 0, regularTotal = 0, savings = 0, couponDiscount = 0; %>
                     <% products.forEach(function(product) { %>
-                        <% subtotal += product.salePrice * product.quantity %>
-                        <% regularTotal += product.regularPrice * product.quantity %>
+                        <% subtotal = subtotal + product.salePrice * product.quantity %>
+                        <% regularTotal =regularTotal + product.regularPrice * product.quantity %>
                     <% }); %>
                     <% savings = regularTotal - subtotal %>
 
@@ -1033,7 +1036,7 @@
                             <input type="text" id="couponCode" class="form-control" placeholder="Enter Coupon Code">
                             <button onclick="applyCoupon()" class="btn btn-primary apply-btn">Apply</button>
                         </div>
-                        <button onclick="showAvailableCoupons()" class="available-coupons-btn">
+                        <button onclick="showAvailableCoupons()" class="available-coupons-btn" id="couponButton">
                             <i class="fas fa-ticket-alt"></i> View Available Coupons
                         </button>
                     </div>
@@ -1055,14 +1058,13 @@
                         <!-- Discount -->
                         <div class="price-row discount-row">
                             <span class="price-label">Discount</span>
-                            <span class="price-value text-success">- ₹<%= savings.toFixed(2) %></span>
+                            <span class="price-value  text-success">- ₹<%= savings.toFixed(2) %></span>
                         </div>
-
 
                         <!-- Coupons -->
                         <div class="price-row discount-row">
                             <span class="price-label">Coupons for you</span>
-                            <span class="price-value text-success">- ₹0.00</span>
+                            <span class="price-value coupon text-success">- ₹<%= couponDiscount.toFixed(2) %></span>
                         </div>
 
                         <div class="price-divider"></div>
@@ -1091,7 +1093,7 @@
                         <!-- Total Amount -->
                         <div class="price-row total-row">
                             <span class="price-label">Total Amount</span>
-                            <span class="price-value total-amount">₹<%= (subtotal + 50).toFixed(2) %></span>
+                            <span class="price-value total-amount">₹<%= (subtotal + 50 - couponDiscount).toFixed(2) %></span>
                         </div>
 
                         <!-- Savings Banner -->
@@ -1166,7 +1168,93 @@
                         if (response.ok) {
                             const result = await response.json();
                             if (result.success) {
-                                window.location.href = `/orderConfirmation/${result.orderId}`;
+                                if(result.paymentMethod === 'online'){
+                                    const razorpayOrder=await fetch('/razorpay/createOrder',{
+                                        method:'POST',
+                                        headers:{'Content-Type':'application/json'},
+                                        body:JSON.stringify({
+                                            amount:result.totalAmount
+                                        })
+                                    })
+                                    const orderRazorpay=await razorpayOrder.json()
+                                    if(orderRazorpay.success){
+                                        const options = {
+                                            key: orderRazorpay.key,
+                                            amount: orderRazorpay.order.amount,
+                                            currency: "INR",
+                                            name: "Your Store",
+                                            description: "Payment for Order",
+                                            order_id: orderRazorpay.order.id,
+                                            handler: async function(response) {
+                                                // This function runs after payment completion
+                                                const verify = await fetch('/razorpay/verify', {
+                                                    method: 'POST',
+                                                    headers: {'Content-Type': 'application/json'},
+                                                    body: JSON.stringify({
+                                                        razorpay_payment_id: response.razorpay_payment_id,
+                                                        razorpay_order_id: response.razorpay_order_id,
+                                                        razorpay_signature: response.razorpay_signature,
+                                                        orderId: result.orderId
+                                                    })
+                                                });
+
+                                                const razorpayVerify = await verify.json();
+                                                if(razorpayVerify.success){
+                                                    Swal.fire({
+                                                        icon: 'success',
+                                                        title: 'Payment Successful!',
+                                                        text: 'Your payment was successful.',
+                                                        showConfirmButton: true,
+                                                        confirmButtonText: 'Okay',
+                                                        timer: 2000
+                                                    });
+                                                    setTimeout(() => {
+                                                        window.location.href = `/orderConfirmation/${result.orderId}`;
+                                                    }, 2500);
+                                                }else{ 
+                                                    Swal.fire({
+                                                        icon: 'error',
+                                                        title: 'Payment Failed!',
+                                                        text: 'Your payment failed. Please try again from the recent orders page.',
+                                                        showConfirmButton: true,
+                                                        confirmButtonText: 'Okay',
+                                                        timer: 2000
+                                                    });
+                                                }
+                                            },
+                                            prefill: {
+                                                name: '<%= user?.name %>',
+                                                email: '<%= user?.email %>',
+                                                contact: '<%= user?.phone %>'  // if you have phone number
+                                            },
+                                            theme: {
+                                                color: "#3399cc"
+                                            },
+                                            modal: {
+                                                ondismiss: function() {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Payment Cancelled',
+                                                        text: 'You cancelled the payment process.',
+                                                        showConfirmButton: true
+                                                    });
+                                                }
+                                            }
+                                        };
+                                        const rzp = new Razorpay(options);
+                                        rzp.open();
+                                        rzp.on('payment.failed', function(response) {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Payment Failed',
+                                                text: 'The payment process failed. Please try again.',
+                                                showConfirmButton: true
+                                            });
+                                        });
+                                    }
+                                }else{
+                                    window.location.href = `/orderConfirmation/${result.orderId}`;
+                                }
                             } else {
                                 Swal.fire({
                                     icon: 'error',
@@ -1206,7 +1294,7 @@
 
             // Coupon related functions
             async function applyCoupon() {
-                const couponCode = document.getElementById('couponCode').value.trim();
+                const couponCode = document.getElementById('couponCode').value;
                 if (!couponCode) {
                     Swal.fire({
                         icon: 'warning',
@@ -1222,7 +1310,10 @@
                     const response = await fetch('/applyCoupon', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ couponCode })
+                        body: JSON.stringify({ 
+                            couponCode,
+                            total: parseFloat(document.querySelector('.total-amount').textContent.replace('₹', ''))
+                        })
                     });
 
                     const data = await response.json();
@@ -1231,7 +1322,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Coupon Applied!',
-                            text: `Discount: ₹${data.discount}`,
+                            text: data.message,
                             showConfirmButton: true,
                             confirmButtonText: 'Okay',
                             timer: 2000
@@ -1241,36 +1332,57 @@
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Oops...',
-                            text: data.message || 'Invalid coupon code',
+                            title: 'Failed to apply coupon',
+                            text: data.message,
                             showConfirmButton: true
                         });
                     }
                 } catch (error) {
-                    console.error('Error applying coupon:', error);
+                    console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong!',
+                        title: 'Error',
+                        text: 'Failed to apply coupon',
                         showConfirmButton: true
                     });
                 }
             }
 
             function updatePriceDetails(discount) {
-                // Update the price details section with the applied discount
-                const subtotalElement = document.querySelector('.subtotal');
-                const discountElement = document.querySelector('.discount');
-                const totalElement = document.querySelector('.total');
+                // Get all necessary elements
+                const subtotalElement = document.querySelector('.price-row:nth-child(1) .price-value');
+                const couponDiscountElement = document.querySelector('.discount-row .coupon');
+                const totalElement = document.querySelector('.total-amount');
 
+                // Get the current subtotal (remove ₹ symbol and convert to number)
                 const subtotal = parseFloat(subtotalElement.textContent.replace('₹', ''));
+                
+                // Update coupon discount
+                couponDiscountElement.textContent = `- ₹${discount.toFixed(2)}`;
+                
+                // Calculate new total (subtotal - coupon discount)
                 const newTotal = subtotal - discount;
-
-                discountElement.textContent = `- ₹${discount.toFixed(2)}`;
+                
+                // Update total amount
                 totalElement.textContent = `₹${newTotal.toFixed(2)}`;
             }
 
             async function showAvailableCoupons() {
+                const couponCode = document.getElementById('couponCode');
+                const couponButton = document.getElementById('couponButton');
+           
+                
+                
+
+                if (couponCode.value) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Already have a coupon code',
+                        confirmButtonText: 'Okay'
+                    });
+                 return    
+                }
                 try {
                     const response = await fetch('/getAvailableCoupons');
                     const data = await response.json();

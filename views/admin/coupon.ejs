@@ -40,7 +40,6 @@
                         <th>Discount</th>
                         <th>Min. Purchase</th>
                         <th>Used Count</th>
-                        <th>Usage Limit</th>
                         <th>Expiry Date</th>
                         <th>Status</th>
                         <th>Created At</th>
@@ -56,7 +55,6 @@
                                 <%= coupon.discountType === 'percentage' ? coupon.discountAmount + '%' : '₹' + coupon.discountAmount %>
                             </td>
                             <td>₹<%= coupon.minimumPurchase %></td>
-                            <td><%= coupon.usageLimit %></td>
                             <td><%= coupon.usedCount %></td>
                             <td><%= new Date(coupon.expiryDate).toLocaleDateString() %></td>
                             <td>
@@ -72,11 +70,7 @@
                                 <button class="btn btn-sm btn-danger" onclick="deleteCoupon('<%= coupon._id %>')">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                <button class="btn btn-sm <%= coupon.status ? 'btn-danger' : 'btn-success' %> toggle-status" 
-                                        data-coupon-id="<%= coupon._id %>"
-                                        data-current-status="<%= coupon.status %>">
-                                    <i class="fas <%= coupon.status ? 'fa-ban' : 'fa-check' %>"></i>
-                                </button>
+                                
                             </td>
                         </tr>
                     <% }); %>
@@ -171,9 +165,6 @@
                         <label class="form-label">Minimum Purchase Amount</label>
                         <input type="number" class="form-control" name="minimumPurchase" required min="0">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Usage Limit</label>
-                        <input type="number" class="form-control" name="usageLimit" required min="1">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Expiry Date</label>

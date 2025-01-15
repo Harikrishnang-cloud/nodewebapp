@@ -6,6 +6,7 @@ const cartController = require('../controllers/user/cartController')
 const orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
 const couponController = require('../controllers/user/couponController')
+const paymentController = require('../controllers/user/paymentController');
 const auth = require('../middlewares/middle')
 const loginauth = require('../middlewares/auth')
 
@@ -76,6 +77,11 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 router.post('/login',userController.login)
 router.get('/logout',userController.logoutpage)
 router.get("/productDetails", userController.productDetails)
+
+
+//Razorpay routes
+router.post('/razorpay/createOrder',loginauth.userAuth, paymentController.createOrder);
+router.post('/razorpay/verify', loginauth.userAuth, paymentController.verifyPayment);
 
 
 module.exports = router;
