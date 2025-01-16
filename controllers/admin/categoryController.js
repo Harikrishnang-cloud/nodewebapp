@@ -61,6 +61,7 @@ const editCategory = async(req,res)=>{
     res.render("editCategory",{category:category})
   } 
   catch (error) { 
+    console.log(error)
     res.redirect("/pageerror")
   }
 }        
@@ -81,11 +82,11 @@ const updateCategory = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid ID format" });
     }
     // Validate inputs
-    if (!name || !description || offer === undefined || offerPrice === undefined) {
+    if (!name || !description || offer === undefined ) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
     // Update the category in the database
-    const updatedCategory = await Category.findByIdAndUpdate(id,{ name, description, offer, offerPrice },{ new: true })
+    const updatedCategory = await Category.findByIdAndUpdate(id,{ name, description, offer },{ new: true })
 
     if (!updatedCategory) {
       return res.status(404).json({ success: false, message: "Category not found" });

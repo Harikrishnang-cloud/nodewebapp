@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Product</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #fdfcfb;
@@ -53,7 +54,7 @@
         }
 
         .btn-secondary:hover {
-            background-color: #643143;
+            background-color: #662d41;
         }
 
         .btn-back {
@@ -94,6 +95,42 @@
             cursor: pointer;
         }
 
+        /* Cropper Modal Styles */
+        #cropperModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        #cropperImage {
+            max-width: 100%;
+            max-height: 70vh;
+        }
+
+        .modal-buttons {
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .modal-buttons button {
+            margin-left: 10px;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 24px;
@@ -121,7 +158,7 @@
     <div class="container mt-5">
         <h1 class="mb-4">Edit Product</h1>
         <div class="form-container">
-            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
+            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data" id="editProductForm">
                 <div class="row">
                     <!-- Left Section -->
                     <div class="col-md-6">
@@ -143,7 +180,7 @@
                             <select id="category" name="category" class="form-control" required>
                                 <% cat.forEach(category => { %>
                                     <option value="<%= category._id %>" 
-                                            <%= product.category.equals(category._id) ? 'selected' : '' %>>
+                                            <%= product.category.equals(category._id) ? 'selected' : '' %> >
                                         <%= category.name %>
                                     </option>
                                 <% }); %>
@@ -164,7 +201,7 @@
                             <select id="publication" name="publication" required>
                                 <option value="">Select a Publication</option>
                                 <% for (let i = 0; i < publication.length; i++) { %>
-                                    <option value="<%= publication[i].id %>" <%= product.publication.equals(publication[i].id) ? 'selected' : '' %>>
+                                    <option value="<%= publication[i].id %>" <%= product.publication.equals(publication[i].id) ? 'selected' : '' %> >
                                         <%= publication[i].name %>
                                     </option>
                                 <% } %>
@@ -204,12 +241,12 @@
                                 <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('<%= index %>', '<%= image %>')">Remove</button>
                             </div>
                         <% }); %>
-                        <% for (let i = product.productImage.length; i < 4; i++) { %> <!-- Allow up to 4 images -->
+                        <% for (let i = product.productImage.length; i < 4; i++) { %>
                             <div class="img-container" id="img-container-<%= i %>">
                                 <div class="img-thumbnail add-image" onclick="triggerFileInput('<%= i %>')" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
                                     <span style="color: #ccc;">Add Image</span>
                                 </div>
-                                <input type="file" id="fileInput-<%= i %>" name="images[]" multiple class="form-control file-input" style="display: none;" onchange="previewImage(this, '<%= i %>')">
+                                <input type="file" id="fileInput-<%= i %>" name="images" accept="image/*" class="form-control file-input" style="display: none;" onchange="previewImage(this, '<%= i %>')">
                             </div>
                         <% } %>
                     </div>
@@ -225,50 +262,148 @@
     </div>
 </div>
 
+<!-- Cropper Modal -->
+<div id="cropperModal">
+    <div class="modal-content">
+        <img id="cropperImage" alt="Crop Image">
+        <div class="modal-buttons">
+            <button class="btn btn-primary" id="cropSaveBtn">Save</button>
+            <button class="btn btn-secondary" id="cropCancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script>
+    console.log('Initial product images:', <%- JSON.stringify(product.productImage) %>);
+
+    let cropper = null;
+    let currentImageIndex = null;
+
     function triggerFileInput(index) {
-    const fileInput = document.getElementById(`fileInput-${index}`);
-    if (fileInput) {
-        fileInput.click();
+        const fileInput = document.getElementById(`fileInput-${index}`);
+        if (fileInput) {
+            fileInput.click();
+        }
     }
-}
 
     function previewImage(input, index) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const container = document.getElementById(`img-container-${index}`);
-            if (container) {
-                container.innerHTML = `
-                    <div class="img-container" id="img-container-${index}">
-                        <img src="${e.target.result}" alt="New Image" class="img-thumbnail">
-                        <button type="button" class="btn btn-remove btn-sm" onclick="removeImage(${index}, '')">Remove</button>
-                    </div>
-                `;
-            }
-        };
-        reader.readAsDataURL(input.files[0]);
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                currentImageIndex = index;
+                const cropperImage = document.getElementById('cropperImage');
+                cropperImage.src = e.target.result;
+                openCropperModal();
+            };
+            
+            reader.readAsDataURL(file);
+        }
     }
-}
 
+    function openCropperModal() {
+        const modal = document.getElementById('cropperModal');
+        modal.style.display = 'flex';
+        
+        if (cropper) {
+            cropper.destroy();
+        }
+        
+        cropper = new Cropper(document.getElementById('cropperImage'), {
+            aspectRatio: 4/5,
+            viewMode: 1,
+            autoCropArea: 1,
+        });
+    }
 
-    function removeImage(index, imagePath) {
-    const container = document.getElementById(`img-container-${index}`);
-    if (container) {
-        // Mark the image for removal and replace it with a file input
+    function closeCropperModal() {
+        const modal = document.getElementById('cropperModal');
+        modal.style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
+
+    document.getElementById('cropSaveBtn').addEventListener('click', () => {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 400,
+            height: 500
+        });
+
+        const croppedImageUrl = canvas.toDataURL('image/jpeg');
+        const container = document.getElementById(`img-container-${currentImageIndex}`);
+        
+        // Update the preview
         container.innerHTML = `
-            <input type="hidden" name="removeImages[]" value="${imagePath}">
-            <div class="img-thumbnail add-image" onclick="triggerFileInput(${index})" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
+            <img src="${croppedImageUrl}" alt="Product Image" class="img-thumbnail">
+            <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('${currentImageIndex}')">Remove</button>
+            <input type="file" id="fileInput-${currentImageIndex}" name="images" accept="image/*" class="form-control file-input" style="display: none;" onchange="previewImage(this, '${currentImageIndex}')">
+        `;
+
+        // Convert canvas to blob and update the file input
+        canvas.toBlob((blob) => {
+            const file = new File([blob], `cropped-image-${Date.now()}.jpg`, { 
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+            
+            // Create a new FileList containing the cropped image
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+
+            const fileInput = document.getElementById(`fileInput-${currentImageIndex}`);
+            fileInput.files = dataTransfer.files;
+        }, 'image/jpeg', 0.95); // Added quality parameter for better compression
+
+        closeCropperModal();
+    });
+
+    document.getElementById('cropCancelBtn').addEventListener('click', closeCropperModal);
+
+    function removeImage(index, existingImage) {
+        const container = document.getElementById(`img-container-${index}`);
+        if (existingImage) {
+            // Add hidden input to track removed images
+            const removedInput = document.createElement('input');
+            removedInput.type = 'hidden';
+            removedInput.name = 'removeImages[]';
+            removedInput.value = existingImage;
+            container.appendChild(removedInput);
+        }
+        
+        // Reset the container to "Add Image" state
+        container.innerHTML = `
+            <div class="img-thumbnail add-image" onclick="triggerFileInput('${index}')" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
                 <span style="color: #ccc;">Add Image</span>
             </div>
-            <input type="file" id="fileInput-${index}" name="newImages[]" class="form-control file-input" style="display: none;" onchange="previewImage(this, ${index})">
+            <input type="file" id="fileInput-${index}" name="images" accept="image/*" class="form-control file-input" style="display: none;" onchange="previewImage(this, '${index}')">
+            ${existingImage ? `<input type="hidden" name="removeImages[]" value="${existingImage}">` : ''}
         `;
     }
-}
 
+    // Add form submission handler
+    document.getElementById('editProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Create FormData object
+        const formData = new FormData(this);
+        
+        // Log form data for debugging
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+
+        // Submit the form
+        this.submit();
+    });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <%- include("../../views/partials/admin/footer") %>
 </body>

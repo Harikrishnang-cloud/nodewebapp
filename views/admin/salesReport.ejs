@@ -101,7 +101,7 @@
                                             <td><%= order._id %></td>
                                             <td><%= moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss') %></td>
                                             <td><%= order.address.fullName %></td>
-                                            <td>₹<%= (order.savings || 0).toFixed(2) %></td>
+                                            <td>₹<%= (order.discount || 0).toFixed(2) %></td>
                                             <td>₹<%= order.totalAmount.toFixed(2) %></td>
                                             <td>
                                                 <span class="badge bg-<%= order.status === 'Delivered' ? 'success' : 

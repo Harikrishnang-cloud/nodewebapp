@@ -98,10 +98,10 @@
       <input type="text" id="offer" placeholder="Enter offer" value="<%=category.offer%>">
     </div> 
   
-    <div class="form-group">
+    <!-- <div class="form-group">
       <label for="offerPrice">Offer Price</label>
       <input type="text" id="offerPrice" placeholder="Enter offer price" value="<%=category.offerPrice%>">
-    </div> 
+    </div>  -->
   
     <div class="save-btn-container">
       <button id="saveCategoryBtn" data-category-id="<%= category._id %>">Save</button>
@@ -117,13 +117,13 @@
       const categoryName = document.getElementById('categoryName').value;
       const description = document.getElementById('description').value;
       const offer = document.getElementById('offer').value;
-      const offerPrice = document.getElementById('offerPrice').value;
+      // const offerPrice = document.getElementById('offerPrice').value;
       // Construct the data to send
       const updatedCategory = {
           name: categoryName,
           description: description,
           offer:offer,
-          offerPrice:offerPrice,
+          // offerPrice:offerPrice,
       };
       console.log("Updated category data:", updatedCategory);
 
@@ -141,10 +141,14 @@
               title: 'Success!',
               text: 'Your category has been updated.',
               icon: 'success',
-            });
-            setTimeout(() => {
+            })
+            .then(()=>{
             window.location.href = '/admin/category';  
-            }, 5000);
+
+            })
+            // setTimeout(() => {
+            // window.location.href = '/admin/category';  
+            // }, 5000);
 
 
           } else {

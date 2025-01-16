@@ -48,6 +48,10 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         default: 40
     },
+    discount:{
+        type: Number,
+        default: 0
+    },
     orderDate: {
         type: Date,
         default: Date.now

@@ -11,7 +11,7 @@ const publicationController =require("../controllers/admin/publicationController
 const orderController = require("../controllers/admin/orderController")
 const couponController = require("../controllers/admin/couponController")
 const salesReportController = require("../controllers/admin/salesReportController")
-const { upload } = require('../middlewares/multer'); 
+const { uploadMiddleware } = require('../middlewares/multer'); 
 
 //admin pages
 router.get("/pageerror",adminController.pageerror)
@@ -40,11 +40,11 @@ router.post("/editPublication/:id",adminAuth,publicationController.postEditPubli
 
 //Product Management
 router.get("/addProduct",adminAuth,productController.productAddpage);
-router.post("/addProduct",adminAuth,upload.array('images', 4),productController.productAdd)
+router.post("/addProduct",adminAuth,uploadMiddleware,productController.productAdd)
 router.get("/productview",adminAuth,productController.productview)
 router.post('/products/toggle-status/:id',adminAuth,productController.deleteProduct);
 router.get("/editProduct/:id",adminAuth,productController.editProduct)
-router.post("/editProduct/:id",adminAuth,upload.array('images',4),productController.updateProduct)
+router.post("/editProduct/:id",adminAuth,uploadMiddleware,productController.updateProduct)
 
 // Order Management Routes
 router.get('/orders', adminAuth,  orderController.getOrders);

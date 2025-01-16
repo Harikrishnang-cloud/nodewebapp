@@ -299,7 +299,6 @@ button.save-btn:hover {
                 <th>Category Name</th>
                 <th>Description</th>
                 <th>Offer</th>
-                <th>Offer Price</th>
                 <th>Status</th>
                 <th>Actions</th>
                 <th>Edit</th> 
@@ -311,7 +310,7 @@ button.save-btn:hover {
                     <td><%= cat[i].name %></td>
                     <td><%= cat[i].description %></td>
                     <td><%= cat[i].offer || "None" %></td>
-                    <td><%= cat[i].offerPrice || "N/A" %></td>
+                    <!-- <td><%= cat[i].offerPrice || "N/A" %></td> -->
                     <td class="editable"><%= !cat[i].isListed ? "Block" : "unblock" %></td>
                     <td>
                         <button class="<%= cat[i].isListed ? 'unlist-btn' : 'list-btn' %>" onclick="updateStatus('<%= cat[i]._id %>', '<%= cat[i].isListed %>')">
@@ -358,12 +357,12 @@ button.save-btn:hover {
         const name = document.getElementById("name").value.trim();
         const description = document.getElementById("description").value.trim();
         const offer = document.getElementById("offer").value.trim();
-        const offerPrice = document.getElementById("offerPrice").value.trim();
+        // const offerPrice = document.getElementById("offerPrice").value.trim();
         //Errors
         const nameError = document.getElementById("nameError");
         const descriptionError = document.getElementById("descriptionError");
         const offerError = document.getElementById("offerError");
-        const offerPriceError = document.getElementById("offerPriceError");
+        // const offerPriceError = document.getElementById("offerPriceError");
 
         nameError.textContent = "";
         descriptionError.textContent = "";
@@ -408,7 +407,7 @@ button.save-btn:hover {
                             <td>${data.category.name}</td>
                             <td>${data.category.description}</td>
                             <td>${data.category.offer || "N/A"}</td>
-                            <td>${data.category.offerPrice || "N/A"}</td>
+                            
                             <td class="status">${data.category.isListed ? "In-Stock" : "Out of Stock"}</td>
                             <td>
                                 <button class="${data.category.isListed ? 'unlist-btn' : 'list-btn'}">

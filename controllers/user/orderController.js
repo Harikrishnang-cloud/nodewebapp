@@ -51,6 +51,7 @@ const placeOrder = async (req, res) => {
         // Fetch product details and calculate total
         let totalAmount = 40; // Base delivery fee
         const orderItems = [];
+        let totalDiscount = 0;
 
         for (const item of JSON.parse(items)) {
             const product = await Product.findById(item.productId);
@@ -58,17 +59,36 @@ const placeOrder = async (req, res) => {
                 return res.status(404).json({ error: 'Product not found' });
             }
 
+            // Calculate discount for this item
+            const itemDiscount = (product.regularPrice - product.salePrice) * item.quantity;
+            totalDiscount += itemDiscount;
+
             orderItems.push({
                 product: item.productId,
                 productName: product.productName,
                 productDescription: product.description,
                 productImage: product.productImage[0],
                 quantity: item.quantity,
-                price: product.salePrice
+                price: product.salePrice,
+                originalPrice: product.price,
+                itemDiscount: itemDiscount
             });
 
-            totalAmount = totalAmount + (product.salePrice * item.quantity);
+            totalAmount += (product.salePrice * item.quantity);
         }
+        console.log("before coupon", totalDiscount)
+        // If a coupon is applied, calculate additional discount
+        if (req.body.couponCode) {
+            const coupon = await Coupon.findOne({ code: req.body.couponCode });
+            if (coupon && coupon.isActive) {
+                const couponDiscount = (totalAmount * coupon.discountPercentage) / 100;
+                totalDiscount += couponDiscount;
+                totalAmount -= couponDiscount;
+            }
+        }
+
+        // // Calculate savings (total discount)
+        // const savings = totalDiscount;
 
         // Handle wallet payment
         if (paymentMethod === 'wallet') {
@@ -95,23 +115,24 @@ const placeOrder = async (req, res) => {
                 }
             );
         }
-
+        console.log("discount",totalDiscount)
         // Create new order with mapped address fields
         const newOrder = new Order({
             userId: userId,
             items: orderItems,
-            totalAmount,
-            status: 'Pending' ,
+            totalAmount: totalAmount,
+            discount: totalDiscount,
+            status: 'Pending',
             deliveryFee: 40,
             orderDate: new Date(),
             address: {
                 fullName: selectedAddress.fullName,
+                phone: selectedAddress.phone,
                 street: selectedAddress.street,
                 city: selectedAddress.city,
                 state: selectedAddress.state,
                 country: selectedAddress.country || 'India',
-                pinCode: selectedAddress.pinCode,
-                phone: selectedAddress.phone
+                pinCode: selectedAddress.pinCode 
             },
             paymentMethod: paymentMethod,
             paymentStatus: paymentMethod === 'wallet' ? 'Completed' : (paymentMethod === 'cod' ? 'Pending' : 'Processing')
@@ -144,9 +165,7 @@ const getOrderConfirmation = async (req, res) => {
     try {
         console.log("order confirm controller hit")
         const orderId = req.params.orderId;
-        const order = await Order.findById(orderId)
-
-            .populate('userId', 'name email');
+        const order = await Order.findById(orderId).populate('userId', 'name email');
 
         if (!order) {
             return res.redirect('/pageNotFound');
@@ -228,16 +247,10 @@ const cancelOrder = async (req, res) => {
             await order.save();
         }
 
-        res.json({
-            success: true,
-            message: 'Order cancelled successfully'
-        });
+        res.json({success: true,message: 'Order cancelled successfully'});
     } catch (error) {
         console.error('Error cancelling order:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to cancel order'
-        });
+        res.status(500).json({success: false,message: 'Failed to cancel order'});
     }
 };
 
