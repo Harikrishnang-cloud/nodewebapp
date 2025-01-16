@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled','Confirmed'],
         default: 'Pending'
     },
     deliveryFee: {
@@ -85,12 +85,12 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['cod', 'online'],
+        enum: ['cod', 'online', 'wallet'],
         required: true
     },
     paymentStatus: {
         type: String,
-        enum: ['Pending', 'Completed', 'Failed', 'Refund Initiated', 'Refunded'],
+        enum: ['Pending', 'Completed', 'Failed', 'Refund Initiated', 'Refunded','Processing'],
         default: 'Pending'
     }
 }, {

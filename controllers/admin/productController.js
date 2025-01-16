@@ -15,7 +15,6 @@ const productAdd = async (req, res) => {
     try {
         const { productName, description, category, Quantity, publication, regularPrice, salePrice } = req.body;
 
-    
         if (!productName || !category || !Quantity || !regularPrice) {
             return res.status(400).send('Missing required fields. Please check your input.');
         }
@@ -28,7 +27,6 @@ const productAdd = async (req, res) => {
 
         const uploadDir = path.join(__dirname, '../public/uploads');
 
-        
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }

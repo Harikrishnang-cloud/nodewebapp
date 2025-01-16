@@ -1093,7 +1093,7 @@
                         <!-- Total Amount -->
                         <div class="price-row total-row">
                             <span class="price-label">Total Amount</span>
-                            <span class="price-value total-amount">₹<%= (subtotal + 50 - couponDiscount).toFixed(2) %></span>
+                            <span class="price-value total-amount" >₹<%= (subtotal + 50 - couponDiscount).toFixed(2) %></span>
                         </div>
 
                         <!-- Savings Banner -->
@@ -1124,6 +1124,20 @@
                                 <div class="payment-text">
                                     <h4>Online Payment</h4>
                                     <p>Pay using credit/debit card, net banking, etc.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="payment-option">
+                        <div class="payment-option-content">
+                            <input type="radio" name="paymentMethod" id="wallet" value="wallet" class="form-check-input">
+                            <label for="wallet" class="payment-label">
+                                <i class="fas fa-wallet"></i>
+                                <div class="payment-text">
+                                    <h4>Wallet Payment</h4>
+                                    <p>Pay using your wallet balance</p>
                                 </div>
                             </label>
                         </div>
@@ -1169,76 +1183,70 @@
                             const result = await response.json();
                             if (result.success) {
                                 if(result.paymentMethod === 'online'){
-                                    const razorpayOrder=await fetch('/razorpay/createOrder',{
+                                    const razorpayOrder = await fetch('/razorpay/createOrder',{
                                         method:'POST',
                                         headers:{'Content-Type':'application/json'},
                                         body:JSON.stringify({
-                                            amount:result.totalAmount
+                                            orderId: result.orderId
                                         })
-                                    })
-                                    const orderRazorpay=await razorpayOrder.json()
+                                    });
+                                    const orderRazorpay = await razorpayOrder.json();
                                     if(orderRazorpay.success){
                                         const options = {
                                             key: orderRazorpay.key,
                                             amount: orderRazorpay.order.amount,
                                             currency: "INR",
-                                            name: "Your Store",
-                                            description: "Payment for Order",
+                                            name: "Bookstore",
+                                            description: "Payment for your order",
                                             order_id: orderRazorpay.order.id,
-                                            handler: async function(response) {
-                                                // This function runs after payment completion
-                                                const verify = await fetch('/razorpay/verify', {
-                                                    method: 'POST',
-                                                    headers: {'Content-Type': 'application/json'},
-                                                    body: JSON.stringify({
-                                                        razorpay_payment_id: response.razorpay_payment_id,
-                                                        razorpay_order_id: response.razorpay_order_id,
-                                                        razorpay_signature: response.razorpay_signature,
-                                                        orderId: result.orderId
-                                                    })
-                                                });
-
-                                                const razorpayVerify = await verify.json();
-                                                if(razorpayVerify.success){
-                                                    Swal.fire({
-                                                        icon: 'success',
-                                                        title: 'Payment Successful!',
-                                                        text: 'Your payment was successful.',
-                                                        showConfirmButton: true,
-                                                        confirmButtonText: 'Okay',
-                                                        timer: 2000
+                                            handler: async function (response) {
+                                                try {
+                                                    const verifyResponse = await fetch('/razorpay/verify', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({
+                                                            razorpay_order_id: response.razorpay_order_id,
+                                                            razorpay_payment_id: response.razorpay_payment_id,
+                                                            razorpay_signature: response.razorpay_signature,
+                                                            orderId: result.orderId
+                                                        })
                                                     });
-                                                    setTimeout(() => {
-                                                        window.location.href = `/orderConfirmation/${result.orderId}`;
-                                                    }, 2500);
-                                                }else{ 
+                                                    const verifyResult = await verifyResponse.json();
+                                                    if (verifyResult.success) {
+                                                        Swal.fire({
+                                                            icon: 'success',
+                                                            title: "Online Payment Success",
+                                                            text: "Your Order is placed",
+                                                            showConfirmButton: true,
+                                                            confirmButtonText: "OK",
+                                                            allowOutsideClick: false
+                                                        }).then(() => {
+                                                            window.location.href = `/orderConfirmation/${result.orderId}`;
+                                                        });
+                                                    } else {
+                                                        Swal.fire({
+                                                            icon: 'error',
+                                                            title: 'Payment Verification Failed',
+                                                            text: 'There was an issue verifying your payment.',
+                                                            showConfirmButton: true
+                                                        });
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Error verifying payment:', error);
                                                     Swal.fire({
                                                         icon: 'error',
-                                                        title: 'Payment Failed!',
-                                                        text: 'Your payment failed. Please try again from the recent orders page.',
-                                                        showConfirmButton: true,
-                                                        confirmButtonText: 'Okay',
-                                                        timer: 2000
+                                                        title: 'Error!',
+                                                        text: 'Failed to verify payment. Please contact support.',
+                                                        showConfirmButton: true
                                                     });
                                                 }
                                             },
                                             prefill: {
-                                                name: '<%= user?.name %>',
-                                                email: '<%= user?.email %>',
-                                                contact: '<%= user?.phone %>'  // if you have phone number
+                                                name: "<%= user.name %>",
+                                                email: "<%= user.email %>"
                                             },
                                             theme: {
                                                 color: "#3399cc"
-                                            },
-                                            modal: {
-                                                ondismiss: function() {
-                                                    Swal.fire({
-                                                        icon: 'warning',
-                                                        title: 'Payment Cancelled',
-                                                        text: 'You cancelled the payment process.',
-                                                        showConfirmButton: true
-                                                    });
-                                                }
                                             }
                                         };
                                         const rzp = new Razorpay(options);
@@ -1252,7 +1260,9 @@
                                             });
                                         });
                                     }
-                                }else{
+                                } else if (result.paymentMethod === 'wallet') {
+                                    window.location.href = `/orderConfirmation/${result.orderId}`;
+                                } else {
                                     window.location.href = `/orderConfirmation/${result.orderId}`;
                                 }
                             } else {
@@ -1286,7 +1296,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: 'Please select an address and payment method.',
+                        text: 'An error occurred. Please try again.',
                         confirmButtonText: 'Okay'
                     });
                 }

@@ -80,6 +80,63 @@
             color: #7f8c8d;
             font-size: 0.9rem;
         }
+        
+        .pagination-container {
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pagination {
+            margin: 0;
+            gap: 5px;
+        }
+
+        .page-item {
+            margin: 0 2px;
+        }
+        
+        .page-link {
+            color: #333;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-link:hover {
+            color: #fff;
+            background: linear-gradient(135deg, #e94560, #d83a6f);
+            border-color: #d83a6f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+        }
+        
+        .page-item.active .page-link {
+            color: #fff;
+            background: linear-gradient(135deg, #e94560, #d83a6f);
+            border-color: #d83a6f;
+            box-shadow: 0 4px 8px rgba(233, 69, 96, 0.2);
+        }
+        
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .page-link {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -95,26 +152,79 @@
             <div class="transactions-section">
                 <h4>Recent Transactions</h4>
                 <ul class="transaction-list">
-                    <% wallet.transactions.sort((a, b) => b.timestamp - a.timestamp).slice(0, 10).forEach(transaction => { %>
+                    <% 
+                    const itemsPerPage = 10;
+                    const currentPage = parseInt(query.page) || 1;
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const sortedTransactions = wallet.transactions.sort((a, b) => b.timestamp - a.timestamp);
+                    const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
+                    
+                    sortedTransactions.slice(startIndex, endIndex).forEach(transaction => { 
+                    %>
                         <li class="transaction-item">
                             <div>
                                 <div><%= transaction.description %></div>
-                                <div class="transaction-date">
-                                    <%= new Date(transaction.timestamp).toLocaleDateString('en-IN', { 
-                                        day: 'numeric', 
-                                        month: 'short', 
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    }) %>
-                                </div>
+                                <div class="transaction-date"><%= new Date(transaction.timestamp).toLocaleString() %></div>
                             </div>
-                            <div class="transaction-amount <%= transaction.type %>">
-                                <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                            <div class="transaction-amount <%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                                <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= Math.abs(transaction.amount).toFixed(2) %>
                             </div>
                         </li>
-                    <% }) %>
+                    <% }); %>
                 </ul>
+
+                <% if (wallet.transactions.length > itemsPerPage) { %>
+                    <div class="pagination-container">
+                        <nav aria-label="Transaction navigation">
+                            <ul class="pagination">
+                                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>" <%= currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : '' %>>Previous</a>
+                                </li>
+                                
+                                <% 
+                                let startPage = Math.max(1, currentPage - 2);
+                                let endPage = Math.min(totalPages, startPage + 4);
+                                if (endPage - startPage < 4) {
+                                    startPage = Math.max(1, endPage - 4);
+                                }
+                                %>
+
+                                <% if (startPage > 1) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">1</a>
+                                    </li>
+                                    <% if (startPage > 2) { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    <% } %>
+                                <% } %>
+
+                                <% for(let i = startPage; i <= endPage; i++) { %>
+                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                    </li>
+                                <% } %>
+
+                                <% if (endPage < totalPages) { %>
+                                    <% if (endPage < totalPages - 1) { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    <% } %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a>
+                                    </li>
+                                <% } %>
+                                
+                                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>" <%= currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : '' %>>Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
@@ -180,7 +290,7 @@
                     order_id: orderResult.order.id,
                     handler: async function(response) {
                         try {
-                            const verifyResponse = await fetch('/wallet/verify', {
+                            const verifyResponse = await fetch('/verifyAdd', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -202,6 +312,8 @@
                                 }).then(() => {
                                     window.location.reload();
                                 });
+                                console.log('Payment verified successfully');
+                                
                             } else {
                                 throw new Error('Payment verification failed');
                             }
@@ -252,4 +364,3 @@
     <%- include('../partials/user/footer.ejs') %>
 </body>
 </html>
-

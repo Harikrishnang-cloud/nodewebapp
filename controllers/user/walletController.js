@@ -22,7 +22,12 @@ const getWallet = async (req, res) => {
             });
         }
 
-        res.render('wallet', {title: 'My Wallet',wallet: wallet,user: req.session.user});
+        res.render('wallet', {
+            title: 'My Wallet',
+            wallet: wallet,
+            user: req.session.user,
+            query: req.query
+        });
 
     } catch (error) {
         console.error('Error fetching wallet:', error);
@@ -67,7 +72,8 @@ const verifyAndAddMoney = async (req, res) => {
             .createHmac('sha256', process.env.RAZORPAY_SECRET_KEY)
             .update(sign)
             .digest('hex');
-
+     console.log("razorpay_signature === expectedSign",razorpay_signature === expectedSign);
+     
         if (razorpay_signature === expectedSign) {
             // Add money to wallet
             const wallet = await Wallet.findOneAndUpdate(
@@ -86,6 +92,8 @@ const verifyAndAddMoney = async (req, res) => {
                 },
                 { new: true, upsert: true }
             );
+            console.log(wallet);
+            
 
             res.json({success: true,message: 'Money added successfully',wallet: wallet});
         } else {

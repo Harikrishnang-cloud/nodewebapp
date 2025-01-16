@@ -10,6 +10,7 @@ const productController = require("../controllers/admin/productController")
 const publicationController =require("../controllers/admin/publicationController")
 const orderController = require("../controllers/admin/orderController")
 const couponController = require("../controllers/admin/couponController")
+const salesReportController = require("../controllers/admin/salesReportController")
 const { upload } = require('../middlewares/multer'); 
 
 //admin pages
@@ -60,5 +61,9 @@ router.get("/editCoupon/:id", adminAuth, couponController.getEditCouponPage);
 router.put("/editCoupon/:id", adminAuth, couponController.updateCoupon);
 router.delete("/coupon/toggle-status/:id", adminAuth, couponController.toggleCouponStatus);
 router.delete("/coupon/delete/:id", adminAuth, couponController.deleteCoupon);
+
+//Sales Report
+router.get("/salesReport", adminAuth, salesReportController.getSalesReport);
+router.get("/salesReport/download", adminAuth, salesReportController.downloadSalesReport);
 
 module.exports = router;

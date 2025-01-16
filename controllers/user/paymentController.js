@@ -1,4 +1,5 @@
 const Razorpay = require('razorpay');
+const Order = require('../../models/orderSchema');
 const crypto = require('crypto');
 // const Order = require('../../models/orderModel');
 
@@ -10,14 +11,13 @@ const razorpay = new Razorpay({
 
 const createOrder = async (req, res) => {
     try {
-        const { amount } = req.body;
-        console.log('Creating Razorpay order:', { amount });
 
+        const orderData = await Order.findById(req.body.orderId);
+        const amount = orderData.totalAmount;
         const options = {
             amount: amount * 100, // amount in paise
             currency: 'INR',
         };
-
         const order = await razorpay.orders.create(options);
         console.log('Razorpay order created:', order);
 

@@ -443,30 +443,42 @@
                 .map(el => parseFloat(el.textContent.replace('₹', '')));
             const subtotal = totals.reduce((sum, total) => sum + total, 0);
             
-            const discounts = Array.from(document.querySelectorAll('.discount'))
-                .map(el => parseFloat(el.textContent.replace('Save ₹', '')))
-                .reduce((sum, discount) => sum + discount, 0);
-
-            const total = subtotal - discounts;
-
+            const discounts = Array.from(document.querySelectorAll('.cart-item')).map(item => {
+                const regularPrice = parseFloat(item.querySelector('.original-price').textContent.replace('₹', ''));
+                const salePrice = parseFloat(item.querySelector('.current-price').textContent.replace('₹', ''));
+                const quantity = parseInt(item.querySelector('.quantity').textContent);
+                return (regularPrice - salePrice) * quantity;
+            });
+            const totalDiscount = discounts.reduce((sum, discount) => sum + discount, 0);
             document.querySelector('.summary-row:nth-child(2) span:last-child').textContent = `₹${subtotal.toFixed(2)}`;
-            document.querySelector('.discount-amount').textContent = `-₹${discounts.toFixed(2)}`;
-            document.querySelector('.total-amount').textContent = `₹${total.toFixed(2)}`;
+            document.querySelector('.discount-amount').textContent = `-₹${totalDiscount.toFixed(2)}`;
+            document.querySelector('.total-amount').textContent = `₹${(subtotal - totalDiscount).toFixed(2)}`;
         }
 
         function calculateSubtotal() {
-            const totals = Array.from(document.querySelectorAll('.item-total'))
-                .map(element => parseFloat(element.textContent.replace('₹', '')))
-            const subtotal = totals.reduce((sum, total) => sum + total, 0);
-            document.querySelector('.summary-row:nth-child(2) span:last-child').textContent = `₹${subtotal.toFixed(2)}`
+            // Calculate subtotal from regular prices
+            const regularPrices = Array.from(document.querySelectorAll('.original-price'))
+                .map(element => {
+                    const priceText = element.textContent.trim();
+                    return parseFloat(priceText.replace('₹', '')) * 
+                           parseInt(element.closest('.cart-item').querySelector('.quantity').textContent);
+                });
+            const subtotal = regularPrices.reduce((sum, price) => sum + price, 0);
+            document.querySelector('.summary-row span:last-child').textContent = `₹${subtotal.toFixed(2)}`;
 
-            const discount = Array.from(document.querySelectorAll('.discount'))
-                .map(element => parseFloat(element.textContent.replace('Save ₹', '')))
-                .reduce((sum, discount) => sum + discount, 0);
-            document.querySelector('.discount-amount').textContent = `-₹${discount.toFixed(2)}`;
+            // Calculate total discount
+            const discounts = Array.from(document.querySelectorAll('.cart-item')).map(item => {
+                const regularPrice = parseFloat(item.querySelector('.original-price').textContent.replace('₹', ''));
+                const salePrice = parseFloat(item.querySelector('.current-price').textContent.replace('₹', ''));
+                const quantity = parseInt(item.querySelector('.quantity').textContent);
+                return (regularPrice - salePrice) * quantity;
+            });
+            const totalDiscount = discounts.reduce((sum, discount) => sum + discount, 0);
+            document.querySelector('.discount-amount').textContent = `-₹${totalDiscount.toFixed(2)}`;
 
-            const final = subtotal - discount;
-            document.querySelector('.summary-row.total span:last-child').textContent = `₹${final.toFixed(2)}`
+            // Calculate final total
+            const final = subtotal - totalDiscount;
+            document.querySelector('.total-amount').textContent = `₹${final.toFixed(2)}`;
         }
 
         function calculateitemPriceonload() {

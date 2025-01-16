@@ -2,6 +2,7 @@ const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
 const Cart = require('../../models/cartSchema');
 const User = require('../../models/userSchema'); 
+const Wallet = require('../../models/walletSchema');
 
 const getPlaceOrderPage = async (req, res) => {
     try {
@@ -69,12 +70,38 @@ const placeOrder = async (req, res) => {
             totalAmount = totalAmount + (product.salePrice * item.quantity);
         }
 
+        // Handle wallet payment
+        if (paymentMethod === 'wallet') {
+            const wallet = await Wallet.findOne({ userId: userId });
+            if (!wallet || wallet.balance < totalAmount) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: 'Insufficient wallet balance' 
+                });
+            }
+
+            // Deduct amount from wallet
+            await Wallet.findOneAndUpdate(
+                { userId: userId },
+                {
+                    $inc: { balance: -totalAmount },
+                    $push: {
+                        transactions: {
+                            type: 'debit',
+                            amount: totalAmount,
+                            description: `Payment for order`,
+                        }
+                    }
+                }
+            );
+        }
+
         // Create new order with mapped address fields
         const newOrder = new Order({
             userId: userId,
             items: orderItems,
             totalAmount,
-            status: 'Pending',
+            status: 'Pending' ,
             deliveryFee: 40,
             orderDate: new Date(),
             address: {
@@ -86,7 +113,8 @@ const placeOrder = async (req, res) => {
                 pinCode: selectedAddress.pinCode,
                 phone: selectedAddress.phone
             },
-            paymentMethod: paymentMethod
+            paymentMethod: paymentMethod,
+            paymentStatus: paymentMethod === 'wallet' ? 'Completed' : (paymentMethod === 'cod' ? 'Pending' : 'Processing')
         });
    
         await newOrder.save();
@@ -99,15 +127,16 @@ const placeOrder = async (req, res) => {
   
         res.status(200).json({
             success: true,
-            message: 'Order placed successfully',
             orderId: newOrder._id,
-            paymentMethod,
-            totalAmount
+            paymentMethod: paymentMethod
         });
 
     } catch (error) {
         console.error('Error placing order:', error);
-        res.status(500).json({ error: 'Failed to place order' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to place order'
+        });
     }
 };
 
