@@ -171,12 +171,13 @@ const resendotp = async (req, res) => {
         req.session.userData.email, otp
       );
       console.log(emailSent);
-      res.status(200).send("OTP resent successfully!");
+      return res.status(200).send("OTP resent successfully!");
     }
     else {
-      res.status(404).send("User not found")
+      return res.status(404).send("User not found")
     }
   } catch (error) {
+    res.status(500).send("Server Error");
     console.log("resendOtp is error", error);
   }
 };

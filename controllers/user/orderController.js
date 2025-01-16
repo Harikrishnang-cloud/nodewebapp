@@ -140,6 +140,14 @@ const placeOrder = async (req, res) => {
    
         await newOrder.save();
         
+        orderItems.forEach(async (item) => {
+            console.log("item",item)
+            const product = await Product.findById(item.product);
+            if (product) {
+                product.Quantity -= item.quantity;
+                await product.save();
+            }
+        });
         // Clear the user's cart after successful order
         await Cart.findOneAndUpdate(
             { userId: userId },
