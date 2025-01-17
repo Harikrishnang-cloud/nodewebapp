@@ -250,11 +250,11 @@
             </div>
 
             <div class="offer">
-                <strong>Product Offer:</strong> Get 10% off on your first purchase!
+                <strong>Product Offer:</strong> Get <%= ((data.regularPrice - data.salePrice) / data.regularPrice * 100).toFixed(0) %>% off on your first purchase!
             </div>
 
             <div class="offer">
-                <strong>Category Offer:</strong> Buy any 2 books and get 15% off!
+                <strong>Category Offer:</strong> Buy any 2 books and get % off!
             </div>
 
             <p class="description"><%= data.description%></p>
