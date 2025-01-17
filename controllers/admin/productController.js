@@ -7,6 +7,8 @@ const path = require("path");
 const sharp = require("sharp");
 const mongoose = require("mongoose")
 const publicationSchema = require("../../models/publicationSchema");
+const { productOfferCalculate } = require('../../helpers/productHelper');
+
 
 //product add page
 const productAdd = async (req, res) => {
@@ -15,7 +17,7 @@ const productAdd = async (req, res) => {
 
         if (!productName || !category || !Quantity || !regularPrice) {
             return res.status(400).send('Missing required fields. Please check your input.');
-        }
+        }   
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).send('At least one product image is required.');
@@ -123,6 +125,8 @@ const productview = async (req, res) => {
             .limit(limit)
             .populate('category')
             .populate('publication');
+            console.log(products);
+            
 
         res.render('productview', {
             products,
@@ -212,9 +216,9 @@ const updateProduct = async (req, res) => {
         // Handle image updates
         let updatedImages = [];
         
-        // Add existing images that weren't removed
+        
         if (existingImages) {
-            // Convert to array if it's a single value
+            
             const existingImagesArray = Array.isArray(existingImages) ? existingImages : [existingImages];
             updatedImages = existingImagesArray.filter(Boolean);
         }
@@ -323,6 +327,7 @@ const updateProduct = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };  
+
 
 
 module.exports = {

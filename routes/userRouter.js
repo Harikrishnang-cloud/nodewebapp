@@ -20,6 +20,8 @@ router.get('/signup', userController.loadSignup);
 router.get('/otp', userController.otp);
 router.get('/resendotp', userController.resendotp);
 router.get('/about', userController.about);
+router.get('/contact', userController.contact);
+router.post('/contact', userController.submitContact);
 
 // Shop page route
 router.get('/user/shop/:page', userController.getShopPage);

@@ -175,7 +175,7 @@
                         <td><%= product.category ? product.category.name : 'Uncategorized' %></td>
                         <td><%= product.regularPrice %></td>
                         <td><%= product.salePrice %></td>
-                        <td><%= product.productOffer %>%</td>
+                        <td><%= (((product.regularPrice - product.salePrice) / product.regularPrice) * 100).toFixed(0) %>%</td>
                         <td><%= product.Quantity %></td>
                         <td><%= product.status %></td>
                         <td><%= product.status === 'Unblock' ? 'Listed' : 'Unlisted' %></td>

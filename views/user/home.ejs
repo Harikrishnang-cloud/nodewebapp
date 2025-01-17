@@ -62,7 +62,7 @@
             <div class="swiper-slide">
               <div class="card position-relative p-4 border rounded-3">
                 <div class="position-absolute">
-                  <p class="bg-primary py-1 px-3 fs-6 text-white rounded-2">10% off</p>
+                  <p class="bg-primary py-1 px-3 fs-6 text-white rounded-2"><%= book[i].totalDiscount%>%</p>
                 </div>
                 <a href="/productDetails/?id=<%=book[i]._id%>"><img src="uploads/<%= book[i].productImage[0] %>" class="img-fluid shadow-sm" alt="product item"></a>
                 <h6 class="mt-4 mb-0 fw-bold"><a href="index.html"><%= book[i].productName%></a></h6> 
@@ -88,7 +88,7 @@
                   </div>
                 </div>
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<strike><%= book[i].regularPrice %></strike></span>
-                <span class="price text-primary fw-bold mb-2 fs-5">₹<%= book[i].salePrice %></span>
+                <span class="price text-primary fw-bold mb-2 fs-5">₹<%= book[i].finalPrice %></span>
                 <div class="card-concern position-absolute start-0 end-0 d-flex gap-2">
                   <!-- Add to Cart Button -->
                   <button type="button" onclick="addToCart('<%=book[i]._id%>')" class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add to Cart">

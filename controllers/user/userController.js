@@ -8,6 +8,7 @@ const userHelper = require('../../helpers/userHelper')
 const bcrypt = require('bcrypt')
 const Books = require("../../models/productSchema")
 const { redirect } = require("server/reply");
+const productHelper = require('../../helpers/productHelper')
 
 
 // Page Not Found Controller
@@ -185,9 +186,22 @@ const resendotp = async (req, res) => {
 const loadHomepage = async (req, res) => {
   // console.log("Session", req.session.user)
   try {
-    const userbooks = await Books.find({ status: "Unblock" })
+    const userbooks = await Books.aggregate([
+      { $match: { status: "Unblock" } },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "cat"
+        }
+      },
+      { $unwind: "$cat" },
+      { $limit: 5 }
+    ])
       .limit(5)
-
+      
+    console.log("home books ", userbooks)
     const categoryBooks = await Category.aggregate([
       { $match: { isListed: true } },
       { $limit: 4 },
@@ -217,8 +231,8 @@ const loadHomepage = async (req, res) => {
         }
       }
     ]);
+    const response = await productHelper.productOfferCalculate(userbooks)
 
-    // console.log(categoryBooks)
     res.render("home", {
       user: req.session.user,
       book: userbooks,
@@ -719,6 +733,40 @@ const about = async (req, res) => {
   }
 };
 
+const contact = async (req, res) => {
+  try {
+    const user = req.session.user;
+    res.render('contact', { user, message: null });
+  } catch (error) {
+    console.error('Error in contact page:', error);
+    res.status(500).render('error', { message: 'Internal server error' });
+  }
+};
+
+const submitContact = async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+    const user = req.session.user;
+
+    res.render('contact', { 
+      user,
+      message: {
+        type: 'success',
+        text: 'Thank you for your message! We will get back to you soon.'
+      }
+    });
+  } catch (error) {
+    console.error('Error in contact form submission:', error);
+    res.render('contact', { 
+      user: req.session.user,
+      message: {
+        type: 'error',
+        text: 'There was an error sending your message. Please try again.'
+      }
+    });
+  }
+};
+
 module.exports = {
   loadHomepage,
   loadShopping,
@@ -746,5 +794,7 @@ module.exports = {
   searchProducts,
   forgotPassword,
   resetPassword,
-  about
+  about,
+  contact,
+  submitContact
 };

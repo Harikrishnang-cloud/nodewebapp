@@ -72,7 +72,7 @@ const updateCategory = async (req, res) => {
   console.log('Update Category Controller Hit'); 
   try {
     const id = req.params.id; 
-    const { name, description, offer, offerPrice } = req.body;
+    const { name, description, offer } = req.body;
     console.log('Request Params:', req.params); 
     console.log("id",req.params.id)
     console.log('Request Body:', req.body); 
