@@ -709,6 +709,16 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const about = async (req, res) => {
+  try {
+    const user = req.session.user;
+    res.render('about', { user });
+  } catch (error) {
+    console.error('Error in about page:', error);
+    res.status(500).render('error', { message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   loadHomepage,
   loadShopping,
@@ -735,5 +745,6 @@ module.exports = {
   filterProducts,
   searchProducts,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  about
 };

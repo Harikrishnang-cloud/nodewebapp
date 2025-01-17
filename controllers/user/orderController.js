@@ -147,7 +147,10 @@ const placeOrder = async (req, res) => {
                 product.Quantity -= item.quantity;
                 await product.save();
             }
+            
         });
+        
+
         // Clear the user's cart after successful order
         await Cart.findOneAndUpdate(
             { userId: userId },

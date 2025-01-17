@@ -246,7 +246,7 @@
             <div class="price">₹<strike><%=data.regularPrice%></strike></div>
             <div class="price">₹<%=data.salePrice%></div>
             <div class="stock-alert">
-                Only 2 left in stock - order soon!
+                Only <%=data.Quantity%> left in stock - order soon!
             </div>
 
             <div class="offer">
@@ -270,8 +270,7 @@
 
             <div class="buttons">
                 <button onclick="addToCart('<%= data._id %>')" class="btn btn-primary">Add to Cart</button>
-                 <button onclick="goToCart()" class="btn btn-secondary">Go to Cart</button>
-                <!-- <button onclick="buyNow('<%= data._id %>')" class="btn btn-secondary">Buy Now</button> --> -->
+                <button onclick="goToCart()" class="btn btn-secondary">Go to Cart</button>
             </div>
         </div>
     </div>
@@ -280,7 +279,7 @@
         <h2>Customer Reviews</h2>
         <div class="review">
             <div class="review-header">
-                <strong>John Doe</strong>
+                <strong>harikrishnan</strong>
                 <div class="review-rating">★★★★★</div>
             </div>
             <p>Great product! Exactly what I was looking for. The quality is excellent and it arrived quickly.</p>
@@ -322,11 +321,11 @@
     // Handle thumbnail click
     function changeImage(src, thumbnail) {
         mainImage.src = src;
-        // Remove active class from all thumbnails
+        
         document.querySelectorAll('.thumbnail').forEach(thumb => {
             thumb.classList.remove('active');
         });
-        // Add active class to clicked thumbnail
+        
         thumbnail.parentElement.classList.add('active');
     }
 

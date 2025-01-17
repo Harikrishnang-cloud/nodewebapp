@@ -19,6 +19,7 @@ router.get('/login',auth.preventToLogin, userController.loginpage);
 router.get('/signup', userController.loadSignup);
 router.get('/otp', userController.otp);
 router.get('/resendotp', userController.resendotp);
+router.get('/about', userController.about);
 
 // Shop page route
 router.get('/user/shop/:page', userController.getShopPage);
