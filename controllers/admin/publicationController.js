@@ -26,7 +26,7 @@ const addPublication = async(req,res)=>{
     try {
         let publications = new publication(req.body)
         await publications.save();
-        res.status(201).json(publication,{message:"Publication added Scucessfully"})
+        res.status(201).json({publication:publications,message:"Publication added Scucessfully"})
     } catch (err) {
         res.status(400).json({error:err.message})
     }

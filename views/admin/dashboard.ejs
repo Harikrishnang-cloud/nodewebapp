@@ -8,8 +8,312 @@
         </form>
     </div>
     <div class="content">
-        <p>This is the area for future works</p>
-    </div>
-</div> 
-<%-include("../../views/partials/admin/footer")%>
+        <!-- Sales Chart Section -->
+        <div class="chart-container">
+            <div class="filter-section">
+                <select id="timeFilter" class="filter-select">
+                    <option value="yearly">Yearly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+                <select id="yearSelect" class="filter-select">
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+                <button onclick="updateChart()" class="filter-btn">Apply Filter</button>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
 
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <!-- Top Products Card -->
+            <div class="stats-card">
+                <div class="card-header">
+                    <h2>Top 10 Best Selling Products</h2>
+                </div>
+                <div class="card-content">
+                    <% if (topProducts && topProducts.length > 0) { %>
+                        <div class="ranking-list">
+                            <% topProducts.forEach((product, index) => { %>
+                                <div class="ranking-item <%= index < 3 ? 'top-' + (index + 1) : '' %>">
+                                    <div class="rank"><%= index + 1 %></div>
+                                    <div class="details">
+                                        <div class="name"><%= product.name %></div>
+                                        <div class="sales">
+                                            <span class="count"><%= product.sales %></span>
+                                            <span class="label">units sold</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="no-data">No product data available</div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Top Categories Card -->
+            <div class="stats-card">
+                <div class="card-header">
+                    <h2>Top 10 Best Selling Categories</h2>
+                </div>
+                <div class="card-content">
+                    <% if (topCategories && topCategories.length > 0) { %>
+                        <div class="ranking-list">
+                            <% topCategories.forEach((category, index) => { %>
+                                <div class="ranking-item <%= index < 3 ? 'top-' + (index + 1) : '' %>">
+                                    <div class="rank"><%= index + 1 %></div>
+                                    <div class="details">
+                                        <div class="name"><%= category.name %></div>
+                                        <div class="sales">
+                                            <span class="count"><%= category.sales %></span>
+                                            <span class="label">units sold</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="no-data">No category data available</div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Top Publications Card -->
+            <div class="stats-card">
+                <div class="card-header">
+                    <h2>Top 10 Best Selling Publications</h2>
+                </div>
+                <div class="card-content">
+                    <% if (topPublications && topPublications.length > 0) { %>
+                        <div class="ranking-list">
+                            <% topPublications.forEach((publication, index) => { %>
+                                <div class="ranking-item <%= index < 3 ? 'top-' + (index + 1) : '' %>">
+                                    <div class="rank"><%= index + 1 %></div>
+                                    <div class="details">
+                                        <div class="name"><%= publication.name %></div>
+                                        <div class="sales">
+                                            <span class="count"><%= publication.sales %></span>
+                                            <span class="label">units sold</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="no-data">No publication data available</div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content {
+        padding: 20px;
+        background: #f8f9fa;
+    }
+
+    /* Chart styles */
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .filter-section {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .filter-select, .filter-btn {
+        padding: 8px 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+
+    .filter-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .chart-wrapper {
+        height: 300px;
+    }
+
+    /* Statistics Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .card-content {
+        padding: 20px;
+    }
+
+    /* Ranking List */
+    .ranking-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ranking-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        transition: transform 0.2s;
+    }
+
+    .ranking-item:hover {
+        transform: translateX(5px);
+    }
+
+    .rank {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+
+    .details {
+        flex: 1;
+    }
+
+    .name {
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    .sales {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .count {
+        font-weight: 600;
+        color: #007bff;
+    }
+
+    /* Top 3 Styling */
+    .top-1 .rank { background: #ffd700; }
+    .top-2 .rank { background: green; }
+    .top-3 .rank { background: #cd7f32; }
+
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+        font-style: italic;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let myChart = null;
+
+    const sampleData = {
+        yearly: {
+            labels: ['2022', '2023', '2024'],
+            data: [150, 280, 320]
+        },
+        monthly: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            data: [30, 40, 35, 45, 50, 55, 45, 60, 65, 70, 75, 80]
+        },
+        weekly: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            data: [20, 25, 30, 28]
+        }
+    };
+
+    function initChart() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sampleData.yearly.labels,
+                datasets: [{
+                    label: 'Sales',
+                    data: sampleData.yearly.data,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Sales'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChart() {
+        const timeFilter = document.getElementById('timeFilter').value;
+        const data = sampleData[timeFilter];
+        
+        myChart.data.labels = data.labels;
+        myChart.data.datasets[0].data = data.data;
+        myChart.update();
+    }
+
+    document.addEventListener('DOMContentLoaded', initChart);
+</script>
+
+<%-include("../../views/partials/admin/footer")%>
