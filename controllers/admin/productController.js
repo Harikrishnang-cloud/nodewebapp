@@ -38,7 +38,7 @@ const productAdd = async (req, res) => {
             try {
                 const originalImagePath = file.path;
                 // Generate a clean filename
-                const ext = 'webp'; // We'll convert all images to webp
+                const ext = 'webp'; 
                 const filename = `${Date.now()}-${path.parse(file.originalname).name.replace(/[^a-zA-Z0-9]/g, '-')}.${ext}`;
                 const resizedImagePath = path.join(uploadDir, filename);
 
@@ -63,7 +63,7 @@ const productAdd = async (req, res) => {
 
             } catch (error) {
                 console.error(`Error processing image: ${error.message}`);
-                // Continue with other images
+
                 continue;
             }
         }
@@ -195,7 +195,7 @@ const editProduct = async(req,res)=>{
 }
 //Update-Product
 const updateProduct = async (req, res) => {
-    console.log('Update Product Controller Hit');
+    console.log('Update controllerill enter aayi');
     try {
         const productId = req.params.id;
         const { productName, description, regularPrice, salePrice, category, Quantity, publication, removeImages, existingImages } = req.body;
@@ -213,9 +213,7 @@ const updateProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
 
-        // Handle image updates
         let updatedImages = [];
-        
         
         if (existingImages) {
             

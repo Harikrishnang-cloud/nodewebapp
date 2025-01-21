@@ -2,13 +2,10 @@
 
 <div class="container-fluid">
     <div class="row">
-        
-
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Sales Report</h1>
             </div>
-
             <!-- Filters -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -52,7 +49,7 @@
 
             <!-- Summary Cards -->
             <div class="row mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Orders</h5>
@@ -60,19 +57,27 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-success text-white">
                         <div class="card-body">
-                            <h5 class="card-title">Total Revenue</h5>
-                            <h2 class="card-text">₹<%= totalRevenue.toFixed(2) %></h2>
+                            <h5 class="card-title">Gross Amount</h5>
+                            <h2 class="card-text">₹<%= grossAmount.toFixed(2) %></h2>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card bg-info text-white">
                         <div class="card-body">
                             <h5 class="card-title">Total Discount</h5>
                             <h2 class="card-text">₹<%= totalDiscount.toFixed(2) %></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Coupon Discount</h5>
+                            <h2 class="card-text">₹<%= totalCouponDiscount.toFixed(2) %></h2>
                         </div>
                     </div>
                 </div>
@@ -90,28 +95,22 @@
                                         <th>Date</th>
                                         <th>Customer</th>
                                         <th>Discount</th>
+                                        <th>Coupon</th>
                                         <th>Total Amount</th>
                                         <th>Status</th>
-                                        <th>Payment Method</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <% orders.forEach(order => { %>
                                         <tr>
                                             <td><%= order._id %></td>
-                                            <td><%= moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss') %></td>
-                                            <td><%= order.address.fullName %></td>
+                                            <td><%= moment(order.orderDate).format('YYYY-MM-DD HH:mm') %></td>
+                                            <td><%= order.userId.fullName %></td>
                                             <td>₹<%= (order.discount || 0).toFixed(2) %></td>
+                                            <td>₹<%= (order.couponDiscount || 0).toFixed(2) %></td>
                                             <td>₹<%= order.totalAmount.toFixed(2) %></td>
-                                            <td>
-                                                <span class="badge bg-<%= order.status === 'Delivered' ? 'success' : 
-                                                                     order.status === 'Pending' ? 'warning' : 
-                                                                     order.status === 'Cancelled' ? 'danger' : 'primary' %>">
-                                                    <%= order.status %>
-                                                </span>
-                                            </td>
-                                            <td><%= order.paymentMethod %></td>
-                                        </tr>
+                                            <td><%= order.status %></td>
+                                        </tr> 
                                     <% }); %>
                                 </tbody>
                             </table>

@@ -82,7 +82,6 @@ router.post('/login',userController.login)
 router.get('/logout',userController.logoutpage)
 router.get("/productDetails", userController.productDetails)
 
-
 //Razorpay routes
 router.post('/razorpay/createOrder',loginauth.userAuth, paymentController.createOrder);
 router.post('/razorpay/verify', loginauth.userAuth, paymentController.verifyPayment);

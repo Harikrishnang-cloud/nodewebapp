@@ -7,6 +7,7 @@ const passport = require("./config/passport")
 const db = require("./config/db")
 const userRouter = require("./routes/userRouter")
 const adminRouter = require('./routes/adminRouter')
+const authRoutes = require('./routes/authRoutes')
 db()
 //Middlewares
 app.use(express.json())
@@ -21,6 +22,11 @@ app.use(session({
         
     // } 
 }))
+app.use(session({
+    secret: 'your_session_secret',
+    resave: false,
+    saveUninitialized: false
+}));
 //passport ne oru middleware akki set cheyyanam
 app.use(passport.initialize())
 app.use(passport.session())
@@ -45,6 +51,7 @@ app.use("/",userRouter);//request handling
 // <---------- Admin parts ---------->
 app.use('/admin',adminRouter)
 app.use('/uploads', express.static(path.join(__dirname, 'controllers/public/uploads')));
+app.use('/auth', authRoutes);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true })); 

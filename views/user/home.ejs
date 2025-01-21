@@ -43,7 +43,7 @@
       <div class="container">
         <div class="section-title d-md-flex justify-content-between align-items-center mb-4">
           <h3 class="d-flex align-items-center">Best selling Books</h3>
-          <a href="/shop" class="btn">View All</a>
+          <a href="/user/shop/:page" class="btn">View All</a>
         </div>
         <div class="position-absolute top-50 end-0 pe-0 pe-xxl-5 me-0 me-xxl-5 swiper-next product-slider-button-next">
           <svg class="chevron-forward-circle d-flex justify-content-center align-items-center p-2" width="80" height="80">
@@ -121,7 +121,9 @@
           <div class="col-md-6 mb-4 mb-lg-0 col-lg-3">
             <div class="featured border rounded-3 p-4 position-relative">
               <div class="position-absolute" style="top: 10px; right: 10px; z-index: 2;">
-                <p class="bg-primary py-1 px-3 fs-6 text-white rounded-2 mb-0"><%=cats[i].discount%>%</p>
+                <% if (cats[i].offer && cats[i].offer > 0) { %>
+                  <p class="bg-primary py-1 px-3 fs-6 text-white rounded-2 mb-0"><%= cats[i].offer %>% OFF</p>
+                <% } %>
               </div>
               <div class="section-title overflow-hidden mb-5 mt-2">
                 <h3 class="d-flex flex-column mb-0"><%=cats[i].name%></h3>

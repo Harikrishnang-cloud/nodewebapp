@@ -23,6 +23,7 @@ const getSalesReport = async (req, res) => {
                         }
                     };
                     break;
+
                 case 'weekly':
                     dateFilter = {
                         orderDate: {
@@ -31,6 +32,7 @@ const getSalesReport = async (req, res) => {
                         }
                     };
                     break;
+
                 case 'monthly':
                     dateFilter = {
                         orderDate: {
@@ -39,6 +41,7 @@ const getSalesReport = async (req, res) => {
                         }
                     };
                     break;
+                    
                 case 'yearly':
                     dateFilter = {
                         orderDate: {
@@ -58,13 +61,15 @@ const getSalesReport = async (req, res) => {
             };
         }
 
-        orders = await Order.find(dateFilter).populate('userId', 'name email')
+        orders = await Order.find(dateFilter).populate('userId', 'fullName email')
             .sort({ orderDate: -1 });
 
         // Calculate totals
         const totalOrders = orders.length;
         const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
         const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0);
+        const totalCouponDiscount = orders.reduce((sum, order) => sum + (order.couponDiscount || 0), 0);
+        const grossAmount = orders.reduce((sum, order) => sum + order.totalAmount + (order.discount || 0) + (order.couponDiscount || 0), 0);
 
         res.render('salesReport', {
             title: 'Sales Report',
@@ -72,6 +77,8 @@ const getSalesReport = async (req, res) => {
             totalOrders,
             totalRevenue,
             totalDiscount,
+            totalCouponDiscount,
+            grossAmount,
             moment,
             period: period || 'custom',
             startDate: startDate || '',
@@ -114,7 +121,7 @@ const downloadSalesReport = async (req, res) => {
         }
 
         const orders = await Order.find(dateFilter)
-            .populate('userId', 'name email')
+            .populate('userId', 'fullName email')
             .sort({ orderDate: -1 });
 
         // Format the data based on requested format
@@ -122,15 +129,16 @@ const downloadSalesReport = async (req, res) => {
             const csvData = orders.map(order => ({
                 'Order ID': order._id,
                 'Date': moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss'),
-                'Customer': order.userId.name,
+                'Customer': order.userId.fullName,
                 'Discount': order.discount || 0,
+                'Coupon Discount': order.couponDiscount || 0,
                 'Total Amount': order.totalAmount,
                 'Status': order.status,
                 'Payment Method': order.paymentMethod
             }));
 
             // Convert to CSV
-            const fields = ['Order ID', 'Date', 'Customer', 'Discount', 'Total Amount', 'Status', 'Payment Method'];
+            const fields = ['Order ID', 'Date', 'Customer', 'Discount', 'Coupon Discount', 'Total Amount', 'Status', 'Payment Method'];
             const csv = json2csv.parse(csvData, { fields });
 
             res.setHeader('Content-Type', 'text/csv');
@@ -153,8 +161,9 @@ const downloadSalesReport = async (req, res) => {
             doc.fontSize(12).text(`Order ID: ${order._id}`);
             doc.fontSize(10)
                 .text(`Date: ${moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss')}`)
-                .text(`Customer: ${order.userId.name}`)
+                .text(`Customer: ${order.userId.fullName}`)
                 .text(`Discount: ${order.discount || 0}`)
+                .text(`Coupon Discount: ${order.couponDiscount || 0}`)
                 .text(`Total Amount: ${order.totalAmount}`)
                 .text(`Status: ${order.status}`)
                 .text(`Payment Method: ${order.paymentMethod}`);

@@ -2,7 +2,7 @@ const productOfferCalculate = (products) => {
     return new Promise((resolve, reject) => {
         try {
             for (let product of products) {
-                // Calculate base product discount 
+                // product discount --> 
                 const productDiscount = ((product.regularPrice - product.salePrice) / product.regularPrice) * 100;
                 
                 // Set initial values

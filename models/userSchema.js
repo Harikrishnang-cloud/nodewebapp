@@ -19,10 +19,21 @@ const userSchema = new Schema({
         sparse : true,
         default : null
     },
-    googleId : {
-        type : String,
-        unique : true,
-        sparse: true  // 'sparse' allows multiple null values
+    google: {
+        id: {
+            type: String,
+            unique: true,
+            sparse: true
+        },
+        name: {
+            type: String
+        },
+        email: {
+            type: String
+        },
+        picture: {
+            type: String
+        }
     },
     password : {
         type : String,
