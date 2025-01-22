@@ -34,6 +34,7 @@ router.post('/placeOrder',loginauth.userAuth,orderController.placeOrder)
 router.get('/orderConfirmation/:orderId',loginauth.userAuth,orderController.getOrderConfirmation)
 router.get('/orders',loginauth.userAuth,orderController.getOrders)
 router.post('/cancelOrder/:orderId',loginauth.userAuth,orderController.cancelOrder)
+router.get('/downloadInvoice/:orderId', loginauth.userAuth, orderController.generateInvoice)
 
 //user pages route
 router.get('/userProfile',loginauth.userAuth,userController.userProfile); 

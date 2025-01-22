@@ -3,6 +3,7 @@ const Order = require('../../models/orderSchema');
 const Cart = require('../../models/cartSchema');
 const User = require('../../models/userSchema'); 
 const Wallet = require('../../models/walletSchema');
+const PDFDocument = require('pdfkit');
 
 const getPlaceOrderPage = async (req, res) => {
     try {
@@ -76,6 +77,13 @@ const placeOrder = async (req, res) => {
 
             totalAmount += (product.salePrice * item.quantity);
         }
+
+        // 1000 nu mukalil aanengil COD not allowed
+        if (paymentMethod === 'cod' && totalAmount > 1000) {
+            return res.status(400).json({success: false,
+                message: 'COD is not available for orders above ₹1000. Please choose online payment or wallet.'});
+        }
+
         console.log("before coupon", totalDiscount)
         // If a coupon is applied, calculate additional discount
         if (req.body.couponCode) {
@@ -251,9 +259,9 @@ const cancelOrder = async (req, res) => {
         order.status = 'Cancelled';
         await order.save();
 
-        // If payment was made, initiate refund process here
+        
         if (order.paymentMethod === 'online' && order.paymentStatus === 'Completed') {
-            // Implement refund logic here
+            
             order.paymentStatus = 'Refund Initiated';
             await order.save();
         }
@@ -265,6 +273,83 @@ const cancelOrder = async (req, res) => {
     }
 };
 
+const generateInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId)
+            .populate('items.product')
+            .populate('userId');
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Create PDF document
+        const doc = new PDFDocument();
+        
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=invoice-${orderId}.pdf`);
+
+        // Pipe the PDF document to the response
+        doc.pipe(res);
+
+        // Add content to PDF
+        doc.fontSize(24).text('BookLove Online Book sellers', { align: 'center' });
+        doc.fontSize(15).text('Email:booklove@gmail.com',{align:'center'});
+        doc.fontSize(15).text('place:Thiruvananthapuram, pin:691334',{align:'center'});
+        doc.fontSize(15).text('phone:7907389098',{align:'center'});
+        doc.fontSize(20).text('Invoice', { align: 'center', underline: true });
+        doc.moveDown();
+        
+        
+
+        // Customer details
+        doc.fontSize(12).text(`Customer Name: ${order.userId.fullName}, ${order.userId.phone}`);
+        doc.text(`Email: ${order.userId.email}`);
+        doc.moveDown();
+
+        // Shipping address
+        doc.fontSize(12).text('Shipping Address:');
+        doc.text(`${order.address.fullName}`);
+        doc.text(`${order.address.street}`);
+        doc.text(`${order.address.city}, ${order.address.state} ${order.address.pinCode}`);
+        doc.moveDown();
+
+        // Order details
+        doc.fontSize(12).text(`Order ID: ${orderId}`);
+        doc.text(`Date: ${order.orderDate.toLocaleDateString()}`);
+        doc.moveDown();
+
+        // Items table
+        doc.text('Order Items:', { underline: true });
+        doc.moveDown();
+
+        let totalAmount = 0;
+        order.items.forEach((item) => {
+            doc.text(`${item.product.productName}`);
+            doc.text(`Quantity: ${item.quantity} x ₹${item.price} = ₹${item.quantity * item.price}`);
+            doc.moveDown(0.5);
+            totalAmount += (item.quantity * item.price);
+        });
+        doc.text("(Shipping Fee: ₹40)");
+        doc.moveDown();
+        // Total
+        doc.fontSize(14).text(`Total Amount: ₹${totalAmount + 40}`, { underline: true });
+        
+        // Payment details
+        doc.moveDown();
+        doc.fontSize(12).text(`Payment Method: ${order.paymentMethod}`);
+        doc.text(`Payment Status: ${order.paymentStatus}`);
+
+        // Finalize PDF
+        doc.end();
+
+    } catch (error) {
+        console.error('Error generating invoice:', error);
+        res.status(500).json({ message: 'Error generating invoice' });
+    }
+};
 
 module.exports = {
     getPlaceOrderPage,
@@ -272,5 +357,5 @@ module.exports = {
     getOrderConfirmation,
     getOrders,
     cancelOrder,
-   
+    generateInvoice
 };

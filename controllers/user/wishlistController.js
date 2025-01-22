@@ -40,15 +40,6 @@ const getWishlist = async (req, res) => {
             productImage: item.productId.productImage
         }));
 
-        
-        console.log('Debug Info:', {
-            totalItems,
-            totalPages,
-            currentPage: page,
-            itemsPerPage: limit,
-            currentPageItems: wishlistItems.length
-        });
-
         res.render('wishlist', {
             wishlistItems,
             user: req.session.user,

@@ -68,18 +68,22 @@
                                             <span>₹<%= order.totalAmount.toFixed(2) %></span>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="order-actions">
-                                    <% if (order.status === 'Pending' || order.status === 'Processing') { %>
-                                        <button onclick="cancelOrder('<%= order._id %>')" class="btn cancel-btn">Cancel Order</button>
-                                    <% } %>
+                                    <div class="order-actions">
+                                        <% if (order.status === 'Delivered') { %>
+                                            <a href="/downloadInvoice/<%= order._id %>" class="btn btn-primary" target="_blank">
+                                                <i class="fas fa-download"></i> Download Invoice
+                                            </a>
+                                        <% } %>
+                                        <% if (order.status === 'Pending' || order.status === 'Processing') { %>
+                                            <button onclick="cancelOrder('<%= order._id %>')" class="btn cancel-btn">Cancel Order</button>
+                                        <% } %>
+                                    </div>
                                 </div>
                             </div>
                         <% }); %>
                     </div>
                 <% } else { %>
-                    <div cinlass="no-orders">
+                    <div class="no-orders">
                         <p>You haven't placed any orders yet.</p>
                     </div>
                 <% } %>
@@ -457,6 +461,28 @@
             padding: 0.3rem 0.6rem;
             font-size: 0.85rem;
         }
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white !important;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        text-decoration: none;
+    }
+
+    .btn-primary i {
+        font-size: 1rem;
     }
 </style>
 
