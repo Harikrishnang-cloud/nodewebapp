@@ -151,7 +151,27 @@ const loadSignup = async (req, res) => {
 // Load Shopping Page
 const loadShopping = async (req, res) => {
   try {
-    res.render("shop");
+    const page = 1; // Default to first page
+    const limit = 9; // Products per page
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments({ isListed: true });
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const productsList = await Product.find({ isListed: true })
+      .populate('category')
+      .skip(skip)
+      .limit(limit);
+
+    const categoriesList = await Category.find({ isListed: true });
+
+    res.render("shop", {
+      products: productsList,
+      categories: categoriesList,
+      user: req.session.user || null,
+      currentPage: page,
+      totalPages: totalPages
+    });
 
   } catch (error) {
     console.error("Shopping page not loading:", error);
@@ -182,6 +202,7 @@ const resendotp = async (req, res) => {
     console.log("resendOtp is error", error);
   }
 };
+
 // Load Homepage
 const loadHomepage = async (req, res) => {
   // console.log("Session", req.session.user)
@@ -469,8 +490,7 @@ const deleteAddress = async (req, res) => {
     const userId = req.session.user._id;
     const addressIndex = req.body.index;
     const addressId = req.body.id;
-    console.log(addressIndex)
-    // const response = await User.findByIdAndUpdate(userId,{ $unset: { ['address.' + addressIndex]: 1 } },{ new: true });
+
     const response = await User.findByIdAndUpdate(userId, { $pull: { address: { _id: addressId } } }, { new: true });
     console.log(response)
     res.json({ success: true });

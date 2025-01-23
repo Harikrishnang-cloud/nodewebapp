@@ -130,7 +130,7 @@ const placeOrder = async (req, res) => {
             items: orderItems,
             totalAmount: totalAmount,
             discount: totalDiscount,
-            status: 'Pending',
+            status: paymentMethod === 'cod' ? 'Pending' : 'Processing',
             deliveryFee: 40,
             orderDate: new Date(),
             address: {
@@ -143,39 +143,72 @@ const placeOrder = async (req, res) => {
                 pinCode: selectedAddress.pinCode 
             },
             paymentMethod: paymentMethod,
-            paymentStatus: paymentMethod === 'wallet' ? 'Completed' : (paymentMethod === 'cod' ? 'Pending' : 'Processing')
+            paymentStatus: paymentMethod === 'wallet' ? 'Completed' : 
+                          paymentMethod === 'cod' ? 'Pending' : 'Processing'
         });
-   
-        await newOrder.save();
-        
-        orderItems.forEach(async (item) => {
-            console.log("item",item)
-            const product = await Product.findById(item.product);
-            if (product) {
-                product.Quantity -= item.quantity;
-                await product.save();
-            }
+
+        try {
+            await newOrder.save();
             
-        });
-        
+            // Only update product quantities and clear cart if payment is successful or COD
+            if (paymentMethod === 'cod' || paymentMethod === 'wallet' || 
+               (paymentMethod === 'online' )) {
+                
+                // Update product quantities
+                for (const item of orderItems) {
+                    const product = await Product.findById(item.product);
+                    if (product) {
+                        product.Quantity -= item.quantity;
+                        await product.save();
+                    }
+                }
 
-        // Clear the user's cart after successful order
-        await Cart.findOneAndUpdate(
-            { userId: userId },
-            { $set: { books: [] } }
-        );
-  
-        res.status(200).json({
-            success: true,
-            orderId: newOrder._id,
-            paymentMethod: paymentMethod
-        });
+                // Clear the user's cart
+                await Cart.findOneAndUpdate(
+                    { userId: userId },
+                    { $set: { books: [] } }
+                );
+            }
 
+            // Handle online payment failure scenario
+            // if (paymentMethod === 'online' && newOrder.paymentStatus === 'Processing') {
+            //     setTimeout(async () => {
+            //         const order = await Order.findById(newOrder._id);
+            //         if (order && order.paymentStatus === 'Processing') {
+            //             order.paymentStatus = 'Failed';
+            //             order.status = 'Payment Failed';
+            //             await order.save();
+            //         }
+            //     }, 300000); // Check after 5 minutes
+            // }
+    
+            res.status(200).json({
+                success: true,
+                orderId: newOrder._id,
+                paymentMethod: paymentMethod,
+                paymentStatus: newOrder.paymentStatus
+            });
+
+        } catch (error) {
+            // If there's an error saving the order or updating products
+            console.error('Error processing order:', error);
+            if (newOrder._id) {
+                // If order was created but subsequent operations failed
+                await Order.findByIdAndUpdate(newOrder._id, {
+                    status: 'Error',
+                    paymentStatus: 'Failed'
+                });
+            }
+            res.status(500).json({ 
+                success: false,
+                message: 'Failed to process order. Please try again.'
+            });
+        }
     } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).json({ 
             success: false,
-            message: 'Failed to place order'
+            message: 'Failed to place order. Please try again later.'
         });
     }
 };

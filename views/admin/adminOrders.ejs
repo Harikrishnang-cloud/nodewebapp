@@ -312,7 +312,7 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <h6 class="mb-3">Customer Information</h6>
-                        <p class="mb-1"><strong>Name:</strong> ${order.userId.name}</p>
+                        <p class="mb-1"><strong>Name:</strong> ${order.userId.fullName}</p>
                         <p class="mb-1"><strong>Email:</strong> ${order.userId.email}</p>
                     </div>
                     <div class="col-md-6">
@@ -345,7 +345,7 @@
                         <tbody>
                             ${order.items.map(item => `
                                 <tr>
-                                    <td>${item.product.name}</td>
+                                    <td>${item.product.productName}</td>
                                     <td>₹${item.price.toFixed(2)}</td>
                                     <td>${item.quantity}</td>
                                     <td>₹${(item.price * item.quantity).toFixed(2)}</td>

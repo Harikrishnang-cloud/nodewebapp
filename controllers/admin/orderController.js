@@ -11,8 +11,8 @@ const getOrders = async (req, res) => {
         const totalOrders = await Order.countDocuments();
         const totalPages = Math.ceil(totalOrders / limit);
         const orders = await Order.find()
-            .populate('userId', 'name email')
-            .populate('items.product', 'name images price')
+            .populate('userId', 'fullName email')
+            .populate('items.product', 'productName images price')
             .sort({ orderDate: -1 })
             .skip(skip)
             .limit(limit)
@@ -70,17 +70,14 @@ const getOrderDetails = async (req, res) => {
     try {
         const orderId = req.params.orderId;
         const order = await Order.findById(orderId)
-            .populate('userId', 'name email')
-            .populate('items.product', 'name images price');
+            .populate('userId', 'fullName email')
+            .populate('items.product', 'productName images price');
        console.log("order",order)
         if (!order) {
             return res.status(404).send('Order not found');
         }
+        res.render('orderDetails', {order,title: 'Order Details'});
 
-        res.render('orderDetails', {
-            order,
-            title: 'Order Details',
-        });
     } catch (error) {
         console.error('Error fetching order details:', error);
         res.status(500).send('Internal Server Error');
@@ -115,7 +112,7 @@ const cancelOrder = async (req, res) => {
     }
 };
 
-
+//update status
 const updateStatus = async (req, res) => {
     try {
         const  { orderId, status } = req.body;

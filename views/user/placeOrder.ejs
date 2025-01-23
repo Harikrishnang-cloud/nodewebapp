@@ -1247,17 +1247,63 @@
                                             },
                                             theme: {
                                                 color: "#3399cc"
+                                            },
+                                            modal: {
+                                                ondismiss: async function() {
+                                                    const verifyResponse = await fetch('/razorpay/verify', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({
+                                                            orderId: result.orderId
+                                                        })
+                                                    });
+                                                    const verifyResult = await verifyResponse.json();
+                                                    
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Payment Incomplete',
+                                                        text: 'Your payment was not completed. You can retry the payment from your orders page.',
+                                                        showConfirmButton: true
+                                                    }).then(() => window.location.href = '/orders');
+                                                }
                                             }
                                         };
                                         const rzp = new Razorpay(options);
                                         rzp.open();
-                                        rzp.on('payment.failed', function(response) {
+                                        rzp.on('payment.failed',async function(response) {
+                                            const verifyResponse = await fetch('/razorpay/verify', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({
+                                                            orderId: result.orderId
+                                                        })
+                                                    });
+                                            const verifyResult = await verifyResponse.json();
                                             Swal.fire({
                                                 icon: 'error',
                                                 title: 'Payment Failed',
-                                                text: 'The payment process failed. Please try again.',
+                                                text: verifyResult.message || 'The payment process failed. Please try again.',
                                                 showConfirmButton: true
+                                            }).then(()=>window.location.href = '/orders')
+                                        });
+                                        rzp.on('modal.closed', async function() {
+                                            const verifyResponse = await fetch('/razorpay/verify', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    orderId: result.orderId
+                                                })
                                             });
+                                            const verifyResult = await verifyResponse.json();
+                                            
+                                            if (!verifyResult.success) {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Payment Incomplete',
+                                                    text: 'Your payment was not completed. You can retry the payment from your orders page.',
+                                                    showConfirmButton: true
+                                                }).then(() => window.location.href = '/orders');
+                                            }
                                         });
                                     }
                                 } else if (result.paymentMethod === 'wallet') {

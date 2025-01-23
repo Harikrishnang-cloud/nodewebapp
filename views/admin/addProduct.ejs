@@ -381,7 +381,6 @@
         const croppedCanvas = cropper.getCroppedCanvas();
         const croppedImage = croppedCanvas.toDataURL('image/png');
         const previewContainer = document.getElementById(`previewContainer${currentImageIndex}`);
-        // Update the preview container with cropped image
         previewContainer.innerHTML = `<img src="${croppedImage}" alt="Cropped Image">`;
         closeCropperModal();
     });
@@ -565,7 +564,12 @@
         }
 
         if (!hasImage) {
-            alert('Please upload at least one product image');
+            Swal.fire({
+                title: 'No Product Image',
+                text: 'Please upload at least one product image.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
             isValid = false;
         }
 
@@ -573,6 +577,57 @@
             e.preventDefault();
         }
     });
+//same name aano nn check cheyyan
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const productNameInput = document.querySelector('input[name="productName"]');
+    
+    productNameInput.addEventListener('blur', async function() {
+        const productName = this.value.trim();
+        if (productName) {
+            try {
+                const response = await fetch(`/admin/check-product-name?name=${encodeURIComponent(productName)}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    Swal.fire({
+                        title: 'Product Name Exists',
+                        text: 'This product name already exists. Please choose a different name.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    })
+                    this.value = '';
+                    this.focus();
+                }
+            } catch (error) {
+                console.error('Error checking product name:', error);
+            }
+        }
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const productName = productNameInput.value.trim();
+        
+        try {
+            const response = await fetch(`/admin/check-product-name?name=${encodeURIComponent(productName)}`);
+            const data = await response.json();
+            
+            // if (data.exists) {
+            //     alert('A product with this name already exists. Please choose a different name.');
+            //     productNameInput.focus();
+            //     return;
+            // }
+            
+            // If no duplicate found, submit the form
+            this.submit();
+        } catch (error) {
+            console.error('Error checking product name:', error);
+            // In case of error, allow form submission
+            this.submit();
+        }
+    });
+});
 
 </script>
 

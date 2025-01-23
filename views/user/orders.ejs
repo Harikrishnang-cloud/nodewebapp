@@ -74,7 +74,11 @@
                                                 <i class="fas fa-download"></i> Download Invoice
                                             </a>
                                         <% } %>
-                                        <% if (order.status === 'Pending' || order.status === 'Processing') { %>
+                                        <% if (order.paymentStatus === 'PaymentFailed') { %>
+                                            <button onclick="retryPayment('<%= order._id %>', <%= order.totalAmount %>)" class="btn btn-warning">
+                                                <i class="fas fa-redo"></i> Retry Payment
+                                            </button>
+                                        <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
                                             <button onclick="cancelOrder('<%= order._id %>')" class="btn cancel-btn">Cancel Order</button>
                                         <% } %>
                                     </div>
@@ -485,7 +489,8 @@
         font-size: 1rem;
     }
 </style>
-
+<link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     async function cancelOrder(orderId) {
         if (confirm('Are you sure you want to cancel this order?')) {
@@ -531,6 +536,149 @@
                 console.error('Error:', error);
                 alert('An error occurred while cancelling the order');
             }
+        }
+    }
+
+    async function retryPayment(orderId, amount) {
+        try {
+            const razorpayOrder = await fetch('/razorpay/createOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orderId: orderId
+                })
+            });
+
+            const orderRazorpay = await razorpayOrder.json();
+            
+            if (orderRazorpay.success) {
+                const options = {
+                    key: orderRazorpay.key,
+                    amount: orderRazorpay.order.amount,
+                    currency: "INR",
+                    name: "Book Store",
+                    description: "Retry Payment for Order",
+                    order_id: orderRazorpay.order.id,
+                    handler: async function (response) {
+                        try {
+                            const verifyResponse = await fetch('/razorpay/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    orderId: orderId
+                                })
+                            });
+                            
+                            const verifyResult = await verifyResponse.json();
+                            
+                            if (verifyResult.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: "Payment Successful",
+                                    text: "Your payment has been processed successfully",
+                                    showConfirmButton: true,
+                                    confirmButtonText: "OK",
+                                    allowOutsideClick: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(verifyResult.error || 'Payment verification failed');
+                            }
+                        } catch (error) {
+                            console.error('Error verifying payment:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Payment Verification Failed',
+                                text: error.message || 'There was an issue verifying your payment.',
+                                showConfirmButton: true
+                            });
+                        }
+                    },
+                    prefill: {
+                        name: "<%= user?.name %>",
+                        email: "<%= user?.email %>"
+                    },
+                    theme: {
+                        color: "#e94560"
+                    },
+                    modal: {
+                        ondismiss: async function() {
+                            const verifyResponse = await fetch('/razorpay/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    orderId: orderId
+                                })
+                            });
+                            const verifyResult = await verifyResponse.json();
+                            
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Payment Incomplete',
+                                text: 'Your payment was not completed. You can try the payment again.',
+                                showConfirmButton: true
+                            }).then(() => window.location.reload());
+                        }
+                    }
+                };
+                
+                const rzp = new Razorpay(options);
+                rzp.open();
+                
+                rzp.on('payment.failed', async function(response) {
+                    const verifyResponse = await fetch('/razorpay/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderId: orderId
+                        })
+                    });
+                    const verifyResult = await verifyResponse.json();
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Payment Failed',
+                        text: verifyResult.message || 'The payment process failed. Please try again.',
+                        showConfirmButton: true
+                    }).then(() => window.location.reload());
+                });
+
+                rzp.on('modal.closed', async function() {
+                    const verifyResponse = await fetch('/razorpay/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            orderId: orderId
+                        })
+                    });
+                    const verifyResult = await verifyResponse.json();
+                    
+                    if (!verifyResult.success) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Payment Incomplete',
+                            text: 'Your payment was not completed. You can try the payment again.',
+                            showConfirmButton: true
+                        }).then(() => window.location.reload());
+                    }
+                });
+            } else {
+                throw new Error(orderRazorpay.error || 'Failed to create payment order');
+            }
+        } catch (error) {
+            console.error('Error initiating payment:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to initiate payment. Please try again.',
+                showConfirmButton: true
+            });
         }
     }
 </script>

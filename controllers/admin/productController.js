@@ -327,6 +327,17 @@ const updateProduct = async (req, res) => {
 };  
 
 
+// Check if product name exists 
+const checkProductName = async (req, res) => {
+    try {
+        const productName = req.query.name;
+        const existingProduct = await Product.findOne({ productName: { $regex: new RegExp(`^${productName}$`, 'i') } });
+        res.json({ exists: !!existingProduct });
+    } catch (error) {
+        console.error('Error checking product name:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 module.exports = {
     productAddpage,
@@ -335,5 +346,5 @@ module.exports = {
     deleteProduct,
     editProduct,
     updateProduct,
-   
+    checkProductName
 }

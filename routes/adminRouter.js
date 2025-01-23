@@ -39,12 +39,13 @@ router.get("/editPublication/:id",adminAuth,publicationController.editPublicatio
 router.post("/editPublication/:id",adminAuth,publicationController.postEditPublication)
 
 //Product Management
-router.get("/addProduct",adminAuth,productController.productAddpage);
+router.get("/addproduct",adminAuth,productController.productAddpage);
 router.post("/addProduct",adminAuth,uploadMiddleware,productController.productAdd)
 router.get("/productview",adminAuth,productController.productview)
 router.post('/products/toggle-status/:id',adminAuth,productController.deleteProduct);
 router.get("/editProduct/:id",adminAuth,productController.editProduct)
 router.post("/editProduct/:id",adminAuth,uploadMiddleware,productController.updateProduct)
+router.get('/check-product-name', adminAuth, productController.checkProductName);
 
 // Order Management Routes
 router.get('/orders', adminAuth,  orderController.getOrders);
