@@ -109,6 +109,30 @@ const downloadSalesReport = async (req, res) => {
                         }
                     };
                     break;
+                case 'weekly':
+                    dateFilter = {
+                        orderDate: {
+                            $gte: moment(today).subtract(7, 'days').toDate(),
+                            $lt: moment(today).endOf('day').toDate()
+                        }
+                    };
+                    break;
+                case 'monthly':
+                    dateFilter = {
+                        orderDate: {
+                            $gte: moment(today).subtract(30, 'days').toDate(),
+                            $lt: moment(today).endOf('day').toDate()
+                        }
+                    };
+                    break;
+                case 'yearly':
+                    dateFilter = {
+                        orderDate: {
+                            $gte: moment(today).subtract(1, 'year').toDate(),
+                            $lt: moment(today).endOf('day').toDate()
+                        }
+                    };
+                    break;
             }
         } 
         else if (startDate && endDate) {
@@ -124,12 +148,21 @@ const downloadSalesReport = async (req, res) => {
             .populate('userId', 'fullName email')
             .sort({ orderDate: -1 });
 
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ error: 'No orders found for the selected period' });
+        }
+
+        // Calculate totals
+        const totalOrders = orders.length;
+        const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+        const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0) + (order.couponDiscount || 0), 0);
+
         // Format the data based on requested format
         if (format === 'csv') {
             const csvData = orders.map(order => ({
                 'Order ID': order._id,
                 'Date': moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss'),
-                'Customer': order.userId.fullName,
+                'Customer': order.userId?.fullName || 'N/A',
                 'Discount': order.discount || 0,
                 'Coupon Discount': order.couponDiscount || 0,
                 'Total Amount': order.totalAmount,
@@ -153,28 +186,47 @@ const downloadSalesReport = async (req, res) => {
 
         doc.pipe(res);
 
-        // Add content to PDF
+        // Add header to PDF
         doc.fontSize(20).text('Sales Report', { align: 'center' });
         doc.moveDown();
 
-        orders.forEach(order => {
-            doc.fontSize(12).text(`Order ID: ${order._id}`);
+        // Add summary
+        doc.fontSize(14).text('Summary', { underline: true });
+        doc.fontSize(12)
+            .text(`Report Period: ${period || 'Custom Range'}`)
+            .text(`Total Orders: ${totalOrders}`)
+            .text(`Total Revenue: ₹${totalRevenue.toFixed(2)}`)
+            .text(`Total Discounts: ₹${totalDiscount.toFixed(2)}`);
+        doc.moveDown();
+
+        // Add orders table header
+        doc.fontSize(14).text('Order Details', { underline: true });
+        doc.moveDown();
+
+        // Add each order
+        orders.forEach((order, index) => {
+            doc.fontSize(12).text(`Order ${index + 1}:`, { underline: true });
             doc.fontSize(10)
+                .text(`Order ID: ${order._id}`)
                 .text(`Date: ${moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss')}`)
-                .text(`Customer: ${order.userId.fullName}`)
-                .text(`Discount: ${order.discount || 0}`)
-                .text(`Coupon Discount: ${order.couponDiscount || 0}`)
-                .text(`Total Amount: ${order.totalAmount}`)
+                .text(`Customer: ${order.userId?.fullName || 'N/A'}`)
+                .text(`Discount: ₹${(order.discount || 0).toFixed(2)}`)
+                .text(`Coupon Discount: ₹${(order.couponDiscount || 0).toFixed(2)}`)
+                .text(`Total Amount: ₹${order.totalAmount.toFixed(2)}`)
                 .text(`Status: ${order.status}`)
                 .text(`Payment Method: ${order.paymentMethod}`);
             doc.moveDown();
         });
 
+        // Add footer
+        doc.fontSize(10)
+            .text(`Generated on: ${moment().format('YYYY-MM-DD HH:mm:ss')}`, { align: 'right' });
+
         doc.end();
 
     } catch (error) {
         console.error('Error downloading sales report:', error);
-        res.status(500).json({ error: 'Failed to download sales report' });
+        res.status(500).json({ error: 'Failed to download sales report. Please try again.' });
     }
 };
 

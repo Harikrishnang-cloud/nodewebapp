@@ -219,7 +219,6 @@ const logout = async(req,res)=>{
     res.redirect("/admin/login")
   } catch (error) {
     console.log("unexpected error during logout",error);
-    // return res.status(500).json({ success: false, message: "Internal server error" });
     res.redirect("/pageerror")
   }
 }
