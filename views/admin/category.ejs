@@ -285,7 +285,6 @@ button.save-btn:hover {
         </div>
         <div>
             <input type="text" id="offer" placeholder="Enter offer (if any)">
-            <input type="number" id="offerPrice" placeholder="Enter offer price">
             <div class="error-message" id="offerError"></div>
         </div>
         <button type="submit">Add Category</button>
@@ -310,7 +309,6 @@ button.save-btn:hover {
                     <td><%= cat[i].name %></td>
                     <td><%= cat[i].description %></td>
                     <td><%= cat[i].offer || "None" %></td>
-                    <!-- <td><%= cat[i].offerPrice || "N/A" %></td> -->
                     <td class="editable"><%= !cat[i].isListed ? "Block" : "unblock" %></td>
                     <td>
                         <button class="<%= cat[i].isListed ? 'unlist-btn' : 'list-btn' %>" onclick="updateStatus('<%= cat[i]._id %>', '<%= cat[i].isListed %>')">

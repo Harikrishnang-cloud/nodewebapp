@@ -351,6 +351,7 @@ const productDetails = async (req, res) => {
 }
 
 //load userProfile
+
 const userProfile = async (req, res) => {
   try {
     console.log(req.session.user)

@@ -1307,7 +1307,23 @@
                                         });
                                     }
                                 } else if (result.paymentMethod === 'wallet') {
-                                    window.location.href = `/orderConfirmation/${result.orderId}`;
+                                    if (!result.success) {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Insufficient Balance',
+                                            text: `Your wallet balance is low. You need ₹${result.requiredAmount} but your wallet only has ₹${result.walletBalance}`,
+                                            showConfirmButton: true
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Payment Successful',
+                                            text: `₹${result.amount} has been deducted from your wallet`,
+                                            showConfirmButton: true
+                                        }).then(() => {
+                                            window.location.href = `/orderConfirmation/${result.orderId}`;
+                                        });
+                                    }
                                 } else {
                                     window.location.href = `/orderConfirmation/${result.orderId}`;
                                 }
