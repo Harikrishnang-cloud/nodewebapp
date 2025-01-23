@@ -31,21 +31,19 @@ const categoryInfo = async (req, res) => {
 
 //addCategory contro..
 const addCategory = async (req, res) => {
-  const { name, description, offer, offerPrice, isListed } = req.body;
-  console.log(name, description,offer,offerPrice,isListed);
+  const { name, description, isListed } = req.body;
+  console.log("cat. add aayi :",name, description,isListed);
 
   try {
       const existingCategory = await Category.findOne({ name });
       if (existingCategory) {
       return res.status(400).json({ error: "Category Already exists" });
       }
-      const newCategory = await Category.create({name,description,});
-      if(newCategory)
-          {
+      const newCategory = await Category.create({name,description,isListed});
+      if(newCategory){
           console.log("entered",newCategory);
-          return res.json({success:true, category:newCategory});
+          return res.status(200).json({success:true, category:newCategory});
       }
-  
   } catch (error) {
       return res.status(500).json({ error: "Internal Server Error" });
   }
@@ -82,7 +80,7 @@ const updateCategory = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid ID format" });
     }
     // Validate inputs
-    if (!name || !description || offer === undefined ) {
+    if (!name || !description ) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
     // Update the category in the database
@@ -119,11 +117,25 @@ const updateCategoryStatus = async (req, res) => {
   }
 };
 
+// Check if category name exists
+const checkCategoryName = async (req, res) => {
+    try {
+        const name = req.query.name;
+        console.log("change name ill vannu",name);
+        
+        const existingCategory = await Category.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+        res.json({ exists: !!existingCategory });
+    } catch (error) {
+        console.error('Error checking category name:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 module.exports = {
   categoryInfo,
   addCategory,
   editCategory,
   updateCategory,
-  updateCategoryStatus
+  updateCategoryStatus,
+  checkCategoryName
 };

@@ -30,13 +30,15 @@ router.post("/addCategory",adminAuth,categoryController.addCategory)
 router.get("/editCategory/:id",adminAuth,categoryController.editCategory)
 router.post("/category/edit/:id",adminAuth,categoryController.updateCategory)
 router.patch("/category/updateStatus/:id",adminAuth,categoryController.updateCategoryStatus)
+router.get('/check-category-name', adminAuth, categoryController.checkCategoryName);
 
 //Publication Management
 router.get("/publication",adminAuth,publicationController.publicationInfo)
-router.post("/addpublication",adminAuth,publicationController.addPublication)
+router.post("/addPublication",adminAuth,publicationController.addPublication)
 router.get("/updatepublication/:id",adminAuth,publicationController.updatePublication)
 router.get("/editPublication/:id",adminAuth,publicationController.editPublication)
 router.post("/editPublication/:id",adminAuth,publicationController.postEditPublication)
+router.get('/check-publication-name', adminAuth, publicationController.checkPublicationName);
 
 //Product Management
 router.get("/addproduct",adminAuth,productController.productAddpage);

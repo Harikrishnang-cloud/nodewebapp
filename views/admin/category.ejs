@@ -344,7 +344,75 @@ button.save-btn:hover {
 
 <%- include("../../views/partials/admin/footer") %>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const categoryNameInput = document.querySelector('input[name="name"]');
+        
+        categoryNameInput.addEventListener('blur', async function() {
+            const name = this.value.trim();
+            if (name) {
+                try {
+                    const response = await fetch(`/admin/check-category-name?name=${encodeURIComponent(name)}`);
+                    const data = await response.json();
+                    
+                    if (data.exists) {
+                        Swal.fire({
+                            title: 'Category Name Exists',
+                            text: 'This category name already exists. Please choose a different name.',
+                            icon: 'warning',
+                            confirmButtonText: 'OK'
+                        });
+                        this.value = '';
+                        this.focus();
+                    }
+                } catch (error) {
+                    console.error('Error checking category name:', error);
+                }
+            }
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = categoryNameInput.value.trim();
+            
+            if (!name) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Please enter a category name',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                categoryNameInput.focus();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/check-category-name?name=${encodeURIComponent(name)}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    Swal.fire({
+                        title: 'Category Name Exists',
+                        text: 'This category name already exists. Please choose a different name.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    categoryNameInput.focus();
+                    return;
+                }
+                
+                // If no duplicate found, submit the form
+                this.submit();
+            } catch (error) {
+                console.error('Error checking category name:', error);
+                // In case of error, allow form submission
+                this.submit();
+            }
+        });
+    });
+
     const form = document.getElementById("categoryForm");
     const categoryTable = document.getElementById("categoryTable");
     const searchInput = document.getElementById("searchInput");
@@ -357,12 +425,10 @@ button.save-btn:hover {
         const name = document.getElementById("name").value.trim();
         const description = document.getElementById("description").value.trim();
         const offer = document.getElementById("offer").value.trim();
-        // const offerPrice = document.getElementById("offerPrice").value.trim();
         //Errors
         const nameError = document.getElementById("nameError");
         const descriptionError = document.getElementById("descriptionError");
         const offerError = document.getElementById("offerError");
-        // const offerPriceError = document.getElementById("offerPriceError");
 
         nameError.textContent = "";
         descriptionError.textContent = "";
@@ -386,16 +452,18 @@ button.save-btn:hover {
             isValid = false;
         }
 
-        if (offer && isNaN(offerPrice)) {
-            offerError.textContent = "Offer price must be a valid number.";
-            isValid = false;
+        if (offer) {
+            if(isNaN(offer)){
+                offerError.textContent = "Offer must be a valid number.";
+                isValid = false;
+            }
         }
         if (isValid) {
             try {
                 const response = await fetch("/admin/addCategory", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, description, offer, offerPrice, isListed: true }),
+                    body: JSON.stringify({ name, description, offer, isListed: true }),
                 });
 
                 const data = await response.json();
@@ -422,7 +490,13 @@ button.save-btn:hover {
                     
                     categoryTable.innerHTML += newRow;
                 } else {
-                    console.error("Failed to add category:", data.error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.error || 'Failed to add category',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    console.log("Failed to add category:", data.error);
                 }
             } catch (error) {
                 console.error("Error adding category:", error);

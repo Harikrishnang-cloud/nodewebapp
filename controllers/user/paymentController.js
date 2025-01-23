@@ -24,38 +24,24 @@ const createOrder = async (req, res) => {
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
-    console.error("Error creating Razorpay order:", error);
-    res.status(500).json({
-      success: false,
-      error: "Failed to create Razorpay order",
-    });
+    console.error("Error creating Razorpay order:", error)
+
+    res.status(500).json({success: false,error: "Failed to create Razorpay order"});
   }
 };
 
 const verifyPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      orderId,
-    } = req.body;
+    const {razorpay_order_id,razorpay_payment_id,razorpay_signature,orderId} = req.body;
 
     // Check if all required parameters are present
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !orderId) {
       console.error("Missing required payment parameters");
       
       // Update order status to payment failed
-      await Order.findByIdAndUpdate(orderId, {
-        paymentStatus: 'PaymentFailed',
-        status: 'Pending'
-      });
+      await Order.findByIdAndUpdate(orderId, {paymentStatus: 'PaymentFailed',status: 'Pending'});
 
-      return res.status(400).json({
-        success: false,
-        error: "Missing payment parameters",
-        message: "Payment verification failed"
-      });
+      return res.status(400).json({success: false,message: "Missing payment parameters",error: "Payment verification failed"});
     }
 
     console.log("Verifying payment:", {
@@ -84,10 +70,8 @@ const verifyPayment = async (req, res) => {
 
       console.log("Order updated successfully");
 
-      return res.json({
-        success: true,
-        message: "Payment verified successfully",
-      });
+      return res.json({success: true,message: "Payment verified successfully"})
+
     } else {
       console.log("Payment signature verification failed");
 

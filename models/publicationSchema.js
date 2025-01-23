@@ -3,6 +3,7 @@ const publicationSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
+        unique: true
     },
     isListed: {
         type: Boolean,

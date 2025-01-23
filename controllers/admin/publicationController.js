@@ -82,7 +82,17 @@ const postEditPublication = async(req,res)=>{
     }
 }
 
-
+// Check if publication name exists
+const checkPublicationName = async (req, res) => {
+    try {
+        const name = req.query.name;
+        const existingPublication = await publication.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+        res.json({ exists: !!existingPublication });
+    } catch (error) {
+        console.error('Error checking publication name:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 module.exports = {
     publicationInfo,
@@ -90,5 +100,5 @@ module.exports = {
     updatePublication,
     editPublication,
     postEditPublication,
-    
+    checkPublicationName
 }
