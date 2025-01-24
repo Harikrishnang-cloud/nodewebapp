@@ -288,21 +288,51 @@ const cancelOrder = async (req, res) => {
             });
         }
 
+        // Calculate refund amount (total amount including shipping)
+        const refundAmount = order.totalAmount;
+
         // Update order status to cancelled
         order.status = 'Cancelled';
         await order.save();
 
-        
-        if (order.paymentMethod === 'online' && order.paymentStatus === 'Completed') {
-            
-            order.paymentStatus = 'Refund Initiated';
+        // Handle refund based on payment method
+        if (order.paymentMethod === 'online' || order.paymentMethod === 'wallet') {
+            // Find or create wallet
+            let wallet = await Wallet.findOne({ userId: userId });
+            if (!wallet) {
+                wallet = new Wallet({
+                    userId: userId,
+                    balance: 0,
+                    transactions: []
+                });
+            }
+
+            // Add refund to wallet
+            wallet.balance += refundAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: refundAmount,
+                description: `Refund for cancelled order #${order._id}`,
+                timestamp: new Date()
+            });
+
+            await wallet.save();
+
+            // Update order payment status
+            order.paymentStatus = 'Refunded';
             await order.save();
         }
 
-        res.json({success: true,message: 'Order cancelled successfully'});
+        res.json({
+            success: true,
+            message: 'Order cancelled successfully. Refund has been credited to your wallet.'
+        });
     } catch (error) {
         console.error('Error cancelling order:', error);
-        res.status(500).json({success: false,message: 'Failed to cancel order'});
+        res.status(500).json({
+            success: false,
+            message: 'Failed to cancel order'
+        });
     }
 };
 

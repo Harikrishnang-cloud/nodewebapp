@@ -518,7 +518,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Order Cancelled',
-                        text: 'Your order has been cancelled successfully.',
+                        text: data.message,
                         showConfirmButton: true
                     }).then(() => {
                         window.location.reload();
