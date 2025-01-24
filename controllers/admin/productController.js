@@ -125,8 +125,6 @@ const productview = async (req, res) => {
             .limit(limit)
             .populate('category')
             .populate('publication');
-            console.log(products);
-            
 
         res.render('productview', {
             products,
@@ -143,22 +141,26 @@ const productview = async (req, res) => {
 
 //delete-Product
 const deleteProduct = async (req, res) => {
-    console.log('deleteProduct controller ill enter aayi');
     try {
         const id = req.params.id;
         const product = await Product.findById(id);
-        console.log('this is the product :',product);
         
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
 
+        // Toggle the status
         product.status = product.status === "Unblock" ? "Block" : "Unblock";
         await product.save();
-        res.status(200).json({message: `Product status updated to ${product.status ? 'Listed' : 'Unlisted'}`,status: product.status,});
+
+        // Send back a clear message
+        res.status(200).json({
+            message: `Product has been ${product.status === "Block" ? "blocked" : "unblocked"} successfully`,
+            status: product.status
+        });
     } catch (error) {
         console.error('Error toggling product status:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.status(500).json({ message: 'Failed to update product status' });
     }
 };
 

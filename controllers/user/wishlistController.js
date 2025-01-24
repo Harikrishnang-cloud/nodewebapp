@@ -6,7 +6,6 @@ const Wishlist = require('../../models/wishlistSchema');
 const getWishlist = async (req, res) => {
     try {
         const userId = req.session.user._id;
-        
         if (!userId) {
             return res.redirect('/login');
         }
@@ -16,13 +15,12 @@ const getWishlist = async (req, res) => {
         const limit = 4;
         const skip = (page - 1) * limit;
 
-        // Get wishlist with all items
+        // Get all items
         const wishlist = await Wishlist.findOne({ userId }).populate({
             path: 'products.productId',
             model: 'Product',
             select: 'productName description regularPrice salePrice productImage'
         });
-
         const allProducts = wishlist ? wishlist.products : [];
         const totalItems = allProducts.length;
         const totalPages = Math.ceil(totalItems / limit);
@@ -40,9 +38,7 @@ const getWishlist = async (req, res) => {
             productImage: item.productId.productImage
         }));
 
-        res.render('wishlist', {
-            wishlistItems,
-            user: req.session.user,
+        res.render('wishlist', {wishlistItems, user: req.session.user,
             pagination: {page,totalPages,
                 hasNext: page < totalPages,hasPrev: page > 1,
                 nextPage: page + 1,prevPage: page - 1

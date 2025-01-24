@@ -44,7 +44,7 @@ router.get('/check-publication-name', adminAuth, publicationController.checkPubl
 router.get("/addproduct",adminAuth,productController.productAddpage);
 router.post("/addProduct",adminAuth,uploadMiddleware,productController.productAdd)
 router.get("/productview",adminAuth,productController.productview)
-router.post('/products/toggle-status/:id',adminAuth,productController.deleteProduct);
+router.patch('/products/toggle-status/:id',adminAuth,productController.deleteProduct);
 router.get("/editProduct/:id",adminAuth,productController.editProduct)
 router.post("/editProduct/:id",adminAuth,uploadMiddleware,productController.updateProduct)
 router.get('/check-product-name', adminAuth, productController.checkProductName);

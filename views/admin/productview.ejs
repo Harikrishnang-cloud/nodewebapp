@@ -224,24 +224,57 @@
 <%- include("../../views/partials/admin/footer") %>
 <script>
     async function toggleProductStatus(productId, currentStatus) {
-        const confirmToggle = confirm(`Are you sure you want to ${currentStatus === 'Unblock' ? 'Block' : 'Unblock'} this product?`);
-        if (!confirmToggle) return;
         try {
-            const response = await fetch(`/admin/products/toggle-status/${productId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: `You want to ${currentStatus === 'Unblock' ? 'Block' : 'Unblock'} this product?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Update it!'
             });
 
-            const result = await response.json();
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            const response = await fetch(`/admin/products/toggle-status/${productId}`, {
+                method: 'PATCH'
+            });
+
+            const data = await response.json();
+            
             if (response.ok) {
-                alert(result.message);
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                // setTimeout(() => {
+                //     location.reload();
+                // }, 1500);
                 location.reload();
             } else {
-                alert(`Error: ${result.message}`);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: data.message || 'Failed to update product status',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             }
         } catch (error) {
             console.error('Error toggling product status:', error);
-            alert('An error occurred while updating the product status.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'An error occurred while updating the product status.',
+                showConfirmButton: false,
+                timer: 2000
+            });
         }
     }
 </script>
