@@ -1082,7 +1082,7 @@
                             <div class="price-row">
                                 <span class="price-label">
                                     Packaging Fee
-                                    <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Secure packaging charges"></i>
+                                    <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Secure packaging charges & Open Box Delivery"></i>
                                 </span>
                                 <span class="price-value">₹10.00</span>
                             </div>
@@ -1319,7 +1319,8 @@
                                             icon: 'success',
                                             title: 'Payment Successful',
                                             text: `₹${result.amount} has been deducted from your wallet`,
-                                            showConfirmButton: true
+                                            showConfirmButton: true,
+                                            confirmButtonText: 'Okay'
                                         }).then(() => {
                                             window.location.href = `/orderConfirmation/${result.orderId}`;
                                         });
@@ -1517,9 +1518,7 @@
                     closeCouponModal();
                     
                     // Calculate discount based on type
-                    let discountText = discountType === 'percentage' 
-                        ? `${discount}%` 
-                        : `₹${discount}`;
+                    let discountText = discountType === 'percentage' ? `${discount}%` : `₹${discount}`;
                         
                     Swal.fire({
                         icon: 'success',

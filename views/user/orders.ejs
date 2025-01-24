@@ -493,7 +493,17 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     async function cancelOrder(orderId) {
-        if (confirm('Are you sure you want to cancel this order?')) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "Are you sure you want to cancel this order?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, cancel it!'
+        });
+
+        if (result.isConfirmed) {
             try {
                 const response = await fetch(`/cancelOrder/${orderId}`, {
                     method: 'POST',
@@ -505,36 +515,30 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Show custom modal
-                    const modal = document.getElementById('customModal');
-                    modal.style.display = 'block';
-                    
-                    // Close modal when clicking the close button
-                    const closeBtn = document.querySelector('.close-modal');
-                    closeBtn.onclick = function() {
-                        modal.style.display = 'none';
-                        location.reload();
-                    }
-                    
-                    // Close modal when clicking outside
-                    window.onclick = function(event) {
-                        if (event.target == modal) {
-                            modal.style.display = 'none';
-                            location.reload();
-                        }
-                    }
-                    
-                    // Auto close after 2 seconds
-                    setTimeout(() => {
-                        modal.style.display = 'none';
-                        location.reload();
-                    }, 2000);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order Cancelled',
+                        text: 'Your order has been cancelled successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        window.location.reload();
+                    });
                 } else {
-                    alert(data.message || 'Failed to cancel order');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to cancel order',
+                        showConfirmButton: true
+                    });
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred while cancelling the order');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again.',
+                    showConfirmButton: true
+                });
             }
         }
     }

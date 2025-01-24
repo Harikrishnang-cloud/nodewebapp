@@ -25,7 +25,7 @@
 
                         <h5 class="mb-4 mt-4" style="color: #e94560;">Price Range</h5>
                         <div class="price-range mb-4">
-                            <input type="range" class="form-range" min="0" max="10000" id="priceRange">
+                            <input type="range" class="form-range" min="0" max="5000" id="priceRange">
                             <div class="d-flex justify-content-between mt-2">
                                 <span>₹0</span>
                                 <span id="priceValue">₹2500</span>
@@ -47,7 +47,7 @@
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                             <h4 style="color: #e94560;">All Books</h4>
                             <div class="search-box">
-                                <i class="fas fa-search search-icon"></i>
+                                <!-- <i class="fas fa-search search-icon"></i> -->
                                 <input type="text" id="searchInput" placeholder="Search books..." class="search-input">
                             </div>
                             <div class="d-flex align-items-center">
@@ -89,7 +89,7 @@
                                                 </div>
                                                 <div class="d-flex gap-2">
                                                     <button class="btn btn-outline-danger btn-sm wishlist-btn" onclick="event.preventDefault(); handleWishlist('<%= product._id %>', this)">
-                                                        <i class="fa-heart"></i>
+                                                        <i class="fas fa-heart"></i>
                                                     </button>
                                                 </div>
                                             </div>
@@ -152,7 +152,7 @@
     }
 
     .add-to-cart-btn, .buy-now-btn {
-        padding: 8px 15px;
+        padding: 8px 10px;
         font-size: 0.9rem;
         font-weight: 500;
         transition: all 0.3s ease;
@@ -428,7 +428,7 @@
                                     </div>
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-outline-danger btn-sm wishlist-btn" onclick="event.preventDefault(); handleWishlist('${product._id}', this)">
-                                            <i class="fa-heart"></i>
+                                            <i class="fas fa-heart"></i>
                                         </button>
                                     </div>
                                 </div>
