@@ -71,7 +71,7 @@ const getSalesReport = async (req, res) => {
         const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0);
         const totalCouponDiscount = orders.reduce((sum, order) => sum + (order.couponDiscount || 0), 0);
         const grossAmount = orders.reduce((sum, order) => sum + order.totalAmount + (order.discount || 0) + (order.couponDiscount || 0), 0);
-
+        console.log(orders)
         res.render('salesReport', {
             title: 'Sales Report',
             orders,
@@ -96,9 +96,13 @@ const getSalesReport = async (req, res) => {
 const downloadSalesReport = async (req, res) => {
     try {
         const { format, period, startDate, endDate } = req.query;
+
+        if (!format) {
+            return res.status(400).send('Format parameter is required (pdf, csv, or excel)');
+        }
+
         let dateFilter = {};
 
-        // Apply date filters similar to getSalesReport
         if (period) {
             const today = moment().startOf('day');
             switch (period) {
@@ -135,8 +139,7 @@ const downloadSalesReport = async (req, res) => {
                     };
                     break;
             }
-        } 
-        else if (startDate && endDate) {
+        } else if (startDate && endDate) {
             dateFilter = {
                 orderDate: {
                     $gte: moment(startDate).startOf('day').toDate(),
@@ -154,25 +157,34 @@ const downloadSalesReport = async (req, res) => {
             return res.status(404).send('No orders found for the selected period');
         }
 
-        const reportData = orders.map(order => ({
-            OrderID: order._id,
-            CustomerName: order.userId.name,
-            OrderDate: moment(order.orderDate).format('YYYY-MM-DD'),
-            Products: order.items.map(item => item.product.title).join(', '),
-            Amount: order.totalAmount,
-            PaymentMethod: order.paymentMethod,
-            Status: order.status
-        }));
+        // Format data for reports
+        const reportData = orders.map(order => {
+            const userName = order.userId ? (order.userId.fullName || order.userId.name || 'N/A') : 'Deleted User';
+            const products = order.items.map(item => {
+                return item.product ? item.product.title : 'Product Removed';
+            }).join(', ');
 
-        switch (format) {
+            return {
+                'Order ID': order._id.toString(),
+                'Date': moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss'),
+                'Customer Name': userName,
+                'Products': products,
+                'Discount': (order.discount || 0).toFixed(2),
+                'Coupon Discount': (order.couponDiscount || 0).toFixed(2),
+                'Total Amount': order.totalAmount.toFixed(2),
+                'Payment Method': order.paymentMethod || 'N/A',
+                'Status': order.status || 'N/A'
+            };
+        });
+
+        switch (format.toLowerCase()) {
             case 'pdf':
                 const doc = new PDFDocument();
                 res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', `attachment; filename=sales-report-${moment().format('YYYY-MM-DD')}.pdf`);
-
+                res.setHeader('Content-Disposition', `attachment; filename=sales_report_${moment().format('YYYY-MM-DD')}.pdf`);
                 doc.pipe(res);
 
-                // Add header to PDF
+                // Add header
                 doc.fontSize(20).text('Sales Report', { align: 'center' });
                 doc.moveDown();
 
@@ -185,99 +197,69 @@ const downloadSalesReport = async (req, res) => {
                     .text(`Total Discounts: ₹${orders.reduce((sum, order) => sum + (order.discount || 0) + (order.couponDiscount || 0), 0).toFixed(2)}`);
                 doc.moveDown();
 
-                // Add orders table header
+                // Add orders table
                 doc.fontSize(14).text('Order Details', { underline: true });
                 doc.moveDown();
 
-                // Add each order
-                orders.forEach((order, index) => {
-                    doc.fontSize(12).text(`Order ${index + 1}:`, { underline: true });
+                reportData.forEach((order, index) => {
                     doc.fontSize(10)
-                        .text(`Order ID: ${order._id}`)
-                        .text(`Date: ${moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss')}`)
-                        .text(`Customer: ${order.userId?.fullName || 'N/A'}`)
-                        .text(`Discount: ₹${(order.discount || 0).toFixed(2)}`)
-                        .text(`Coupon Discount: ₹${(order.couponDiscount || 0).toFixed(2)}`)
-                        .text(`Total Amount: ₹${order.totalAmount.toFixed(2)}`)
-                        .text(`Status: ${order.status}`)
-                        .text(`Payment Method: ${order.paymentMethod}`);
-                    doc.moveDown();
+                        .text(`${index + 1}. Order ID: ${order['Order ID']}`)
+                        .text(`   Date: ${order['Date']}`)
+                        .text(`   Customer: ${order['Customer Name']}`)
+                        .text(`   Products: ${order['Products']}`)
+                        .text(`   Amount: ₹${order['Total Amount']}`)
+                        .text(`   Status: ${order['Status']}`);
+                    doc.moveDown(0.5);
                 });
-
-                // Add footer
-                doc.fontSize(10)
-                    .text(`Generated on: ${moment().format('YYYY-MM-DD HH:mm:ss')}`, { align: 'right' });
 
                 doc.end();
                 break;
 
             case 'csv':
-                const csvData = orders.map(order => ({
-                    'Order ID': order._id,
-                    'Date': moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss'),
-                    'Customer': order.userId?.fullName || 'N/A',
-                    'Discount': order.discount || 0,
-                    'Coupon Discount': order.couponDiscount || 0,
-                    'Total Amount': order.totalAmount,
-                    'Status': order.status,
-                    'Payment Method': order.paymentMethod
-                }));
-
-                // Convert to CSV
-                const fields = ['Order ID', 'Date', 'Customer', 'Discount', 'Coupon Discount', 'Total Amount', 'Status', 'Payment Method'];
-                const csv = json2csv.parse(csvData, { fields });
-
+                const fields = Object.keys(reportData[0]);
+                const csv = json2csv.parse(reportData, { fields });
                 res.setHeader('Content-Type', 'text/csv');
-                res.setHeader('Content-Disposition', `attachment; filename=sales-report-${moment().format('YYYY-MM-DD')}.csv`);
-                return res.send(csv);
+                res.setHeader('Content-Disposition', `attachment; filename=sales_report_${moment().format('YYYY-MM-DD')}.csv`);
+                res.send(csv);
                 break;
 
             case 'excel':
                 const workbook = XLSX.utils.book_new();
                 const worksheet = XLSX.utils.json_to_sheet(reportData);
 
-                // Add headers
-                const headers = [
-                    'Order ID', 'Customer Name', 'Order Date', 
-                    'Products', 'Amount', 'Payment Method', 'Status'
-                ];
-                XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: 'A1' });
-
-                // Style the headers
+                // Style headers
                 const range = XLSX.utils.decode_range(worksheet['!ref']);
                 for (let i = 0; i <= range.e.c; i++) {
                     const cellRef = XLSX.utils.encode_cell({ r: 0, c: i });
+                    if (!worksheet[cellRef]) continue;
                     worksheet[cellRef].s = {
                         font: { bold: true },
                         fill: { fgColor: { rgb: "CCCCCC" } }
                     };
                 }
 
-                // Auto-size columns
-                const max_width = reportData.reduce((w, r) => Math.max(w, r.CustomerName.length), 10);
-                worksheet['!cols'] = [ 
-                    { wch: 24 }, // Order ID
-                    { wch: max_width }, // Customer Name
-                    { wch: 12 }, // Order Date
-                    { wch: 40 }, // Products
-                    { wch: 10 }, // Amount
-                    { wch: 15 }, // Payment Method
-                    { wch: 12 }  // Status
+                // Set column widths
+                worksheet['!cols'] = [
+                    { wch: 24 },  // Order ID
+                    { wch: 20 },  // Date
+                    { wch: 20 },  // Customer Name
+                    { wch: 40 },  // Products
+                    { wch: 12 },  // Discount
+                    { wch: 15 },  // Coupon Discount
+                    { wch: 12 },  // Total Amount
+                    { wch: 15 },  // Payment Method
+                    { wch: 12 }   // Status
                 ];
 
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
-
-                // Set the response headers
+                const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
                 res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                 res.setHeader('Content-Disposition', `attachment; filename=sales_report_${moment().format('YYYY-MM-DD')}.xlsx`);
-
-                // Write to response
-                const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
                 res.send(excelBuffer);
                 break;
 
             default:
-                res.status(400).send('Invalid format specified');
+                res.status(400).send('Invalid format specified. Use pdf, csv, or excel');
         }
     } catch (error) {
         console.error('Error generating sales report:', error);

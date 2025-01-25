@@ -105,7 +105,7 @@
                                         <tr>
                                             <td><%= order._id %></td>
                                             <td><%= moment(order.orderDate).format('YYYY-MM-DD HH:mm') %></td>
-                                            <td><%= order.userId.fullName %></td>
+                                            <td><%=  order.userId?.fullName  %></td>
                                             <td>₹<%= (order.discount || 0).toFixed(2) %></td>
                                             <td>₹<%= (order.couponDiscount || 0).toFixed(2) %></td>
                                             <td>₹<%= order.totalAmount.toFixed(2) %></td>
@@ -225,36 +225,47 @@
 
     .download-buttons .btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .download-buttons .btn-outline-success:hover {
-        background-color: #198754;
-        color: white;
-    }
-
-    .download-buttons .btn-outline-info:hover {
-        background-color: #0dcaf0;
-        color: white;
     }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    function downloadReport(format) {
-        const period = document.querySelector('select[name="period"]').value;
-        const startDate = document.querySelector('input[name="startDate"]').value;
-        const endDate = document.querySelector('input[name="endDate"]').value;
-        
-        const url = `/admin/sales-report/download?format=${format}&period=${period}&startDate=${startDate}&endDate=${endDate}`;
-        
-        // Create a temporary link and click it
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    async function downloadReport(format) {
+        try {
+            // Get the current filter values
+            const period = document.querySelector('select[name="period"]').value;
+            const startDate = document.querySelector('input[name="startDate"]').value;
+            const endDate = document.querySelector('input[name="endDate"]').value;
+
+            // Construct the URL with query parameters
+            let url = `/admin/sales-report/download?format=${format}`;
+            if (period) {
+                url += `&period=${period}`;
+            }
+            if (startDate) {
+                url += `&startDate=${startDate}`;
+            }
+            if (endDate) {
+                url += `&endDate=${endDate}`;
+            }
+
+            // Create a temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading report:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Download Failed',
+                text: 'Failed to download the report. Please try again.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
     }
 </script>
 
