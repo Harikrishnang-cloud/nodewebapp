@@ -96,7 +96,7 @@ const getSalesReport = async (req, res) => {
 const downloadSalesReport = async (req, res) => {
     try {
         const { format, period, startDate, endDate } = req.query;
-
+        // format ellengil
         if (!format) {
             return res.status(400).send('Format parameter is required (pdf, csv, or excel)');
         }
@@ -139,7 +139,8 @@ const downloadSalesReport = async (req, res) => {
                     };
                     break;
             }
-        } else if (startDate && endDate) {
+        } 
+        else if (startDate && endDate) {
             dateFilter = {
                 orderDate: {
                     $gte: moment(startDate).startOf('day').toDate(),
@@ -148,10 +149,7 @@ const downloadSalesReport = async (req, res) => {
             };
         }
 
-        const orders = await Order.find({
-            ...dateFilter,
-            status: { $nin: ['Cancelled'] }
-        }).populate('userId').populate('items.product');
+        const orders = await Order.find({...dateFilter,status: { $nin: ['Cancelled'] } }).populate('userId').populate('items.product');
 
         if (!orders || orders.length === 0) {
             return res.status(404).send('No orders found for the selected period');

@@ -40,6 +40,16 @@ const createAddMoneyOrder = async (req, res) => {
     try {
         const { amount } = req.body;
         
+        // Validate amount
+        if (!amount || amount <= 0) {
+            return res.status(400).json({success: false,error: 'Please enter a valid amount'});
+        }
+
+        // Check max. limit of 1 lakh
+        if (amount > 100000) {
+            return res.status(400).json({success: false,error: 'Maximum amount allowed is ₹1,00,000 at a time'});
+        }
+
         const options = {
             amount: amount * 100, 
             currency: 'INR',
@@ -54,7 +64,7 @@ const createAddMoneyOrder = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating add money order:', error);
-        res.status(500).json({success: false,error: 'Failed to create order'});
+        res.status(500).json({success: false, error: 'Failed to create order'});
     }
 };
 

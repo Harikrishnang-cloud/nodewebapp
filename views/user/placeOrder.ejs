@@ -1034,7 +1034,7 @@
                     <div class="coupon-section">
                         <div class="coupon-input">
                             <input type="text" id="couponCode" class="form-control" placeholder="Enter Coupon Code">
-                            <button onclick="applyCoupon()" class="btn btn-primary apply-btn">Apply</button>
+                            <button id="applyCouponBtn" onclick="applyCoupon()" class="btn btn-primary apply-btn">Apply</button>
                         </div>
                         <button onclick="showAvailableCoupons()" class="available-coupons-btn" id="couponButton">
                             <i class="fas fa-ticket-alt"></i> View Available Coupons
@@ -1049,16 +1049,18 @@
                             <span class="price-value text-decoration-line-through">₹<%= regularTotal.toFixed(2) %></span>
                         </div>
 
-                        <!-- Sale Price -->
-                        <div class="price-row">
-                            <span class="price-label">Sale Price</span>
-                            <span class="price-value">₹<%= subtotal.toFixed(2) %></span>
-                        </div>
+                        
 
                         <!-- Discount -->
                         <div class="price-row discount-row">
                             <span class="price-label">Discount</span>
                             <span class="price-value  text-success">- ₹<%= savings.toFixed(2) %></span>
+                        </div>
+
+                        <!-- Sale Price -->
+                        <div class="price-row">
+                            <span class="price-label">Sale Price</span>
+                            <span class="price-value">₹<%= subtotal.toFixed(2) %></span>
                         </div>
 
                         <!-- Coupons -->
@@ -1093,7 +1095,7 @@
                         <!-- Total Amount -->
                         <div class="price-row total-row">
                             <span class="price-label">Total Amount</span>
-                            <span class="price-value total-amount" >₹<%= (subtotal + 50 - couponDiscount).toFixed(2) %></span>
+                            <span class="price-value total-amount">₹<%= (subtotal + 50 - couponDiscount).toFixed(2) %></span>
                         </div>
 
                         <!-- Savings Banner -->
@@ -1162,6 +1164,8 @@
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
+            let isCouponApplied = false;
+
             async function placeOrder() {
                 try {
                     const orderItems = '<%- JSON.stringify(products.map(p => ({ productId: p._id, quantity: p.quantity }))) %>';
@@ -1367,6 +1371,17 @@
 
             // Coupon related functions
             async function applyCoupon() {
+                if (isCouponApplied) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Coupon already applied',
+                        text: 'Please remove the current coupon before applying a new one',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Okay'
+                    });
+                    return;
+                }
+
                 const couponCode = document.getElementById('couponCode').value;
                 if (!couponCode) {
                     Swal.fire({
@@ -1392,6 +1407,19 @@
                     const data = await response.json();
 
                     if (data.success) {
+                        isCouponApplied = true;
+                        const applyButton = document.querySelector('#applyCouponBtn');
+                        applyButton.disabled = true;
+                        applyButton.textContent = 'Coupon Applied';
+                        applyButton.style.backgroundColor = '#ccc';
+                        
+                        // Add remove coupon button
+                        const removeCouponBtn = document.createElement('button');
+                        removeCouponBtn.textContent = 'Remove Coupon';
+                        removeCouponBtn.className = 'btn btn-danger ms-2';
+                        removeCouponBtn.onclick = removeCoupon;
+                        applyButton.parentNode.appendChild(removeCouponBtn);
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Coupon Applied!',
@@ -1421,6 +1449,37 @@
                 }
             }
 
+            function removeCoupon() {
+                const couponCode = document.getElementById('couponCode');
+                const applyButton = document.querySelector('#applyCouponBtn');
+                const removeCouponBtn = document.querySelector('.btn-danger');
+                
+                // Reset coupon state
+                isCouponApplied = false;
+                couponCode.value = '';
+                
+                // Enable apply button
+                applyButton.disabled = false;
+                applyButton.textContent = 'Apply Coupon';
+                applyButton.style.backgroundColor = '';
+                
+                // Remove the remove button
+                if (removeCouponBtn) {
+                    removeCouponBtn.remove();
+                }
+                
+                // Reset price details
+                updatePriceDetails(0);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Coupon Removed',
+                    text: 'Coupon has been removed successfully',
+                    showConfirmButton: true,
+                    timer: 2000
+                });
+            }
+
             function updatePriceDetails(discount) {
                 // Get all necessary elements
                 const subtotalElement = document.querySelector('.price-row:nth-child(1) .price-value');
@@ -1429,12 +1488,14 @@
 
                 // Get the current subtotal (remove ₹ symbol and convert to number)
                 const subtotal = parseFloat(subtotalElement.textContent.replace('₹', ''));
+                const deliveryFee = 40;
+                const packagingFee = 10;
                 
                 // Update coupon discount
                 couponDiscountElement.textContent = `- ₹${discount.toFixed(2)}`;
                 
-                // Calculate new total (subtotal - coupon discount)
-                const newTotal = subtotal - discount;
+                // Calculate new total (subtotal + delivery fee + packaging fee - coupon discount)
+                const newTotal = subtotal + deliveryFee + packagingFee - discount;
                 
                 // Update total amount
                 totalElement.textContent = `₹${newTotal.toFixed(2)}`;

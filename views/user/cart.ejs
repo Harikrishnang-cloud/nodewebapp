@@ -29,10 +29,10 @@
                                                         %></span>
                                                 <span class="original-price">₹<%=
                                                         cart.books[i].product.regularPrice.toFixed(2) %></span>
-                                                <span class="discount">Save ₹<%= (cart.books[i].product.regularPrice -
-                                                        cart.books[i].product.salePrice).toFixed(2) %></span>
+                                                <span class="discount">Save ₹<%= ((cart.books[i].product.regularPrice -
+                                                        cart.books[i].product.salePrice) * cart.books[i].quantity).toFixed(2) %></span>
                                                 <span class="offer-percent">
-                                                    <%= cart.books[i].product.offer %>% Off
+                                                    <%= Math.round(((cart.books[i].product.regularPrice - cart.books[i].product.salePrice) / cart.books[i].product.regularPrice) * 100) %>% Off
                                                 </span>
                                             </div>
                                         </div>
@@ -72,6 +72,7 @@
                             <%}%>
                         </div>
 
+                        <%if(cart.books.length > 0){%>
                         <div class="cart-summary">
                             <h3 class="summary-title">Order Summary</h3>
                             <div class="summary-row">
@@ -88,6 +89,7 @@
                             </div>
                             <a class="place-order-btn" href="/placeOrder">Check-Out</a>
                         </div>
+                        <%}%>
                     </div>
                 </main>
             </div>
