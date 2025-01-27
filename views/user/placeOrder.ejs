@@ -1060,7 +1060,7 @@
                         <!-- Sale Price -->
                         <div class="price-row">
                             <span class="price-label">Sale Price</span>
-                            <span class="price-value">₹<%= subtotal.toFixed(2) %></span>
+                            <span class="price-value" data-type="sale-price">₹<%= subtotal.toFixed(2) %></span>
                         </div>
 
                         <!-- Coupons -->
@@ -1101,7 +1101,7 @@
                         <!-- Savings Banner -->
                         <div class="savings-banner">
                             <i class="fas fa-piggy-bank"></i>
-                            <span>Total Savings: ₹<%= savings.toFixed(2) %></span>
+                            <span>Total Savings: ₹<%= (savings + couponDiscount).toFixed(2) %></span>
                         </div>
                     </div>
                 </div>
@@ -1453,6 +1453,8 @@
                 const couponCode = document.getElementById('couponCode');
                 const applyButton = document.querySelector('#applyCouponBtn');
                 const removeCouponBtn = document.querySelector('.btn-danger');
+                const savingsBannerElement = document.querySelector('.savings-banner span');
+                const regularDiscountElement = document.querySelector('.discount-row .text-success');
                 
                 // Reset coupon state
                 isCouponApplied = false;
@@ -1470,6 +1472,10 @@
                 
                 // Reset price details
                 updatePriceDetails(0);
+
+                // Reset total savings to show only regular discount
+                const regularDiscount = parseFloat(regularDiscountElement.textContent.replace('- ₹', ''));
+                savingsBannerElement.textContent = `Total Savings: ₹${regularDiscount.toFixed(2)}`;
                 
                 Swal.fire({
                     icon: 'success',
@@ -1482,23 +1488,33 @@
 
             function updatePriceDetails(discount) {
                 // Get all necessary elements
-                const subtotalElement = document.querySelector('.price-row:nth-child(1) .price-value');
+                const regularPriceElement = document.querySelector('.price-row:nth-child(1) .price-value');
                 const couponDiscountElement = document.querySelector('.discount-row .coupon');
                 const totalElement = document.querySelector('.total-amount');
+                const savingsBannerElement = document.querySelector('.savings-banner span');
+                const regularDiscountElement = document.querySelector('.discount-row .text-success');
+                const salePriceElement = document.querySelector('.price-row .price-value[data-type="sale-price"]');
 
-                // Get the current subtotal (remove ₹ symbol and convert to number)
-                const subtotal = parseFloat(subtotalElement.textContent.replace('₹', ''));
+                // Get the current prices and discounts
+                const regularPrice = parseFloat(regularPriceElement.textContent.replace('₹', ''));
+                const regularDiscount = parseFloat(regularDiscountElement.textContent.replace('- ₹', ''));
                 const deliveryFee = 40;
                 const packagingFee = 10;
                 
                 // Update coupon discount
                 couponDiscountElement.textContent = `- ₹${discount.toFixed(2)}`;
                 
-                // Calculate new total (subtotal + delivery fee + packaging fee - coupon discount)
-                const newTotal = subtotal + deliveryFee + packagingFee - discount;
+                // Calculate sale price (regular price - regular discount)
+                const salePrice = regularPrice - regularDiscount;
+                salePriceElement.textContent = `₹${salePrice.toFixed(2)}`;
                 
-                // Update total amount
-                totalElement.textContent = `₹${newTotal.toFixed(2)}`;
+                // Calculate total amount (sale price + delivery fee + packaging fee - coupon discount)
+                const totalAmount = salePrice + deliveryFee + packagingFee - discount;
+                totalElement.textContent = `₹${totalAmount.toFixed(2)}`;
+
+                // Update total savings (regular discount + coupon discount)
+                const totalSavings = regularDiscount + discount;
+                savingsBannerElement.textContent = `Total Savings: ₹${totalSavings.toFixed(2)}`;
             }
 
             async function showAvailableCoupons() {
