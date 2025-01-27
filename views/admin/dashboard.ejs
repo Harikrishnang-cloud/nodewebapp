@@ -12,15 +12,9 @@
         <div class="chart-container">
             <div class="filter-section">
                 <select id="timeFilter" class="filter-select">
-                    <option value="yearly">Yearly</option>
-                    <option value="monthly">Monthly</option>
+                    <option value="daily" selected>Daily</option>
                     <option value="weekly">Weekly</option>
-                </select>
-                <select id="yearSelect" class="filter-select">
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
+                    <option value="monthly">Monthly</option>
                 </select>
                 <button onclick="updateChart()" class="filter-btn">Apply Filter</button>
             </div>
@@ -260,30 +254,30 @@
 <script>
     let myChart = null;
 
-    const sampleData = {
-        yearly: {
-            labels: ['2022', '2023', '2024'],
-            data: [150, 280, 320]
-        },
-        monthly: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            data: [30, 40, 35, 45, 50, 55, 45, 60, 65, 70, 75, 80]
-        },
-        weekly: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            data: [20, 25, 30, 28]
+    async function fetchChartData(timeFilter) {
+        try {
+            const response = await fetch(`/admin/chart-data?timeFilter=${timeFilter}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch chart data');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            return null;
         }
-    };
+    }
 
-    function initChart() {
+    async function initChart() {
         const ctx = document.getElementById('salesChart').getContext('2d');
+        const initialData = await fetchChartData('daily');
+        
         myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: sampleData.yearly.labels,
+                labels: initialData.labels,
                 datasets: [{
                     label: 'Sales',
-                    data: sampleData.yearly.data,
+                    data: initialData.data,
                     borderColor: '#007bff',
                     backgroundColor: 'rgba(0, 123, 255, 0.1)',
                     fill: true
@@ -305,13 +299,15 @@
         });
     }
 
-    function updateChart() {
+    async function updateChart() {
         const timeFilter = document.getElementById('timeFilter').value;
-        const data = sampleData[timeFilter];
+        const data = await fetchChartData(timeFilter);
         
-        myChart.data.labels = data.labels;
-        myChart.data.datasets[0].data = data.data;
-        myChart.update();
+        if (data) {
+            myChart.data.labels = data.labels;
+            myChart.data.datasets[0].data = data.data;
+            myChart.update();
+        }
     }
 
     document.addEventListener('DOMContentLoaded', initChart);

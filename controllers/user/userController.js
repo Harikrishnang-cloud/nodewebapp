@@ -743,7 +743,7 @@ const resetPassword = async (req, res) => {
     });
   }
 };
-
+//about page
 const about = async (req, res) => {
   try {
     const user = req.session.user;
@@ -754,6 +754,7 @@ const about = async (req, res) => {
   }
 };
 
+//get contact page
 const contact = async (req, res) => {
   try {
     const user = req.session.user;
@@ -763,7 +764,7 @@ const contact = async (req, res) => {
     res.status(500).render('error', { message: 'Internal server error' });
   }
 };
-
+//Contact page submit
 const submitContact = async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;

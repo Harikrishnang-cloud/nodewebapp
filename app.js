@@ -8,6 +8,7 @@ const db = require("./config/db")
 const userRouter = require("./routes/userRouter")
 const adminRouter = require('./routes/adminRouter')
 const authRoutes = require('./routes/authRoutes')
+const { checkBlockedStatus } = require('./middlewares/authMiddleware')
 db()
 //Middlewares
 app.use(express.json())
@@ -44,6 +45,18 @@ app.use(express.static(path.join(__dirname,"public")))
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     next();
+});
+
+// Check if user is blocked before all routes except login/signup
+app.use((req, res, next) => {
+    // Skip check for login, signup, and auth routes
+    if (req.path === '/login' || 
+        req.path === '/signup' || 
+        req.path.startsWith('/auth/') || 
+        req.path === '/logout') {
+        return next();
+    }
+    checkBlockedStatus(req, res, next);
 });
 
 app.use("/",userRouter);//request handling

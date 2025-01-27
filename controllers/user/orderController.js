@@ -104,7 +104,8 @@ const placeOrder = async (req, res) => {
             if (!wallet || wallet.balance < totalAmount) {
                 return res.status(400).json({ 
                     success: false,
-                    message: 'Insufficient wallet balance' 
+                    message: 'Insufficient wallet balance' ,
+                    requiredAmount:totalAmount
                 });
             }
 
@@ -170,23 +171,12 @@ const placeOrder = async (req, res) => {
                 );
             }
 
-            // Handle online payment failure scenario
-            // if (paymentMethod === 'online' && newOrder.paymentStatus === 'Processing') {
-            //     setTimeout(async () => {
-            //         const order = await Order.findById(newOrder._id);
-            //         if (order && order.paymentStatus === 'Processing') {
-            //             order.paymentStatus = 'Failed';
-            //             order.status = 'Payment Failed';
-            //             await order.save();
-            //         }
-            //     }, 300000); // Check after 5 minutes
-            // }
-    
             res.status(200).json({
                 success: true,
                 orderId: newOrder._id,
                 paymentMethod: paymentMethod,
-                paymentStatus: newOrder.paymentStatus
+                paymentStatus: newOrder.paymentStatus,
+                amount:totalAmount
             });
 
         } catch (error) {

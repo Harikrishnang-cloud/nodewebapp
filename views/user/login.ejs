@@ -419,7 +419,9 @@
                 Swal.fire({
                   icon: "error",
                   title: "Oops...",
-                  text: data.message,
+                  text: "Your account has been blocked. Please contact support",
+                  showConfirmButton: true,
+                  confirmButtonText: "Okay",
                   footer: '<a href="/signup">signup</a>',
                 });
               }

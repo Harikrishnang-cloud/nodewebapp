@@ -85,7 +85,6 @@ const getSalesReport = async (req, res) => {
             startDate: startDate || '',
             endDate: endDate || ''
         });
-
     } catch (error) {
         console.error('Error generating sales report:', error);
         res.status(500).render('error', { message: 'Failed to generate sales report' });
@@ -158,17 +157,11 @@ const downloadSalesReport = async (req, res) => {
         // Format data for reports
         const reportData = orders.map(order => {
             const userName = order.userId ? (order.userId.fullName || order.userId.name || 'N/A') : 'Deleted User';
-            const products = order.items.map(item => {
-                return item.product ? item.product.title : 'Product Removed';
-            }).join(', ');
-
             return {
                 'Order ID': order._id.toString(),
                 'Date': moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss'),
                 'Customer Name': userName,
-                'Products': products,
                 'Discount': (order.discount || 0).toFixed(2),
-                'Coupon Discount': (order.couponDiscount || 0).toFixed(2),
                 'Total Amount': order.totalAmount.toFixed(2),
                 'Payment Method': order.paymentMethod || 'N/A',
                 'Status': order.status || 'N/A'
@@ -192,24 +185,152 @@ const downloadSalesReport = async (req, res) => {
                     .text(`Report Period: ${period || 'Custom Range'}`)
                     .text(`Total Orders: ${orders.length}`)
                     .text(`Total Revenue: ₹${orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(2)}`)
-                    .text(`Total Discounts: ₹${orders.reduce((sum, order) => sum + (order.discount || 0) + (order.couponDiscount || 0), 0).toFixed(2)}`);
+                    .text(`Total Discounts: ₹${orders.reduce((sum, order) => sum + (order.discount || 0), 0).toFixed(2)}`);
                 doc.moveDown();
 
-                // Add orders table
-                doc.fontSize(14).text('Order Details', { underline: true });
-                doc.moveDown();
+                // Table header
+                const startX = 50;
+                let startY = doc.y + 10;
+                const rowHeight = 25;
+                const colWidths = {
+                    orderID: 140,
+                    date: 80,
+                    customer: 110,
+                    discount: 70,
+                    amount: 70,
+                    status: 80
+                };
 
-                reportData.forEach((order, index) => {
-                    doc.fontSize(10)
-                        .text(`${index + 1}. Order ID: ${order['Order ID']}`)
-                        .text(`   Date: ${order['Date']}`)
-                        .text(`   Customer: ${order['Customer Name']}`)
-                        .text(`   Products: ${order['Products']}`)
-                        .text(`   Amount: ₹${order['Total Amount']}`)
-                        .text(`   Status: ${order['Status']}`);
-                    doc.moveDown(0.5);
+                const totalWidth = Object.values(colWidths).reduce((sum, width) => sum + width, 0);
+                let pageNumber = 1;
+
+                // Function to add page number
+                const addPageNumber = () => {
+                    const bottom = doc.page.height - 50;
+                    doc.fontSize(8)
+                       .text(`Page ${pageNumber}`, 
+                            startX, 
+                            bottom, 
+                            { align: 'center', width: totalWidth });
+                };
+
+                // Function to draw table header
+                const drawTableHeader = (yPosition) => {
+                    // Add some spacing at the top of each page
+                    if (yPosition === 50) {
+                        yPosition += 20;
+                    }
+
+                    doc.fontSize(9);
+                    doc.rect(startX, yPosition, totalWidth, rowHeight).stroke();
+
+                    let headerX = startX;
+                    const headers = [
+                        { text: 'Order ID', width: colWidths.orderID },
+                        { text: 'Date', width: colWidths.date },
+                        { text: 'Customer', width: colWidths.customer },
+                        { text: 'Discount', width: colWidths.discount },
+                        { text: 'Amount', width: colWidths.amount },
+                        { text: 'Status', width: colWidths.status }
+                    ];
+
+                    headers.forEach(header => {
+                        if (headerX > startX) {
+                            doc.moveTo(headerX, yPosition)
+                               .lineTo(headerX, yPosition + rowHeight)
+                               .stroke();
+                        }
+
+                        doc.text(header.text,
+                            headerX + 5,
+                            yPosition + 8,
+                            {
+                                width: header.width - 10,
+                                align: 'center'
+                            }
+                        );
+                        headerX += header.width;
+                    });
+
+                    return yPosition + rowHeight;
+                };
+
+                // Draw initial header
+                startY = drawTableHeader(startY);
+
+                // Table rows
+                doc.fontSize(8);
+
+                reportData.forEach((order, i) => {
+                    // Check if there's enough space for the next row
+                    if (startY + rowHeight > doc.page.height - 70) {
+                        // addPageNumber();
+                        doc.addPage();
+                        pageNumber++;
+                        startY = 50;
+                        startY = drawTableHeader(startY);
+                    }
+
+                    // Draw row background and vertical lines
+                    doc.rect(startX, startY, totalWidth, rowHeight).stroke();
+                    let currentX = startX;
+
+                    const rowData = [
+                        { 
+                            text: order['Order ID'],
+                            width: colWidths.orderID,
+                            align: 'left'
+                        },
+                        { 
+                            text: moment(order['Date']).format('DD-MM-YYYY'),
+                            width: colWidths.date,
+                            align: 'center'
+                        },
+                        { 
+                            text: order['Customer Name'],
+                            width: colWidths.customer,
+                            align: 'left'
+                        },
+                        { 
+                            text: '₹' + order['Discount'],
+                            width: colWidths.discount,
+                            align: 'right'
+                        },
+                        { 
+                            text: '₹' + order['Total Amount'],
+                            width: colWidths.amount,
+                            align: 'right'
+                        },
+                        { 
+                            text: order['Status'],
+                            width: colWidths.status,
+                            align: 'center'
+                        }
+                    ];
+
+                    rowData.forEach(cell => {
+                        if (currentX > startX) {
+                            doc.moveTo(currentX, startY)
+                               .lineTo(currentX, startY + rowHeight)
+                               .stroke();
+                        }
+
+                        doc.text(cell.text,
+                            currentX + 5,
+                            startY + 8,
+                            {
+                                width: cell.width - 10,
+                                align: cell.align
+                            }
+                        );
+                        currentX += cell.width;
+                    });
+
+                    startY += rowHeight;
                 });
 
+                // Add page number to the last page
+                // addPageNumber();
                 doc.end();
                 break;
 
@@ -241,11 +362,8 @@ const downloadSalesReport = async (req, res) => {
                     { wch: 24 },  // Order ID
                     { wch: 20 },  // Date
                     { wch: 20 },  // Customer Name
-                    { wch: 40 },  // Products
                     { wch: 12 },  // Discount
-                    { wch: 15 },  // Coupon Discount
                     { wch: 12 },  // Total Amount
-                    { wch: 15 },  // Payment Method
                     { wch: 12 }   // Status
                 ];
 

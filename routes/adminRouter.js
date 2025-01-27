@@ -11,6 +11,7 @@ const publicationController =require("../controllers/admin/publicationController
 const orderController = require("../controllers/admin/orderController")
 const couponController = require("../controllers/admin/couponController")
 const salesReportController = require("../controllers/admin/salesReportController")
+const chartController = require("../controllers/admin/chartController")
 const { uploadMiddleware } = require('../middlewares/multer'); 
 
 //admin pages
@@ -48,6 +49,9 @@ router.patch('/products/toggle-status/:id',adminAuth,productController.deletePro
 router.get("/editProduct/:id",adminAuth,productController.editProduct)
 router.post("/editProduct/:id",adminAuth,uploadMiddleware,productController.updateProduct)
 router.get('/check-product-name', adminAuth, productController.checkProductName);
+
+// Chart Data
+router.get("/chart-data", adminAuth, chartController.getChartData)
 
 // Order Management Routes
 router.get('/orders', adminAuth,  orderController.getOrders);
