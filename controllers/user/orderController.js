@@ -24,10 +24,7 @@ const getPlaceOrderPage = async (req, res) => {
         console.log("User data:", user); 
         
         res.render('placeOrder', { 
-            products: cartItems.map(item => ({
-                ...item.product.toObject(),
-                quantity: item.quantity
-            })),
+            products: cartItems.map(item => ({...item.product.toObject(),quantity: item.quantity})),
             user:user,
             wallet: wallet || { balance: 0 },
             title: 'Place Order',
@@ -97,8 +94,6 @@ const placeOrder = async (req, res) => {
             }
         }
 
-        // // Calculate savings (total discount)
-        // const savings = totalDiscount;
 
         // Handle wallet payment
         if (paymentMethod === 'wallet') {
@@ -267,17 +262,11 @@ const cancelOrder = async (req, res) => {
         const order = await Order.findOne({ _id: orderId, userId: userId });
         
         if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'Order not found'
-            });
+            return res.status(404).json({success: false,message: 'Order not found'});
         }
 
         if (order.status === 'Shipped' || order.status === 'Delivered') {
-            return res.status(400).json({
-                success: false,
-                message: 'Cannot cancel order that has been shipped or delivered'
-            });
+            return res.status(400).json({success: false,message: 'Cannot cancel order that has been shipped or delivered'});
         }
 
         // Calculate refund amount (total amount including shipping)
@@ -314,17 +303,10 @@ const cancelOrder = async (req, res) => {
             order.paymentStatus = 'Refunded';
             await order.save();
         }
-
-        res.json({
-            success: true,
-            message: 'Order cancelled successfully. Refund has been credited to your wallet.'
-        });
+            res.json({success: true,message: 'Order cancelled successfully. Refund has been credited to your wallet.'});
     } catch (error) {
         console.error('Error cancelling order:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to cancel order'
-        });
+        res.status(500).json({success: false,message: 'Failed to cancel order'});
     }
 };
 

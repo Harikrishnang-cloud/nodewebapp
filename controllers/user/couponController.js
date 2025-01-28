@@ -38,6 +38,10 @@ const applyCoupon = async (req, res) => {
         if (coupon.usedCount >= coupon.usageLimit) {
             return res.status(400).json({success: false,message: 'Coupon usage limit reached'});
         }
+        
+        if(coupon.minimumPurchase > req.body.total){
+            return res.status(400).json({success: false,message: 'Minimum purchase amount not met'});
+        }
 
         // Calculate discount
         let discount = 0;
