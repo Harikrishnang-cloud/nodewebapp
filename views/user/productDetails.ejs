@@ -245,9 +245,16 @@
 
             <div class="price">₹<strike><%=data.regularPrice%></strike></div>
             <div class="price">₹<%=data.salePrice%></div>
-            <div class="stock-alert">
-                Only <%=data.Quantity%> left in stock - order soon!
-            </div>
+            
+            <% if(data.Quantity <= 0) { %>
+                <div class="stock-alert" style="color: #dc3545; font-weight: bold; font-size: 1.1em;">
+                    This product is out of stock
+                </div>
+            <% } else { %>
+                <div class="stock-alert">
+                    Only <%=data.Quantity%> left in stock - order soon!
+                </div>
+            <% } %>
 
             <div class="offer">
                 <strong>Product Offer:</strong> Get <%= ((data.regularPrice - data.salePrice) / data.regularPrice * 100).toFixed(0) %>% off on your first purchase!
@@ -259,19 +266,21 @@
 
             <p class="description"><%= data.description%></p>
 
-            <div class="quantity">
-                <label for="quantity">Quantity:</label>
-                <select id="quantity">
-                    <% for(let i = 1; i <= Math.min(5, data.Quantity); i++) { %>
-                        <option value="<%= i %>"><%= i %></option>
-                    <% } %>
-                </select>
-            </div>
+            <% if(data.Quantity > 0) { %>
+                <div class="quantity">
+                    <label for="quantity">Quantity:</label>
+                    <select id="quantity">
+                        <% for(let i = 1; i <= Math.min(5, data.Quantity); i++) { %>
+                            <option value="<%= i %>"><%= i %></option>
+                        <% } %>
+                    </select>
+                </div>
 
-            <div class="buttons">
-                <button onclick="addToCart('<%= data._id %>')" class="btn btn-primary">Add to Cart</button>
-                <button onclick="goToCart()" class="btn btn-secondary">Buy Now</button>
-            </div>
+                <div class="buttons">
+                    <button onclick="addToCart('<%= data._id %>')" class="btn btn-primary">Add to Cart</button>
+                    <button onclick="goToCart()" class="btn btn-secondary">Buy Now</button>
+                </div>
+            <% } %>
         </div>
     </div>
 

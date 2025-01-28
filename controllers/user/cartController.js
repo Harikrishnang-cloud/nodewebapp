@@ -20,7 +20,8 @@ const getCart = async(req,res)=>{
         console.log("This is cart Data",cart)
         
       res.render('cart',{user:req.session.user,cart:cart||{books:[]}})
-    } catch (error) {
+    } 
+    catch (error) {
       console.log(error);
       
     }
