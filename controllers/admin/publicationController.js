@@ -24,10 +24,12 @@ const publicationInfo = async (req, res) => {
 //add Publication
 const addPublication = async(req,res)=>{
     try {
+        console.log("body", req.body)
         let publications = new publication(req.body)
         await publications.save();
-        res.status(201).json({publication:publications,message:"Publication added Scucessfully"})
+        res.status(201).json({success:true, publication:publications,message:"Publication added Scucessfully"})
     } catch (err) {
+        console.log(err)
         res.status(400).json({error:err.message})
     }
 }

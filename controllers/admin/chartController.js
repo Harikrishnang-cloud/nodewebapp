@@ -34,7 +34,7 @@ const getChartData = async (req, res) => {
                     }
                 ]);
 
-                days.unshift(startOfDay.format('DD MMM')); // Format: "25 Jan"
+                days.unshift(startOfDay.format('DD MMM')); 
                 dailyData.unshift(daySales[0]?.totalSales || 0);
             }
 

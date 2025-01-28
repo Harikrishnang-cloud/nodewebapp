@@ -125,7 +125,7 @@
 
     </div>
     <% } else { %>
-    <!-- <p class="text-center">No publications found. Add a new publication to get started!</p> -->
+    <p class="text-center">No publications found. Add a new publication to get started!</p>
     <% } %>
 </div>
 
@@ -178,13 +178,26 @@
                     publicationNameInput.focus();
                     return;
                 }
+                console.log(name)
+                const publicationResponse = await fetch('/admin/addpublication',{
+                    method:'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:JSON.stringify({name})
+                })
+
+                const publicationResponseData = await publicationResponse.json()
+                if(publicationResponseData.success){
+                    Swal.fire({
+                        icon:'success',
+                        title:"Publication Added Sucessfully",
+                        confirmButtonText:"OK"
+                    })
+                }
                 
                 // If no duplicate found, submit the form
-                this.submit();
             } catch (error) {
                 console.error('Error checking publication name:', error);
-                // In case of error, allow form submission
-                this.submit();
+                
             }
         });
     });
@@ -201,14 +214,22 @@
             const result = await response.json();
 
             if (response.ok) {
-                alert(result.message);
-                location.reload(); // Reload page to reflect changes
+                Swal.fire(result.message);
+                location.reload(); 
             } else {
-                alert(`Error: ${result.message}`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message,
+                });
             }
         } catch (error) {
             console.error('Error toggling publication status:', error);
-            alert('An error occurred while updating the publication status.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'An error occurred while updating the publication status.',
+            });
         }
     }
 </script>

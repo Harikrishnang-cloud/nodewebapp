@@ -62,16 +62,19 @@ const getSalesReport = async (req, res) => {
             };
         }
 
-        orders = await Order.find(dateFilter).populate('userId', 'fullName email')
+        orders = await Order.find({...dateFilter,status: 'Delivered' }).populate('userId', 'fullName email')
             .sort({ orderDate: -1 });
+
+        // Get total orders count (all statuses)
+        const totalAllOrders = await Order.countDocuments(dateFilter);
 
         // Calculate totals
         const totalOrders = orders.length;
         const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
         const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0);
         const totalCouponDiscount = orders.reduce((sum, order) => sum + (order.couponDiscount || 0), 0);
-        const grossAmount = orders.reduce((sum, order) => sum + order.totalAmount + (order.discount || 0) + (order.couponDiscount || 0), 0);
-        console.log(orders)
+        const grossAmount = totalRevenue + totalDiscount + totalCouponDiscount;
+
         res.render('salesReport', {
             title: 'Sales Report',
             orders,
@@ -80,6 +83,7 @@ const getSalesReport = async (req, res) => {
             totalDiscount,
             totalCouponDiscount,
             grossAmount,
+            totalAllOrders,
             moment,
             period: period || 'custom',
             startDate: startDate || '',
@@ -148,7 +152,7 @@ const downloadSalesReport = async (req, res) => {
             };
         }
 
-        const orders = await Order.find({...dateFilter,status: { $nin: ['Cancelled'] } }).populate('userId').populate('items.product');
+        const orders = await Order.find({...dateFilter,status: 'Delivered' }).populate('userId').populate('items.product');
 
         if (!orders || orders.length === 0) {
             return res.status(404).send('No orders found for the selected period');

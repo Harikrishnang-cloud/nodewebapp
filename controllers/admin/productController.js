@@ -19,6 +19,11 @@ const productAdd = async (req, res) => {
             return res.status(400).send('Missing required fields. Please check your input.');
         }   
 
+        // Validate quantity is not negative
+        if (Quantity < 0) {
+            return res.status(400).send('Product quantity cannot be negative.');
+        }
+
         if (!req.files || req.files.length === 0) {
             return res.status(400).send('At least one product image is required.');
         }
@@ -283,7 +288,7 @@ const updateProduct = async (req, res) => {
                         if (err) console.error('Error removing temporary file:', err);
                     });
 
-                    console.log('Successfully processed and saved:', filename);
+                    console.log('Product saved aayi:', filename);
 
                 } catch (error) {
                     console.error('Error processing image:', error.message);
@@ -293,8 +298,6 @@ const updateProduct = async (req, res) => {
             }
         }
 
-        console.log('Final updated images array:', updatedImages);
-
         const updatedData = {
             productName: productName || product.productName,
             description: description || product.description,
@@ -303,10 +306,15 @@ const updateProduct = async (req, res) => {
             publication: publication || product.publication,
             regularPrice: regularPrice || product.regularPrice,
             salePrice: salePrice || product.salePrice,
-            productImage: updatedImages // Make sure this is an array
+            productImage: updatedImages 
         };
 
-        console.log('Data being saved to database:', updatedData);
+        //quantity is not negative
+        if (updatedData.Quantity < 0) {
+            return res.status(400).json({ success: false, message: "Product quantity is not negative"});
+        }
+
+        console.log('Database ill save aayi:', updatedData);
 
         // Update the product in the database
         const updatedProduct = await Product.findByIdAndUpdate(

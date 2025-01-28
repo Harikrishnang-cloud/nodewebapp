@@ -53,9 +53,7 @@ const addCategory = async (req, res) => {
 const editCategory = async(req,res)=>{
   try {
     const id = req.params.id;
-    console.log(id)
     const category = await Category.findOne({_id:id})
-    console.log(category);
     res.render("editCategory",{category:category})
   } 
   catch (error) { 
@@ -75,11 +73,9 @@ const updateCategory = async (req, res) => {
     console.log("id",req.params.id)
     console.log('Request Body:', req.body); 
 
-    // Validate ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid ID format" });
     }
-    // Validate inputs
     if (!name || !description ) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
@@ -97,6 +93,7 @@ const updateCategory = async (req, res) => {
   }
 };
 
+//Update Category-Status
 const updateCategoryStatus = async (req, res) => {
   try {
     const id = req.params.id;

@@ -11,12 +11,7 @@ const checkBlockedStatus = async (req, res, next) => {
         const user = await User.findById(req.session.user._id);
         if (!user || user.isBlocked) {
             
-            req.session.destroy((err) => {
-                if (err) {
-                    console.error('Error destroying session:', err);
-                }
-            });
-            
+            req.session.user = null;
             return res.redirect('/login?error=Your account has been blocked. Please contact support.');
         }
 

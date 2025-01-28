@@ -146,6 +146,19 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* Add styles for error messages */
+        .text-danger {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .error {
+            border-color: #dc3545;
+        }
+        .error:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -158,21 +171,25 @@
     <div class="container mt-5">
         <h1 class="mb-4">Edit Product</h1>
         <div class="form-container">
-            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data" id="editProductForm">
+            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data" id="editProductForm" onsubmit="return validateForm()">
                 <div class="row">
                     <!-- Left Section -->
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="productName" class="form-label">Product Name</label>
                             <input type="text" id="productName" name="productName" class="form-control" 
-                                   value="<%= product.productName %>" required>
+                                   value="<%= product.productName %>" required pattern="[A-Za-z0-9\s-]+" 
+                                   title="Product name can only contain letters, numbers, spaces and hyphens">
+                            <div class="text-danger" id="productNameError"></div>
                         </div>
 
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea id="description" name="description" class="form-control" rows="3" required>
+                            <textarea id="description" name="description" class="form-control" rows="3" required
+                                    minlength="10" maxlength="1000">
                                 <%= product.description %>
                             </textarea>
+                            <div class="text-danger" id="descriptionError"></div>
                         </div>
 
                         <div class="mb-3">
@@ -190,7 +207,8 @@
                         <div class="mb-3">
                             <label for="Quantity" class="form-label">Quantity</label>
                             <input type="number" id="Quantity" name="Quantity" class="form-control" 
-                                   value="<%= product.Quantity %>" required>
+                                   value="<%= product.Quantity %>" min="0" required>
+                            <div class="text-danger" id="quantityError"></div>
                         </div>
                     </div>
 
@@ -211,13 +229,15 @@
                         <div class="mb-3">
                             <label for="regularPrice" class="form-label">Regular Price</label>
                             <input type="number" id="regularPrice" name="regularPrice" class="form-control" 
-                                   value="<%= product.regularPrice %>" required>
+                                   value="<%= product.regularPrice %>" required min="1" step="0.01">
+                            <div class="text-danger" id="regularPriceError"></div>
                         </div>
 
                         <div class="mb-3">
                             <label for="salePrice" class="form-label">Sale Price</label>
                             <input type="number" id="salePrice" name="salePrice" class="form-control" 
-                                   value="<%= product.salePrice %>">
+                                   value="<%= product.salePrice %>" min="1" step="0.01">
+                            <div class="text-danger" id="salePriceError"></div>
                         </div>
 
                         <div class="mb-3">
@@ -275,7 +295,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script>
-    console.log('Initial product images:',<%- JSON.stringify(product.productImage) %>);
 
     let cropper = null;
     let currentImageIndex = null;
@@ -400,6 +419,98 @@
 
         // Submit the form
         this.submit();
+    });
+
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        const inputElement = document.getElementById(elementId.replace('Error', ''));
+        errorElement.textContent = message;
+        inputElement.classList.add('error');
+    }
+
+    function clearError(elementId) {
+        const errorElement = document.getElementById(elementId);
+        const inputElement = document.getElementById(elementId.replace('Error', ''));
+        errorElement.textContent = '';
+        inputElement.classList.remove('error');
+    }
+
+    function validateForm() {
+        let isValid = true;
+        // Clear all previous errors
+        const errorElements = document.querySelectorAll('.text-danger');
+        errorElements.forEach(element => element.textContent = '');
+        document.querySelectorAll('.error').forEach(element => element.classList.remove('error'));
+
+        // Get form values
+        const productName = document.getElementById('productName').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+        const salePrice = parseFloat(document.getElementById('salePrice').value);
+        const quantity = parseInt(document.getElementById('Quantity').value);
+
+        // Validate product name
+        if (productName.length < 3 || productName.length > 50) {
+            showError('productNameError', 'Product name must be between 3 and 50 characters');
+            isValid = false;
+        }
+
+        // Validate description
+        if (description.length < 10 || description.length > 1000) {
+            showError('descriptionError', 'Description must be between 10 and 1000 characters');
+            isValid = false;
+        }
+
+        // Validate regular price
+        if (regularPrice <= 0) {
+            showError('regularPriceError', 'Regular price must be greater than 0');
+            isValid = false;
+        }
+
+        // Validate sale price if provided
+        if (!isNaN(salePrice)) {
+            if (salePrice <= 0) {
+                showError('salePriceError', 'Sale price must be greater than 0');
+                isValid = false;
+            }
+            if (salePrice >= regularPrice) {
+                showError('salePriceError', 'Sale price must be less than regular price');
+                isValid = false;
+            }
+        }
+
+        // Validate quantity
+        if (quantity < 0) {
+            showError('quantityError', 'Quantity cannot be negative');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    // Add event listeners for real-time validation
+    document.getElementById('productName').addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value.length < 3) {
+            showError('productNameError', 'Product name must be at least 3 characters long');
+        } else if (value.length > 50) {
+            showError('productNameError', 'Product name cannot exceed 50 characters');
+        } else if (!/^[A-Za-z0-9\s-]+$/.test(value)) {
+            showError('productNameError', 'Product name can only contain letters, numbers, spaces and hyphens');
+        } else {
+            clearError('productNameError');
+        }
+    });
+
+    document.getElementById('salePrice').addEventListener('input', function() {
+        const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+        const salePrice = parseFloat(this.value);
+        
+        if (!isNaN(salePrice) && salePrice >= regularPrice) {
+            showError('salePriceError', 'Sale price must be less than regular price');
+        } else {
+            clearError('salePriceError');
+        }
     });
 </script>
 

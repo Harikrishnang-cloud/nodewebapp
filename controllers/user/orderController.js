@@ -28,7 +28,7 @@ const getPlaceOrderPage = async (req, res) => {
             user:user,
             wallet: wallet || { balance: 0 },
             title: 'Place Order',
-            couponDiscount: 0  // Initialize coupon discount as 0
+            couponDiscount: 0  
         });
     } catch (error) {
         console.error('Error fetching cart items:', error);
@@ -47,6 +47,7 @@ const placeOrder = async (req, res) => {
         }
 
         const selectedAddress = user.address[addressIndex];
+
         
         // Fetch product details and calculate total
         let totalAmount = 40; // Base delivery fee
@@ -62,6 +63,7 @@ const placeOrder = async (req, res) => {
             // Calculate discount for this item
             const itemDiscount = (product.regularPrice - product.salePrice) * item.quantity;
             totalDiscount += itemDiscount;
+
 
             orderItems.push({
                 product: item.productId,
@@ -146,19 +148,33 @@ const placeOrder = async (req, res) => {
         });
 
         try {
-            await newOrder.save();
             
             // Only update product quantities and clear cart if payment is successful or COD
             if (paymentMethod === 'cod' || paymentMethod === 'wallet' || 
-               (paymentMethod === 'online' )) {
-                
+                (paymentMethod === 'online' )) {
+                    
+                    const checkQuantityPromises = orderItems.map(async (item) => {
+                        const product = await Product.findById(item.product);
+                        console.log("Product quantity check:", product.Quantity, item.quantity);
+                        return (product.Quantity - item.quantity) < 0;
+                    });
+                    
+                    const quantityChecks = await Promise.all(checkQuantityPromises);
+                    const invalidQuantity = quantityChecks.some(isInvalid => isInvalid);
+                    
+                    console.log("Invalid quantity check result:", invalidQuantity);
+                    
+                    if(invalidQuantity){
+                        return res.status(400).json({success:false, message:"Product out of stock"})
+                    }
+                    await newOrder.save();
                 // Update product quantities
                 for (const item of orderItems) {
                     const product = await Product.findById(item.product);
                     if (product) {
                         product.Quantity -= item.quantity;
                         await product.save();
-                    }
+                    }       
                 }
 
                 // Clear the user's cart

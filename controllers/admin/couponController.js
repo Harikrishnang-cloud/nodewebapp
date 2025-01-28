@@ -26,7 +26,6 @@ const addCoupon = async (req, res) => {
     try {
         const {code,description,discountType,discountAmount,minimumPurchase,usageLimit,expiryDate} = req.body;
 
-        // Validate discount amount
         if (discountType === 'percentage' && (discountAmount < 0 || discountAmount > 100)) {
             return res.status(400).json({success: false,message: 'Percentage discount must be between 0 and 100' });
         }
@@ -34,10 +33,7 @@ const addCoupon = async (req, res) => {
         // Check if coupon code already exists
         const existingCoupon = await Coupon.findOne({ code: code.toUpperCase() });
         if (existingCoupon) {
-            return res.status(400).json({
-                success: false,
-                message: 'Coupon code already exists'
-            });
+            return res.status(400).json({success: false,message: 'Coupon code already exists'});
         }
 
         const coupon = new Coupon({
