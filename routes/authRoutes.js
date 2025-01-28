@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const router = express.Router();
+const User = require('../models/userSchema')
 
 // Google OAuth configuration
 passport.use(new GoogleStrategy({
@@ -54,7 +55,7 @@ router.get('/google/callback',
   passport.authenticate('google', { 
     failureRedirect: '/login',
     successRedirect: '/'
-  })
+  }),
 );
 
 module.exports = router;
