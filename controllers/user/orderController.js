@@ -15,6 +15,7 @@ const getPlaceOrderPage = async (req, res) => {
         const cart = await Cart.findOne({ userId: req.session.user._id }).populate('books.product');
         const cartItems = cart ? cart.books : [];
         const user = await User.findById(req.session.user._id);
+        const wallet = await Wallet.findOne({ userId: req.session.user._id });
         
         if (!user) {
             return res.redirect('/login'); 
@@ -28,6 +29,7 @@ const getPlaceOrderPage = async (req, res) => {
                 quantity: item.quantity
             })),
             user:user,
+            wallet: wallet || { balance: 0 },
             title: 'Place Order',
             couponDiscount: 0  // Initialize coupon discount as 0
         });

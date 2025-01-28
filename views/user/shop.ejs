@@ -488,16 +488,20 @@
             } else {
                 Swal.fire({
                     icon: "error",
-                    title: "Oops...",
+                    title: "Cannot Add to Cart",
                     text: data.message || 'Failed to add product to cart',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK'
                 });
             }
         } catch (error) {
             console.error('Error:', error);
             Swal.fire({
                 icon: "error",
-                title: "Oops...",
-                text: "Something went wrong! Please try again.",
+                title: "Error!",
+                text: error.message || 'Something went wrong! Please try again.',
+                showConfirmButton: true,
+                confirmButtonText: 'OK'
             });
         }
     }
@@ -525,16 +529,20 @@
             } else {
                 Swal.fire({
                     icon: "error",
-                    title: "Oops...",
+                    title: "Cannot Buy Now",
                     text: data.message || 'Failed to process buy now request',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK'
                 });
             }
         } catch (error) {
             console.error('Error:', error);
             Swal.fire({
                 icon: "error",
-                title: "Oops...",
+                title: "Error!",
                 text: "Something went wrong! Please try again.",
+                showConfirmButton: true,
+                confirmButtonText: 'OK'
             });
         }
     }

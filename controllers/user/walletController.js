@@ -57,11 +57,8 @@ const createAddMoneyOrder = async (req, res) => {
         };
 
         const order = await razorpay.orders.create(options);
-        res.json({
-            success: true,
-            order,
-            key: process.env.RAZORPAY_KEY_ID
-        });
+        res.json({success: true,order,key: process.env.RAZORPAY_KEY_ID});
+        
     } catch (error) {
         console.error('Error creating add money order:', error);
         res.status(500).json({success: false, error: 'Failed to create order'});

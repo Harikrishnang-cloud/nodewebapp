@@ -248,7 +248,7 @@
             
             <% if(data.Quantity <= 0) { %>
                 <div class="stock-alert" style="color: #dc3545; font-weight: bold; font-size: 1.1em;">
-                    This product is out of stock
+                    This product is Out of stock
                 </div>
             <% } else { %>
                 <div class="stock-alert">
@@ -375,7 +375,9 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: result.message || 'Failed to add product to cart'
+                    text: result.message || 'Failed to add product to cart',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK'
                 });
             }
         } catch (error) {

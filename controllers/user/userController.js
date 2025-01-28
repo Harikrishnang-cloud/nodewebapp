@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt')
 const Books = require("../../models/productSchema")
 const { redirect } = require("server/reply");
 const productHelper = require('../../helpers/productHelper')
-
+const Cart = require("../../models/cartSchema");
 
 // Page Not Found Controller
 const pageNotFound = async (req, res) => {
@@ -424,7 +424,13 @@ const userAddress = async (req, res) => {
     if (!user) {
       return res.status(404).send('User not found');
     }
-    res.render('userAddress', { user });
+    const cart = await Cart.findOne({ userId: req.session.user._id });
+    const hasItems = cart && cart.books && cart.books.length > 0;
+    
+    res.render('userAddress', { 
+      user,
+      hasItems
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send('Server Error');

@@ -52,6 +52,13 @@
               <p class="no-address">No addresses added yet. Use the "Add Address" button to get started.</p>
             <% } %>
           </div>
+          <div class="continue-shopping-container">
+            <% if (hasItems) { %>
+              <a href="/placeOrder" class="btn continue-shopping-btn">Continue Shopping</a>
+            <% } else { %>
+              <button class="btn continue-shopping-btn disabled" disabled title="Your cart is empty">Continue Shopping</button>
+            <% } %>
+          </div>
         </div>
       </main>
     
@@ -191,6 +198,37 @@
     display: flex;
     gap: 1rem;
     margin-top: 1rem;
+  }
+  
+  .continue-shopping-container {
+    margin-top: 2rem;
+    text-align: right;
+    padding: 0 1rem;
+  }
+  
+  .continue-shopping-btn {
+    background-color: #e94560;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  
+  .continue-shopping-btn:hover {
+    background-color: #d13652;
+    color: white;
+  }
+  
+  .continue-shopping-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  .continue-shopping-btn.disabled:hover {
+    background-color: #ccc;
   }
   
   .edit-btn {
@@ -356,7 +394,19 @@
   }
   
   async function deleteAddress(index, addressId) {
-    if (confirm('Are you sure you want to delete this address?')) {
+    // Show confirmation dialog using SweetAlert2
+    const result = await Swal.fire({
+      title: 'Delete Address',
+      text: 'Are you sure you want to delete this address?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e94560',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
       try {
         const response = await fetch('/deleteAddress', {
           method: 'POST',
@@ -369,11 +419,21 @@
         if (response.ok) {
           window.location.reload();
         } else {
-          alert('Failed to delete address');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Failed to delete address',
+            confirmButtonText: 'Okay'
+          });
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Failed to delete address');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Failed to delete address',
+          confirmButtonText: 'Okay'
+        });
       }
     }
   }
