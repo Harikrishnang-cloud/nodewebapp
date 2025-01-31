@@ -7,13 +7,12 @@ const PDFDocument = require('pdfkit');
 
 const getPlaceOrderPage = async (req, res) => {
     try {
-
         if (!req.session.user || !req.session.user._id) {
             return res.redirect('/login'); 
         }
 
         const cart = await Cart.findOne({ userId: req.session.user._id }).populate('books.product');
-        const cartItems = cart ? cart.books : [];
+        const cartItems = cart ? cart.books : []
         const user = await User.findById(req.session.user._id);
         const wallet = await Wallet.findOne({ userId: req.session.user._id });
         
@@ -48,7 +47,6 @@ const placeOrder = async (req, res) => {
 
         const selectedAddress = user.address[addressIndex];
 
-        
         // Fetch product details and calculate total
         let totalAmount = 40; // Base delivery fee
         const orderItems = [];
@@ -91,8 +89,8 @@ const placeOrder = async (req, res) => {
             const coupon = await Coupon.findOne({ code: req.body.couponCode });
             if (coupon && coupon.isActive) {
                 const couponDiscount = (totalAmount * coupon.discountPercentage) / 100;
-                totalDiscount += couponDiscount;
-                totalAmount -= couponDiscount;
+                totalDiscount = totalDiscount + couponDiscount;
+                totalAmount = totalAmount - couponDiscount;
             }
         }
 
@@ -148,8 +146,6 @@ const placeOrder = async (req, res) => {
         });
 
         try {
-            
-            // Only update product quantities and clear cart if payment is successful or COD
             if (paymentMethod === 'cod' || paymentMethod === 'wallet' || 
                 (paymentMethod === 'online' )) {
                     
@@ -172,7 +168,7 @@ const placeOrder = async (req, res) => {
                 for (const item of orderItems) {
                     const product = await Product.findById(item.product);
                     if (product) {
-                        product.Quantity -= item.quantity;
+                        product.Quantity = product.Quantity - item.quantity;
                         await product.save();
                     }       
                 }
@@ -193,10 +189,9 @@ const placeOrder = async (req, res) => {
             });
 
         } catch (error) {
-            // If there's an error saving the order or updating products
+
             console.error('Error processing order:', error);
             if (newOrder._id) {
-                // If order was created but subsequent operations failed
                 await Order.findByIdAndUpdate(newOrder._id, {
                     status: 'Error',
                     paymentStatus: 'Failed'
@@ -225,7 +220,6 @@ const getOrderConfirmation = async (req, res) => {
         if (!order) {
             return res.redirect('/pageNotFound');
         }
-
         res.render('orderConfirm', {
             title: 'Order Confirmation',
             order: order
@@ -288,7 +282,6 @@ const cancelOrder = async (req, res) => {
         // Calculate refund amount (total amount including shipping)
         const refundAmount = order.totalAmount;
 
-        // Update order status to cancelled
         order.status = 'Cancelled';
         await order.save();
 
@@ -305,7 +298,7 @@ const cancelOrder = async (req, res) => {
             }
 
             // Add refund to wallet
-            wallet.balance += refundAmount;
+            wallet.balance = wallet.balance + refundAmount;
             wallet.transactions.push({
                 type: 'credit',
                 amount: refundAmount,

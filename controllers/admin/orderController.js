@@ -52,7 +52,7 @@ const updateOrderStatus = async (req, res) => {
         if (order.status === 'Delivered' || order.status === 'Cancelled') {
             return res.status(400).json({success: false,message: `Cannot change status of ${order.status.toLowerCase()} order`});
         }
-
+ 
         // update aayath db ill save cheyyanam
         order.status = status;
         await order.save();
@@ -87,7 +87,7 @@ const getOrderDetails = async (req, res) => {
 // Cancel order
 const cancelOrder = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const { orderId } = req.params; 
         const order = await Order.findById(orderId);
         
         if (!order) {
@@ -116,12 +116,13 @@ const cancelOrder = async (req, res) => {
 const updateStatus = async (req, res) => {
     try {
         const  { orderId, status } = req.body;
-        console.log("orderId, status",orderId, status);
         
         const update = await Order.updateOne({ _id: orderId }, { $set: { status: status } });
         if (update.modifiedCount > 0) {
          return res.status(200).json({ success: true, message: 'Order status updated successfully' });
-        }else{
+        }
+        else
+        {
            return res.status(400).json({ success: false, message: 'Failed to update order status' });
         }
         

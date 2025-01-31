@@ -94,8 +94,7 @@ const signup = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      // console.log("Email already registered.");
-      // return res.render("signup", { message: "Email already registered." });
+      console.log("Email already registered.");
       return res.status(400).send("Email already registered.");
     }
 
@@ -107,7 +106,6 @@ const signup = async (req, res) => {
     console.log("email,send", emailSent);
 
     if (!emailSent) {
-      // return res.render("signup", { message: "Failed to send OTP.please try again." })
       return res.status(500).send("Failed to send OTP.please try again.");
     }
     if (emailSent) {
@@ -116,7 +114,6 @@ const signup = async (req, res) => {
       //   otp: otp,
       // });
       req.session.singupotp = otp;
-      // console.log("otp",otp);
       console.log(`Mail send to ${email} otp is ${otp}`);
 
     }
@@ -245,7 +242,7 @@ const loadHomepage = async (req, res) => {
           }
         }
       },
-      { $addFields: { topProducts: { $slice: ["$products", 5] } } },
+      { $addFields: { topProducts: { $slice: ["$products", 3] } } },
       {
         $project: {
           products: 0
@@ -277,7 +274,7 @@ const loginpage = async (req, res) => {
 //logout
 const logoutpage = async (req, res) => {
   try {
-    req.session.user = null//session distroy
+    req.session.user = null
     res.redirect("/login");
   } catch (error) {
     console.error("Login page error:", error.message);
@@ -619,10 +616,7 @@ const filterProducts = async (req, res) => {
 
   } catch (error) {
     console.error('Filter products error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error filtering products'
-    });
+    res.status(500).json({success: false,message: 'Error filtering products'});
   }
 };
 
@@ -639,12 +633,7 @@ const searchProducts = async (req, res) => {
     const searchRegex = new RegExp(query, 'i');
 
     // Search in product name and description
-    const products = await Product.find({
-      $or: [
-        { productName: { $regex: searchRegex } },
-        { description: { $regex: searchRegex } }
-      ]
-    });
+    const products = await Product.find({$or: [{ productName: { $regex: searchRegex } },{ description: { $regex: searchRegex } }]});
 
     res.json({ products });
   } catch (error) {
@@ -660,10 +649,7 @@ const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'No account found with this email'
-      });
+      return res.status(404).json({success: false, message: 'No account found with this email'});
     }
 
     // Generate OTP
@@ -671,26 +657,16 @@ const forgotPassword = async (req, res) => {
     console.log("otp is : ", otp);
 
     // Save OTP to session
-    req.session.resetPasswordOtp = {
-      email,
-      otp,
-      timestamp: Date.now()
-    };
+    req.session.resetPasswordOtp = {email,otp,timestamp: Date.now()};
 
     // Send OTP via email
     await sendVerificationEmail(email, otp);
 
-    res.json({
-      success: true,
-      message: 'OTP sent successfully'
-    });
+    res.json({success: true,message: 'OTP sent successfully'});
 
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to process request'
-    });
+    res.status(500).json({success: false, message: 'Failed to process request'});
   }
 };
 
@@ -736,10 +712,7 @@ const resetPassword = async (req, res) => {
     // Clear the OTP from session
     delete req.session.resetPasswordOtp;
 
-    res.json({
-      success: true,
-      message: 'Password reset successfully'
-    });
+    res.json({success: true,message: 'Password reset successfully'});
 
   } catch (error) {
     console.error('Reset password error:', error);
@@ -749,6 +722,7 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+
 //about page
 const about = async (req, res) => {
   try {
@@ -770,6 +744,7 @@ const contact = async (req, res) => {
     res.status(500).render('error', { message: 'Internal server error' });
   }
 };
+
 //Contact page submit
 const submitContact = async (req, res) => {
   try {

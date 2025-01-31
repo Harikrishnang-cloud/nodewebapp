@@ -1,5 +1,13 @@
 <%-include("../../views/partials/user/header")%>
+    <style>
+      .book-card{
+        align-self: st;
+      }
 
+      .item{
+        height: 9rem;
+      }
+    </style>
     <section id="limited-offer" class="padding-large"
       style="background-image: url(images/banner-image-bg-1.jpg); background-size: cover; background-repeat: no-repeat; background-position: center; height: 800px;">
       <div class="container">
@@ -59,15 +67,15 @@
           <div class="swiper-wrapper">
             <!-- books -->
              <% for(let i = 0; i < book.length; i++){ %>
-            <div class="swiper-slide">
+            <div class="swiper-slide book-card">
               <div class="card position-relative p-4 border rounded-3">
                 <div class="position-absolute">
                   <p class="bg-primary py-1 px-3 fs-6 text-white rounded-2"><%= book[i].totalDiscount%>%</p>
                 </div>
                 <a href="/productDetails/?id=<%=book[i]._id%>"><img src="uploads/<%= book[i].productImage[0] %>" class="img-fluid shadow-sm" alt="product item"></a>
                 <h6 class="mt-4 mb-0 fw-bold"><a href="index.html"><%= book[i].productName%></a></h6> 
-                <div class="review-content d-flex">
-                  <p class="my-2 me-2 fs-6 text-black-50"><%= book[i].description %></p>
+                <div class="review-content">
+
 
                   <div class="rating text-warning d-flex align-items-center">
                     <svg class="star star-fill">
@@ -86,6 +94,9 @@
                       <use xlink:href="#star-fill"></use>
                     </svg>
                   </div>
+                  <div class="row">
+                    <p class="my-2 me-2 fs-6 text-black-50 text-truncate"><%= book[i].description %></p>
+                  </div> 
                 </div>
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<strike><%= book[i].regularPrice %></strike></span>
                 <span class="price text-primary fw-bold mb-2 fs-5">₹<%= book[i].finalPrice %></span>

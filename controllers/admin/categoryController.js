@@ -47,7 +47,7 @@ const addCategory = async (req, res) => {
   } catch (error) {
       return res.status(500).json({ error: "Internal Server Error" });
   }
-  };        
+};        
 
 //editCategory
 const editCategory = async(req,res)=>{

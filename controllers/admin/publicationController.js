@@ -38,7 +38,6 @@ const updatePublication = async(req,res)=>{
     console.log("hi");
     
     try {
-       
         await publication.findByIdAndUpdate(req.params.id, req.body, { new: true })
         res.status(202).json({ 
             publication: updatePublication,message: "Publication updated successfully" 
@@ -52,15 +51,10 @@ const updatePublication = async(req,res)=>{
 //edit-Publication page
 const editPublication = async(req,res)=>{
     try {
-      publication.findByIdAndUpdate(req.params.id,
-            { 
-                name: req.body.name,
-                isListed: req.body.isListed === "true" 
-            },{ new: true }).then((data)=>
-                {
+      publication.findByIdAndUpdate(req.params.id,{name: req.body.name, isListed: req.body.isListed === "true" },
+        { new: true }).then((data)=>{
                 res.render("editPublication",{publication:data})//promise
             })
-          
     } catch (err) {
         res.status(400).json({error:err.message})
     }
@@ -71,7 +65,7 @@ const postEditPublication = async(req,res)=>{
         let data = req.body;
         console.log(data);
         
-        let pub = await publication.findById(req.params.id);
+        let pub = await publication.findById(req.params.id)
         pub.name = data.name;
         pub.isListed = data.isListed
         await pub.save();

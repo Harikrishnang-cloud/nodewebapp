@@ -309,19 +309,16 @@ const updateProduct = async (req, res) => {
             productImage: updatedImages 
         };
 
-        //quantity is not negative
         if (updatedData.Quantity < 0) {
             return res.status(400).json({ success: false, message: "Product quantity is not negative"});
         }
 
         console.log('Database ill save aayi:', updatedData);
 
-        // Update the product in the database
+        
         const updatedProduct = await Product.findByIdAndUpdate(
             productId, 
-            updatedData, 
-            { new: true }
-        ).populate('category').populate('publication');
+            updatedData, { new: true }).populate('category').populate('publication');
 
         if (!updatedProduct) {
             return res.status(404).json({ success: false, message: "Product not found" });

@@ -33,7 +33,7 @@
         const total = Date.parse(endtime) - Date.parse(new Date());
         const seconds = Math.floor((total / 1000) % 60);
         const minutes = Math.floor((total / 1000 / 60) % 60);
-        const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+        const hours = Math.floor((total / 1000 / 60 / 60) % 24);
         const days = Math.floor(total / (1000 * 60 * 60 * 24));
         return {
           total,
@@ -66,8 +66,10 @@
       }
   
       $('#countdown-clock').each(function(){
-        const deadline = new Date(Date.parse(new Date()) + 28 * 24 * 60 * 60 * 1000);
-        initializeClock('countdown-clock', deadline);
+        // Get the end of current month
+        const now = new Date();
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        initializeClock('countdown-clock', lastDayOfMonth);
       });
     }
 
