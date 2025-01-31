@@ -325,11 +325,11 @@ const updateProduct = async (req, res) => {
         }
 
         console.log('Updated Product in DB:', updatedProduct);
-        res.redirect("/admin/productview");
+        res.status(200).json({ success: true, message: "Product updated successfully", product: updatedProduct });
         
     } catch (error) {
         console.error('Error updating product:', error.stack);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        res.status(500).json({ success: false, message: error.message || "Internal Server Error" });
     }
 };  
 

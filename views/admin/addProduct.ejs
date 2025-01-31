@@ -209,15 +209,16 @@
 }
 
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 <body>
 <%- include("../../views/partials/admin/header") %>
-
 <section class="content-main">
     <div class="content-header">
         <h1>Add New Product</h1>
     </div>
-    <form method="post" action="/admin/addProduct" enctype="multipart/form-data">
+    <form method="post" action="/admin/addProduct" enctype="multipart/form-data" id="addProductForm">
         <div class="form-container">
             <!-- Left Section -->
             <div class="left-section">
@@ -241,6 +242,7 @@
                     <div class="form-group">
                         <label for="description">Description</label>
                         <textarea id="description" name="description" placeholder="Enter product description"></textarea>
+                        <div id="descriptionError" class="text-danger"></div>
                     </div>
                 </div>
 
@@ -255,6 +257,7 @@
                                 <option value="<%= cat[i].id %>"><%= cat[i].name %></option>
                             <% } %>
                         </select>
+                        <div id="categoryError" class="text-danger"></div>
                     </div>
                 </div>
                 
@@ -264,6 +267,7 @@
                     <div class="form-group">
                         <label for="stock">Available Quantity</label>
                         <input type="text" id="stock" name="Quantity" placeholder="Enter stock quantity" required>
+                        <div id="stockError" class="text-danger"></div>
                     </div>
                 </div>
             </div>
@@ -288,29 +292,32 @@
                     </div>
                 </div>
                 <!-- Publication Listing Section -->
-            <div class="card">
-                <h3>Publication</h3>
-                <div class="form-group">
-                    <label for="publication">Select Publication</label>
-                    <select id="publication" name="publication" required>
-                        <option value="">Select a Publication</option>
-                        <% for (let i = 0; i < pub.length; i++) { %>
-                            <option value="<%= pub[i].id %>"><%= pub[i].name %></option>
-                        <% } %>
-                    </select>
+                <div class="card">
+                    <h3>Publication</h3>
+                    <div class="form-group">
+                        <label for="publication">Select Publication</label>
+                        <select id="publication" name="publication" required>
+                            <option value="">Select a Publication</option>
+                            <% for (let i = 0; i < pub.length; i++) { %>
+                                <option value="<%= pub[i].id %>"><%= pub[i].name %></option>
+                            <% } %>
+                        </select>
+                        <div id="publicationError" class="text-danger"></div>
+                    </div>
                 </div>
-            </div>
                 
                 <!-- Pricing Section -->
                 <div class="card">
                     <h3>Pricing</h3>
                     <div class="form-group">
                         <label for="regularPrice">Regular Price</label>
-                        <input type="text" id="regularPrice" name="regularPrice" placeholder="Enter regular price" required>
+                        <input type="number" id="regularPrice" name="regularPrice" placeholder="Enter regular price" required min="0" step="0.01">
+                        <div id="regularPriceError" class="text-danger"></div>
                     </div>
                     <div class="form-group">
-                        <label for="salePrice">Sale Price</label>
-                        <input type="text" id="salePrice" name="salePrice" placeholder="Enter sale price">
+                        <label for="salePrice">Sale Price (Optional)</label>
+                        <input type="number" id="salePrice" name="salePrice" placeholder="Enter sale price" min="0" step="0.01">
+                        <div id="salePriceError" class="text-danger"></div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -410,22 +417,13 @@
     // Error message elements
     const errorElements = {
         productName: document.getElementById('productNameError'),
-        description: document.createElement('div'),
-        category: document.createElement('div'),
-        stock: document.createElement('div'),
-        publication: document.createElement('div'),
-        regularPrice: document.createElement('div'),
-        salePrice: document.createElement('div')
+        description: document.getElementById('descriptionError'),
+        category: document.getElementById('categoryError'),
+        stock: document.getElementById('stockError'),
+        publication: document.getElementById('publicationError'),
+        regularPrice: document.getElementById('regularPriceError'),
+        salePrice: document.getElementById('salePriceError')
     };
-
-    // Add error elements to the DOM
-    Object.keys(errorElements).forEach(key => {
-        if (key !== 'productName') { // productName error div already exists
-            errorElements[key].style.color = 'red';
-            errorElements[key].style.fontSize = '12px';
-            document.getElementById(key).parentElement.appendChild(errorElements[key]);
-        }
-    });
 
     // Validation rules
     const validations = {
@@ -517,7 +515,12 @@
         if (field.id === 'salePrice' && value) {
             const regularPriceValue = Number(regularPrice.value);
             const salePriceValue = Number(value);
-            if (salePriceValue >= regularPriceValue) {
+            
+            if (salePriceValue <= 0) {
+                errorElement.textContent = 'Sale price must be greater than 0';
+                field.style.borderColor = 'red';
+                return false;
+            } else if (salePriceValue >= regularPriceValue) {
                 errorElement.textContent = 'Sale price must be less than regular price';
                 field.style.borderColor = 'red';
                 return false;
@@ -582,25 +585,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const productNameInput = document.querySelector('input[name="productName"]');
     
     productNameInput.addEventListener('blur', async function() {
-        const productName = this.value.trim();
-        if (productName) {
-            try {
-                const response = await fetch(`/admin/check-product-name?name=${encodeURIComponent(productName)}`);
-                const data = await response.json();
-                
-                if (data.exists) {
-                    Swal.fire({
-                        title: 'Product Name Exists',
-                        text: 'This product name already exists. Please choose a different name.',
-                        icon: 'warning',
-                        confirmButtonText: 'OK'
-                    })
-                    this.value = '';
-                    this.focus();
-                }
-            } catch (error) {
-                console.error('Error checking product name:', error);
+        const value = this.value.trim();
+        const errorElement = document.getElementById('productNameError');
+        
+        if (value.length < 3) {
+            errorElement.textContent = 'Product name must be at least 3 characters long';
+            return;
+        }
+        
+        if (value.length > 50) {
+            errorElement.textContent = 'Product name cannot exceed 50 characters';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/admin/check-product-name?name=${encodeURIComponent(value)}`);
+            const data = await response.json();
+            
+            if (data.exists) {
+                errorElement.textContent = 'This product name already exists';
+            } else {
+                errorElement.textContent = '';
             }
+        } catch (error) {
+            console.error('Error checking product name:', error);
         }
     });
 
@@ -628,6 +636,235 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addProductForm');
+    const productNameInput = document.querySelector('input[name="productName"]');
+    
+    // Form submission handler
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please check all fields and try again',
+                confirmButtonColor: '#a42550'
+            });
+            return;
+        }
+
+        // Show loading state
+        const loadingAlert = Swal.fire({
+            title: 'Adding Product',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            // Create FormData object
+            const formData = new FormData(this);
+            
+            // Submit the form using fetch
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            console.log('Server response:', result);
+
+            // Close loading alert
+            loadingAlert.close();
+
+            if (result.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Product added successfully',
+                    confirmButtonColor: '#4caf50'
+                });
+                window.location.href = '/admin/productview';
+            } else {
+                throw new Error(result.message || 'Failed to add product');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            loadingAlert.close();
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Something went wrong. Please try again.',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    });
+
+    function validateForm() {
+        let isValid = true;
+        
+        // Clear all previous errors
+        clearAllErrors();
+
+        // Get form values
+        const productName = document.getElementById('productName').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const category = document.getElementById('category').value;
+        const publication = document.getElementById('publication').value;
+        const stock = document.getElementById('stock').value;
+        const regularPrice = document.getElementById('regularPrice').value;
+        const salePrice = document.getElementById('salePrice').value;
+
+        // Validate product name
+        if (!productName || productName.length < 3 || productName.length > 50) {
+            showError('productNameError', 'Product name must be between 3 and 50 characters');
+            isValid = false;
+        }
+
+        // Validate description
+        if (!description || description.length < 10) {
+            showError('descriptionError', 'Description must be at least 10 characters long');
+            isValid = false;
+        }
+
+        // Validate category
+        if (!category) {
+            showError('categoryError', 'Please select a category');
+            isValid = false;
+        }
+
+        // Validate publication
+        if (!publication) {
+            showError('publicationError', 'Please select a publication');
+            isValid = false;
+        }
+
+        // Validate stock
+        if (!stock || isNaN(stock) || parseInt(stock) < 0) {
+            showError('stockError', 'Stock quantity must be 0 or greater');
+            isValid = false;
+        }
+
+        // Validate regular price
+        if (!regularPrice || isNaN(regularPrice) || parseFloat(regularPrice) <= 0) {
+            showError('regularPriceError', 'Regular price must be greater than 0');
+            isValid = false;
+        }
+
+        // Validate sale price if provided
+        if (salePrice && !isNaN(salePrice)) {
+            const saleValue = parseFloat(salePrice);
+            const regularValue = parseFloat(regularPrice);
+            
+            if (saleValue <= 0) {
+                showError('salePriceError', 'Sale price must be greater than 0');
+                isValid = false;
+            } else if (saleValue >= regularValue) {
+                showError('salePriceError', 'Sale price must be less than regular price');
+                isValid = false;
+            }
+        }
+
+        // Validate at least one image is selected
+        const imageInputs = document.querySelectorAll('input[type="file"]');
+        let hasImage = false;
+        imageInputs.forEach(input => {
+            if (input.files && input.files.length > 0) hasImage = true;
+        });
+
+        if (!hasImage) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Image Required',
+                text: 'Please add at least one product image',
+                confirmButtonColor: '#dc3545'
+            });
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.color = '#dc3545';
+            errorElement.style.fontSize = '12px';
+            errorElement.style.marginTop = '5px';
+        }
+    }
+
+    function clearAllErrors() {
+        const errorElements = document.querySelectorAll('[id$="Error"]');
+        errorElements.forEach(element => {
+            element.textContent = '';
+        });
+    }
+
+    // Real-time product name validation
+    productNameInput.addEventListener('input', async function() {
+        const value = this.value.trim();
+        const errorElement = document.getElementById('productNameError');
+        
+        if (value.length < 3) {
+            errorElement.textContent = 'Product name must be at least 3 characters long';
+            return;
+        }
+        
+        if (value.length > 50) {
+            errorElement.textContent = 'Product name cannot exceed 50 characters';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/admin/checkProductName?name=${encodeURIComponent(value)}`);
+            const data = await response.json();
+            
+            if (data.exists) {
+                errorElement.textContent = 'This product name already exists';
+            } else {
+                errorElement.textContent = '';
+            }
+        } catch (error) {
+            console.error('Error checking product name:', error);
+        }
+    });
+
+    // Image preview and deletion
+    function handleDelete(index) {
+        Swal.fire({
+            title: 'Remove Image?',
+            text: 'Are you sure you want to remove this image?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, remove it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const previewContainer = document.getElementById(`previewContainer${index}`);
+                const imageInput = document.getElementById(`imageInput${index}`);
+                
+                previewContainer.innerHTML = '<span>Add Image</span>';
+                imageInput.value = '';
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Removed!',
+                    text: 'The image has been removed.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    }
+});
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

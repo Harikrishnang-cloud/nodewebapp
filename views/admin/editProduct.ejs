@@ -171,7 +171,7 @@
     <div class="container mt-5">
         <h1 class="mb-4">Edit Product</h1>
         <div class="form-container">
-            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data" id="editProductForm" onsubmit="return validateForm()">
+            <form action="/admin/editProduct/<%= product._id %>" method="POST" enctype="multipart/form-data" id="editProductForm">
                 <div class="row">
                     <!-- Left Section -->
                     <div class="col-md-6">
@@ -202,6 +202,7 @@
                                     </option>
                                 <% }); %>
                             </select>
+                            <div class="text-danger" id="categoryError"></div>
                         </div>
 
                         <div class="mb-3">
@@ -224,6 +225,7 @@
                                     </option>
                                 <% } %>
                             </select>
+                            <div class="text-danger" id="publicationError"></div>
                         </div>
 
                         <div class="mb-3">
@@ -258,7 +260,7 @@
                             <div class="img-container" id="img-container-<%= index %>">
                                 <img src="/uploads/<%= image %>" alt="Product Image <%= index + 1 %>" class="img-thumbnail">
                                 <input type="hidden" name="existingImages[]" value="<%= image %>">
-                                <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('<%= index %>', '<%= image %>')">Remove</button>
+                                <button type="button" class="btn btn-remove btn-sm" onclick="removeImage('<%= index %>')">Remove</button>
                             </div>
                         <% }); %>
                         <% for (let i = product.productImage.length; i < 4; i++) { %>
@@ -384,42 +386,180 @@
 
     document.getElementById('cropCancelBtn').addEventListener('click', closeCropperModal);
 
-    function removeImage(index, existingImage) {
-        const container = document.getElementById(`img-container-${index}`);
-        if (existingImage) {
-            // Add hidden input to track removed images
-            const removedInput = document.createElement('input');
-            removedInput.type = 'hidden';
-            removedInput.name = 'removeImages[]';
-            removedInput.value = existingImage;
-            container.appendChild(removedInput);
-        }
-        
-        // Reset the container to "Add Image" state
-        container.innerHTML = `
-            <div class="img-thumbnail add-image" onclick="triggerFileInput('${index}')" style="background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 150px;">
-                <span style="color: #ccc;">Add Image</span>
-            </div>
-            <input type="file" id="fileInput-${index}" name="images" accept="image/*" class="form-control file-input" style="display: none;" onchange="previewImage(this, '${index}')">
-            ${existingImage ? `<input type="hidden" name="removeImages[]" value="${existingImage}">` : ''}
-        `;
+    function removeImage(index) {
+        Swal.fire({
+            title: 'Remove Image?',
+            text: 'Are you sure you want to remove this image?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, remove it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const container = document.getElementById(`img-container-${index}`);
+                if (container) {
+                    container.remove();
+                }
+                // Update hidden input for tracking removed images
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'removedImages[]';
+                input.value = index;
+                document.getElementById('editProductForm').appendChild(input);
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Removed!',
+                    text: 'The image has been removed.',
+                    confirmButtonColor: '#4caf50',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
     }
 
     // Add form submission handler
-    document.getElementById('editProductForm').addEventListener('submit', function(e) {
+    document.getElementById('editProductForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Create FormData object
-        const formData = new FormData(this);
-        
-        // Log form data for debugging
-        for (let pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
+        if (!validateForm()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please check all fields and try again',
+                confirmButtonColor: '#7e3b51'
+            });
+            return;
         }
 
-        // Submit the form
-        this.submit();
+        // Show loading state
+        const loadingAlert = Swal.fire({
+            title: 'Updating Product',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            // Create FormData object
+            const formData = new FormData(this);
+            
+            // Log form data for debugging
+            for (let pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+
+            // Submit the form using fetch
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            console.log('Server response:', result);
+
+            // Close loading alert
+            loadingAlert.close();
+
+            if (result.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message || 'Product updated successfully',
+                    confirmButtonColor: '#4caf50'
+                });
+                window.location.href = '/admin/productview';
+            } else {
+                throw new Error(result.message || 'Failed to update product');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // Close loading alert if it's still open
+            loadingAlert.close();
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Something went wrong. Please try again.',
+                confirmButtonColor: '#dc3545'
+            });
+        }
     });
+
+    function validateForm() {
+        let isValid = true;
+        
+        // Clear all previous errors
+        const errorElements = document.querySelectorAll('.text-danger');
+        errorElements.forEach(element => element.textContent = '');
+        document.querySelectorAll('.error').forEach(element => element.classList.remove('error'));
+
+        // Get form values
+        const productName = document.getElementById('productName').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+        const salePrice = document.getElementById('salePrice').value ? parseFloat(document.getElementById('salePrice').value) : null;
+        const quantity = parseInt(document.getElementById('Quantity').value);
+        const category = document.getElementById('category').value;
+        const publication = document.getElementById('publication').value;
+
+        // Validate product name
+        if (!productName || productName.length < 3 || productName.length > 50) {
+            showError('productNameError', 'Product name must be between 3 and 50 characters');
+            isValid = false;
+        }
+
+        // Validate description
+        if (!description || description.length < 10 || description.length > 1000) {
+            showError('descriptionError', 'Description must be between 10 and 1000 characters');
+            isValid = false;
+        }
+
+        // Validate category
+        if (!category) {
+            showError('categoryError', 'Please select a category');
+            isValid = false;
+        }
+
+        // Validate publication
+        if (!publication) {
+            showError('publicationError', 'Please select a publication');
+            isValid = false;
+        }
+
+        // Validate regular price
+        if (!regularPrice || regularPrice <= 0) {
+            showError('regularPriceError', 'Regular price must be greater than 0');
+            isValid = false;
+        }
+
+        // Validate sale price if provided
+        if (salePrice !== null) {
+            if (salePrice <= 0) {
+                showError('salePriceError', 'Sale price must be greater than 0');
+                isValid = false;
+            }
+            if (salePrice >= regularPrice) {
+                showError('salePriceError', 'Sale price must be less than regular price');
+                isValid = false;
+            }
+        }
+
+        // Validate quantity
+        if (isNaN(quantity) || quantity < 0) {
+            showError('quantityError', 'Quantity must be 0 or greater');
+            isValid = false;
+        }
+
+        return isValid;
+    }
 
     function showError(elementId, message) {
         const errorElement = document.getElementById(elementId);
@@ -435,63 +575,10 @@
         inputElement.classList.remove('error');
     }
 
-    function validateForm() {
-        let isValid = true;
-        // Clear all previous errors
-        const errorElements = document.querySelectorAll('.text-danger');
-        errorElements.forEach(element => element.textContent = '');
-        document.querySelectorAll('.error').forEach(element => element.classList.remove('error'));
-
-        // Get form values
-        const productName = document.getElementById('productName').value.trim();
-        const description = document.getElementById('description').value.trim();
-        const regularPrice = parseFloat(document.getElementById('regularPrice').value);
-        const salePrice = parseFloat(document.getElementById('salePrice').value);
-        const quantity = parseInt(document.getElementById('Quantity').value);
-
-        // Validate product name
-        if (productName.length < 3 || productName.length > 50) {
-            showError('productNameError', 'Product name must be between 3 and 50 characters');
-            isValid = false;
-        }
-
-        // Validate description
-        if (description.length < 10 || description.length > 1000) {
-            showError('descriptionError', 'Description must be between 10 and 1000 characters');
-            isValid = false;
-        }
-
-        // Validate regular price
-        if (regularPrice <= 0) {
-            showError('regularPriceError', 'Regular price must be greater than 0');
-            isValid = false;
-        }
-
-        // Validate sale price if provided
-        if (!isNaN(salePrice)) {
-            if (salePrice <= 0) {
-                showError('salePriceError', 'Sale price must be greater than 0');
-                isValid = false;
-            }
-            if (salePrice >= regularPrice) {
-                showError('salePriceError', 'Sale price must be less than regular price');
-                isValid = false;
-            }
-        }
-
-        // Validate quantity
-        if (quantity < 0) {
-            showError('quantityError', 'Quantity cannot be negative');
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
     // Add event listeners for real-time validation
     document.getElementById('productName').addEventListener('input', function() {
         const value = this.value.trim();
-        if (value.length < 3) {
+        if (!value || value.length < 3) {
             showError('productNameError', 'Product name must be at least 3 characters long');
         } else if (value.length > 50) {
             showError('productNameError', 'Product name cannot exceed 50 characters');
