@@ -98,11 +98,6 @@
       <input type="text" id="offer" placeholder="Enter offer" value="<%=category.offer%>">
     </div> 
   
-    <!-- <div class="form-group">
-      <label for="offerPrice">Offer Price</label>
-      <input type="text" id="offerPrice" placeholder="Enter offer price" value="<%=category.offerPrice%>">
-    </div>  -->
-  
     <div class="save-btn-container">
       <button id="saveCategoryBtn" data-category-id="<%= category._id %>">Save</button>
     </div>
@@ -123,7 +118,6 @@
           name: categoryName,
           description: description,
           offer:offer,
-          // offerPrice:offerPrice,
       };
       console.log("Updated category data:", updatedCategory);
 

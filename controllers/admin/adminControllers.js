@@ -7,11 +7,11 @@ const Order = require('../../models/orderSchema')
 const Publication = require('../../models/publicationSchema')
 
 //page-error controller --->
-const pageerror = async (req, res) => {
+const pageError = async (req, res) => {
     try {
         const errorMessage = req.query.error || 'An error occurred';
         const statusCode = req.query.status || 500;
-        res.status(statusCode).render("admin-error", {error: errorMessage,status: statusCode,layout: 'admin-layout'});
+        res.status(statusCode).render("page-404", {error: errorMessage,status: statusCode,layout: 'admin-layout'});
     } catch (error) {
         console.error('Error in admin error page:', error);
         res.status(500).send('Internal Server Error');
@@ -229,5 +229,5 @@ module.exports = {
     loaddashboard,
     adminLogin,
     logout,
-    pageerror
+    pageError
 }

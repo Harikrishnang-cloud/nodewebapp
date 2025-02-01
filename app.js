@@ -8,6 +8,7 @@ const db = require("./config/db")
 const userRouter = require("./routes/userRouter")
 const adminRouter = require('./routes/adminRouter')
 const authRoutes = require('./routes/authRoutes')
+const adminController = require('./controllers/admin/adminControllers')
 const { checkBlockedStatus } = require('./middlewares/authMiddleware')
 db()
 //Middlewares
@@ -59,12 +60,19 @@ app.use((req, res, next) => {
     checkBlockedStatus(req, res, next);
 });
 
-app.use("/",userRouter);//request handling
+app.use("/",userRouter);
 
 // <---------- Admin parts ---------->
 app.use('/admin',adminRouter)
 app.use('/uploads', express.static(path.join(__dirname, 'controllers/public/uploads')));
 app.use('/auth', authRoutes);
+app.use('*',adminController.pageError)
+app.use('/error',(req,res)=>{
+    throw new Error("This is Error")
+})
+app.use((err,req,res,next)=>{
+    res.redirect(`/admin/pageerror/?error=${err.message}`)
+})
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true })); 

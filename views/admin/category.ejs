@@ -473,7 +473,6 @@ button.save-btn:hover {
                             <td>${data.category.name}</td>
                             <td>${data.category.description}</td>
                             <td>${data.category.offer || "N/A"}</td>
-                            
                             <td class="status">${data.category.isListed ? "In-Stock" : "Out of Stock"}</td>
                             <td>
                                 <button class="${data.category.isListed ? 'unlist-btn' : 'list-btn'}">
@@ -484,9 +483,21 @@ button.save-btn:hover {
                                 <a href="/admin/editCategory/${data.category._id}"  class="edit-btn" data-id="${data.category._id}">Edit</a>
                             </td>
                         </tr>`;
-                    console.log(newRow);
                     
                     categoryTable.innerHTML += newRow;
+
+                    // Clear form inputs
+                    document.getElementById("name").value = "";
+                    document.getElementById("description").value = "";
+                    document.getElementById("offer").value = "";
+
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Category added successfully',
+                        icon: 'success',
+                        confirmButtonColor: '#4caf50'
+                    });
                 } else {
                     Swal.fire({
                         title: 'Error',

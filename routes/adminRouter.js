@@ -15,7 +15,7 @@ const chartController = require("../controllers/admin/chartController")
 const { uploadMiddleware } = require('../middlewares/multer'); 
 
 //admin pages
-router.get("/pageerror",adminController.pageerror)
+router.get("/pageerror",adminController.pageError)
 router.get("/login",adminController.loadLogin)
 router.get("/dashboard",adminAuth,adminController.loaddashboard)
 router.post("/login",adminController.adminLogin)

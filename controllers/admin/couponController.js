@@ -93,10 +93,7 @@ const updateCoupon = async (req, res) => {
 
         // Validate discount amount
         if (discountType === 'percentage' && (discountAmount < 0 || discountAmount > 100)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Percentage discount must be between 0 and 100'
-            });
+            return res.status(400).json({success: false,message: 'Percentage discount must be between 0 and 100'});
         }
 
         if (discountType === 'fixed' && discountAmount <= 0) {

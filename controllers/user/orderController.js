@@ -204,10 +204,7 @@ const placeOrder = async (req, res) => {
         }
     } catch (error) {
         console.error('Error placing order:', error);
-        res.status(500).json({ 
-            success: false,
-            message: 'Failed to place order. Please try again later.'
-        });
+        return res.redirect('/pageNotFound');
     }
 };
 
@@ -226,7 +223,7 @@ const getOrderConfirmation = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching order confirmation:', error);
-        res.status(500).send('Internal Server Error');
+        res.redirect('/pageNotFound');
     }
 };
 
@@ -246,6 +243,10 @@ const getOrders = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
+        if (!orders) {
+            return res.redirect('/pageNotFound');
+        }
+
         res.render('orders', {
             title: 'My Orders',
             orders: orders,
@@ -260,7 +261,7 @@ const getOrders = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).send('Internal Server Error');
+        res.redirect('/pageNotFound');
     }
 };
 
@@ -272,15 +273,24 @@ const cancelOrder = async (req, res) => {
         const order = await Order.findOne({ _id: orderId, userId: userId });
         
         if (!order) {
-            return res.status(404).json({success: false,message: 'Order not found'});
+            return res.redirect('/pageNotFound');
         }
 
         if (order.status === 'Shipped' || order.status === 'Delivered') {
             return res.status(400).json({success: false,message: 'Cannot cancel order that has been shipped or delivered'});
         }
 
-        // Calculate refund amount (total amount including shipping)
+        //refund amount 
         const refundAmount = order.totalAmount;
+
+        // Return products 
+        for (const item of order.items) {
+            const product = await Product.findById(item.product);
+            if (product) {
+                product.Quantity = product.Quantity + item.quantity;
+                await product.save();
+            }
+        }
 
         order.status = 'Cancelled';
         await order.save();
@@ -315,7 +325,7 @@ const cancelOrder = async (req, res) => {
             res.json({success: true,message: 'Order cancelled successfully. Refund has been credited to your wallet.'});
     } catch (error) {
         console.error('Error cancelling order:', error);
-        res.status(500).json({success: false,message: 'Failed to cancel order'});
+        res.redirect('/pageNotFound');
     }
 };
 
@@ -327,7 +337,7 @@ const generateInvoice = async (req, res) => {
             .populate('userId');
 
         if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.redirect('/pageNotFound');
         }
 
         // Create PDF document
@@ -393,7 +403,7 @@ const generateInvoice = async (req, res) => {
 
     } catch (error) {
         console.error('Error generating invoice:', error);
-        res.status(500).json({ message: 'Error generating invoice' });
+        res.redirect('/pageNotFound');
     }
 };
 
