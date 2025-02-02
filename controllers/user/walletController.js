@@ -116,10 +116,9 @@ const getTransactions = async (req, res) => {
         if (!wallet) {
             return res.json({ transactions: [] });
         }
-        
+         
         // Sort transactions by timestamp in descending order
         const transactions = wallet.transactions.sort((a, b) => b.timestamp - a.timestamp);
-        
         res.json({ transactions });
     } catch (error) {
         console.error('Error fetching transactions:', error);

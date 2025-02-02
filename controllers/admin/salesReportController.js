@@ -70,9 +70,9 @@ const getSalesReport = async (req, res) => {
 
         // Calculate totals
         const totalOrders = orders.length;
-        const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-        const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0);
-        const totalCouponDiscount = orders.reduce((sum, order) => sum + (order.couponDiscount || 0), 0);
+        const totalRevenue = orders.reduce((sum, order)=> sum + order.totalAmount, 0);
+        const totalDiscount = orders.reduce((sum, order)=> sum + (order.discount || 0), 0);
+        const totalCouponDiscount = orders.reduce((sum, order)=>sum + (order.Coupon ||0),0)
         const grossAmount = totalRevenue + totalDiscount + totalCouponDiscount;
 
         res.render('salesReport', {
@@ -181,6 +181,7 @@ const downloadSalesReport = async (req, res) => {
 
                 // Add header
                 doc.fontSize(20).text('Sales Report', { align: 'center' });
+                doc.fontSize(17).text('BookLove Online BookStore', { align: 'center' });
                 doc.moveDown();
 
                 // Add summary
@@ -204,7 +205,6 @@ const downloadSalesReport = async (req, res) => {
                     amount: 70,
                     status: 80
                 };
-
                 const totalWidth = Object.values(colWidths).reduce((sum, width) => sum + width, 0);
                 let pageNumber = 1;
 

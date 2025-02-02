@@ -1327,11 +1327,12 @@
                                             showConfirmButton: true,
                                             confirmButtonText: 'Okay'
                                         }).then(() => {
-                                            window.location.href = `/orderConfirmation/${result.orderId}`;
+                                            window.location.replace(`/orderConfirmation/${result.orderId}`);
                                         });
                                     }
                                 } else {
-                                    window.location.href = `/orderConfirmation/${result.orderId}`;
+                                    window.location.replace(`/orderConfirmation/${result.orderId}`);
+            
                                 }
                             } else {
                                 Swal.fire({

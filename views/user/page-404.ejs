@@ -113,6 +113,7 @@
         <div class="button-container">
             <button onclick="goToHomePage()">Back to Homepage</button>
             <button class="secondary-button" onclick="goBack()">Go Back</button>
+            <button onclick="goContact()">Contact support</button>
         </div>
     </div>
 
@@ -120,9 +121,11 @@
         function goToHomePage() {
             window.location.href = "/";
         }
-
         function goBack() {
             window.history.back();
+        }
+        function goContact() {
+            window.location.href = "/contact"
         }
     </script>
 </body>

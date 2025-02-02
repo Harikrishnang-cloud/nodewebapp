@@ -22,8 +22,7 @@ const pageError = async (req, res) => {
 const loadLogin = (req,res)=>{
     if(req.session.admin){
       return res.redirect("/admin/dashboard")
-    }
-    else{
+    }else{
       res.render("adminlogin",{message:null})
     }
 }
@@ -48,7 +47,6 @@ const loaddashboard = async (req, res) => {
         }
       ]);
 // console.log(topProducts)
-
 
       // Fetch top 10 categories
       const topCategories = await Order.aggregate([{ $unwind: "$items" },
@@ -76,8 +74,6 @@ const loaddashboard = async (req, res) => {
         }
       ]);
 // console.log(topCategories)
-
-
 
       // Fetch top 10 publications
       const topPublications = await Order.aggregate([

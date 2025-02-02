@@ -27,7 +27,7 @@ const addPublication = async(req,res)=>{
         console.log("body", req.body)
         let publications = new publication(req.body)
         await publications.save();
-        res.status(201).json({success:true, publication:publications,message:"Publication added Scucessfully"})
+        res.status(201).json({success:true, publication:publications, message:"Publication added Scucessfully"})
     } catch (err) {
         console.log(err)
         res.status(400).json({error:err.message})
@@ -59,7 +59,7 @@ const editPublication = async(req,res)=>{
         res.status(400).json({error:err.message})
     }
 }
-//POST Edit Publication page
+//POST Edit-Publication page
 const postEditPublication = async(req,res)=>{
     try {
         let data = req.body;

@@ -35,6 +35,15 @@
                                                     <%= Math.round(((cart.books[i].product.regularPrice - cart.books[i].product.salePrice) / cart.books[i].product.regularPrice) * 100) %>% Off
                                                 </span>
                                             </div>
+                                            <% if (cart.books[i].product.Quantity <= 0) { %>
+                                                <div class="stock-status out-of-stock">
+                                                    Out of Stock
+                                                </div>
+                                            <% } else if (cart.books[i].product.Quantity <= 5) { %>
+                                                <div class="stock-status low-stock">
+                                                    Low Stock! Only <%= cart.books[i].product.Quantity %> items left
+                                                </div>
+                                            <% } %>
                                         </div>
                                         <div class="quantity-controls">
                                             <button class="qty-btn minus"
@@ -87,7 +96,7 @@
                                 <span>Total</span>
                                 <span class="total-amount">₹<%=cart.totalPrice%></span>
                             </div>
-                            <a class="place-order-btn" href="/placeOrder">Check-Out</a>
+                            <button class="place-order-btn" onclick="checkStockAndProceed()">Check-Out</button>
                         </div>
                         <%}%>
                     </div>
@@ -310,6 +319,29 @@
             margin: 0;
         }
 
+        .stock-status {
+            margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            width: 50%;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .out-of-stock {
+            color: #dc3545;
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .low-stock {
+            color: #f57c00;
+            background-color: #fff3e0;
+            border: 1px solid #ffe0b2;
+        }
+
         @media (max-width: 768px) {
             .cart-container {
                 grid-template-columns: 1fr;
@@ -494,6 +526,29 @@
         }
         calculateitemPriceonload();
         calculateSubtotal();
+
+        function checkStockAndProceed() {
+            const cartItems = document.querySelectorAll('.cart-item');
+            const outOfStockItems = [];
+            
+            cartItems.forEach(item => {
+                const productName = item.querySelector('.item-name').textContent.trim();
+                if (item.querySelector('.out-of-stock')) {
+                    outOfStockItems.push(productName);
+                }
+            });
+            
+            if (outOfStockItems.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Out of Stock Items',
+                    text: `Please remove these out of stock items before proceeding: ${outOfStockItems.join(', ')}`,
+                    confirmButtonText: 'Okay'
+                });
+            } else {
+                window.location.href = '/placeOrder';
+            }
+        }
     </script>
 
     <%- include('../partials/user/footer') %>

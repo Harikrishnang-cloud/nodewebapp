@@ -74,6 +74,11 @@ const placeOrder = async (req, res) => {
                 itemDiscount: itemDiscount
             });
 
+            //if product is in stock
+            if(product.Quantity < item.quantity){
+                return res.status(400).json({success:false, message:"Product out of stock"})
+            }
+
             totalAmount += (product.salePrice * item.quantity);
         }
 
@@ -174,10 +179,7 @@ const placeOrder = async (req, res) => {
                 }
 
                 // Clear the user's cart
-                await Cart.findOneAndUpdate(
-                    { userId: userId },
-                    { $set: { books: [] } }
-                );
+                await Cart.findOneAndUpdate({ userId: userId },{ $set: { books: [] } });
             }
 
             res.status(200).json({

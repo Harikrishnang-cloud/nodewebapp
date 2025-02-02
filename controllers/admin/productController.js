@@ -154,11 +154,9 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        // Toggle the status
         product.status = product.status === "Unblock" ? "Block" : "Unblock";
         await product.save();
 
-        // Send back a clear message
         res.status(200).json({
             message: `Product has been ${product.status === "Block" ? "blocked" : "unblocked"} successfully`,
             status: product.status
@@ -181,11 +179,8 @@ const editProduct = async(req,res)=>{
             return res.status(404).send('Product not found');
         }
 
-        // Ensure productImage is always an array
+        //  productImage is always an array
         product.productImage = product.productImage || [];
-
-        // Log the product images for debugging
-        console.log('Product images before render:', product.productImage);
 
         const categories = await Category.find();
         const publication = await publicationSchema.find({});

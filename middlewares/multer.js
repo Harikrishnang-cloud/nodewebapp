@@ -51,10 +51,9 @@ const uploadMiddleware = (req, res, next) => {
             }
             return res.status(400).send(err.message);
         } else if (err) {
-            // An unknown error occurred
             return res.status(400).send(err.message);
         }
-        // Everything went fine
+        // Everything fine
         next();
     });
 };

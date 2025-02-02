@@ -25,7 +25,7 @@ const categoryInfo = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.redirect("/pageerror");
+    res.redirect("/pageError");
   }
 };
 
@@ -58,7 +58,7 @@ const editCategory = async(req,res)=>{
   } 
   catch (error) { 
     console.log(error)
-    res.redirect("/pageerror")
+    res.redirect("/pageError")
   }
 }        
 
