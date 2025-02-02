@@ -58,6 +58,7 @@
                             </div>
 
                             <div class="action-buttons">
+                                <a href="/order/track/<%= order._id %>" class="btn track-order-btn">Track Order</a>
                                 <a href="/orders" class="btn view-orders-btn">View All Orders</a>
                                 <a href="/user/shop/:page" class="btn continue-shopping-btn">Continue Shopping</a>
                             </div>
@@ -166,37 +167,43 @@
         }
 
         .action-buttons {
-            margin-top: 2rem;
             display: flex;
             justify-content: center;
             gap: 1rem;
+            margin-top: 2rem;
         }
 
         .btn {
-            padding: 0.8rem 1.5rem;
-            border-radius: 6px;
-            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 5px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
 
-        .view-orders-btn {
-            background: #e94560;
+        .track-order-btn {
+            background-color: #17a2b8;
             color: white;
         }
 
-        .view-orders-btn:hover {
-            background: #d83a6f;
+        .track-order-btn:hover {
+            background-color: #138496;
+            transform: translateY(-2px);
+        }
+
+        .view-orders-btn {
+            background-color: #6c757d;
+            color: white;
         }
 
         .continue-shopping-btn {
-            background: #f8f9fa;
-            color: #333;
-            border: 1px solid #dee2e6;
+            background-color: #28a745;
+            color: white;
         }
 
-        .continue-shopping-btn:hover {
-            background: #e9ecef;
+        .btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
     </style>
 <%- include('../partials/user/footer') %>

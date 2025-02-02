@@ -1,4 +1,3 @@
-const { ServerDescriptionChangedEvent } = require('mongodb');
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -41,14 +40,14 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled','Confirmed'],
+        enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
         default: 'Pending'
     },
     deliveryFee: {
         type: Number,
         default: 40
     },
-    discount:{
+    discount: {
         type: Number,
         default: 0
     },
@@ -56,6 +55,27 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    estimatedDeliveryDate: {
+        type: Date,
+        default: function() {
+            const date = new Date();
+            date.setDate(date.getDate() + 5);
+            return date;
+        }
+    },
+    trackingHistory: [{
+        status: {
+            type: String,
+            enum: ['Order Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+            required: true
+        },
+        location: String,
+        timestamp: {
+            type: Date,
+            default: Date.now
+        },
+        description: String
+    }],
     address: {
         fullName: {
             type: String,
@@ -94,11 +114,15 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['Pending', 'Completed', 'PaymentFailed', 'RefundInitiated', 'Refunded','Processing'],
+        enum: ['Pending', 'Completed', 'PaymentFailed', 'RefundInitiated', 'Refunded', 'Processing'],
         default: 'Pending'
     }
 }, {
     timestamps: true
 });
+
+// Add indexes for better query performance
+orderSchema.index({ userId: 1, orderDate: -1 });
+orderSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

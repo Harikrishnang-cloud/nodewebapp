@@ -409,11 +409,96 @@ const generateInvoice = async (req, res) => {
     }
 };
 
+// Track order page
+const trackOrder = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId)
+            .populate('items.product');
+
+        if (!order) {
+            return res.status(404).render('404');
+        }
+
+        // Check if the order belongs to the logged-in user
+        if (order.userId.toString() !== req.session.user._id.toString()) {
+            return res.status(403).render('403');
+        }
+
+        res.render('orderTracking', {
+            order,
+            user: req.session.user
+        });
+    } catch (error) {
+        console.error('Error tracking order:', error);
+        res.status(500).render('500');
+    }
+};
+
+// Get order status API
+const getOrderStatus = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findById(orderId)
+            .select('status trackingHistory estimatedDeliveryDate');
+
+        if (!order) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Order not found' 
+            });
+        }
+
+        res.json({
+            success: true,
+            status: order.status,
+            trackingHistory: order.trackingHistory,
+            estimatedDelivery: order.estimatedDeliveryDate
+        });
+    } catch (error) {
+        console.error('Error fetching order status:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error fetching order status' 
+        });
+    }
+};
+
+// Update tracking status (internal function)
+const updateOrderStatus = async (orderId, status, location = '', description = '') => {
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Update main status
+        order.status = status;
+
+        // Add to tracking history
+        order.trackingHistory.push({
+            status,
+            location,
+            description,
+            timestamp: new Date()
+        });
+
+        await order.save();
+        return true;
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        return false;
+    }
+};
+
 module.exports = {
     getPlaceOrderPage,
     placeOrder,
     getOrderConfirmation,
     getOrders,
     cancelOrder,
-    generateInvoice
+    generateInvoice,
+    trackOrder,
+    updateOrderStatus,
+    getOrderStatus
 };

@@ -36,6 +36,10 @@ router.get('/orders',loginauth.userAuth,orderController.getOrders)
 router.post('/cancelOrder/:orderId',loginauth.userAuth,orderController.cancelOrder)
 router.get('/downloadInvoice/:orderId', loginauth.userAuth, orderController.generateInvoice)
 
+// Order Tracking Routes
+router.get('/order/track/:orderId', loginauth.userAuth, orderController.trackOrder);
+router.get('/api/order/status/:orderId', loginauth.userAuth, orderController.getOrderStatus);
+
 //user pages route
 router.get('/userProfile',loginauth.userAuth,userController.userProfile); 
 router.post('/userProfile',loginauth.userAuth,userController.updateProfile)

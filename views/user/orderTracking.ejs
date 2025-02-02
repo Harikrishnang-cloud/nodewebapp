@@ -1,0 +1,224 @@
+<%- include('../partials/user/header.ejs') %>
+
+<div class="container mt-5 mb-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Order Tracking</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Order Details</h5>
+                    <p><strong>Order ID:</strong> <%= order._id %></p>
+                    <p><strong>Order Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                    <p><strong>Total Amount:</strong> ₹<%= order.totalAmount %></p>
+                    <p><strong>Payment Method:</strong> <%= order.paymentMethod.toUpperCase() %></p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Delivery Details</h5>
+                    <p><strong>Name:</strong> <%= order.address.fullName %></p>
+                    <p><strong>Address:</strong> <%= order.address.street %>, <%= order.address.city %>, <%= order.address.state %></p>
+                    <p><strong>Phone:</strong> <%= order.address.phone %></p>
+                    <p><strong>Expected Delivery:</strong> <%= new Date(order.estimatedDeliveryDate).toLocaleDateString() %></p>
+                </div>
+            </div>
+
+            <div class="tracking-progress">
+                <div class="tracking-steps">
+                    <div class="step <%= order.status === 'Order Placed' || order.status === 'Processing' || order.status === 'Shipped' || order.status === 'Out for Delivery' || order.status === 'Delivered' ? 'active' : '' %>">
+                        <div class="step-icon"><i class="fas fa-box"></i></div>
+                        <div class="step-text">Order Placed</div>
+                    </div>
+                    <div class="step <%= order.status === 'Processing' || order.status === 'Shipped' || order.status === 'Out for Delivery' || order.status === 'Delivered' ? 'active' : '' %>">
+                        <div class="step-icon"><i class="fas fa-cog"></i></div>
+                        <div class="step-text">Processing</div>
+                    </div>
+                    <div class="step <%= order.status === 'Shipped' || order.status === 'Out for Delivery' || order.status === 'Delivered' ? 'active' : '' %>">
+                        <div class="step-icon"><i class="fas fa-shipping-fast"></i></div>
+                        <div class="step-text">Shipped</div>
+                    </div>
+                    
+                    <div class="step <%= order.status === 'Delivered' ? 'active' : '' %>">
+                        <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="step-text">Delivered</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tracking-history mt-4">
+                <h5>Tracking History</h5>
+                <div class="timeline" id="trackingTimeline">
+                    <% order.trackingHistory.sort((a, b) => b.timestamp - a.timestamp).forEach(track => { %>
+                        <div class="timeline-item">
+                            <div class="timeline-badge">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-header"><%= track.status %></h6>
+                                <p class="timeline-date"><%= new Date(track.timestamp).toLocaleString() %></p>
+                                <% if (track.location) { %>
+                                    <p class="timeline-location"><i class="fas fa-map-marker-alt"></i> <%= track.location %></p>
+                                <% } %>
+                                <% if (track.description) { %>
+                                    <p class="timeline-description"><%= track.description %></p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tracking-progress {
+    margin: 40px 0;
+    padding: 0 20px;
+}
+
+.tracking-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.tracking-steps::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 1;
+}
+
+.step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    color: #e0e0e0;
+}
+
+.step.active .step-icon {
+    border-color: #007bff;
+    color: #007bff;
+    background: #fff;
+}
+
+.step-text {
+    font-size: 12px;
+    color: #666;
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding-left: 30px;
+}
+
+.timeline-badge {
+    position: absolute;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 2px solid #007bff;
+    border-radius: 50%;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.timeline-header {
+    margin: 0;
+    color: #007bff;
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.timeline-location {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.timeline-description {
+    margin: 5px 0 0;
+}
+</style>
+
+<script>
+// Function to update tracking status
+async function updateTrackingStatus() {
+    try {
+        const response = await fetch(`/api/order/status/<%= order._id %>`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update tracking timeline
+            const timeline = document.getElementById('trackingTimeline');
+            timeline.innerHTML = data.trackingHistory
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .map(track => `
+                    <div class="timeline-item">
+                        <div class="timeline-badge">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h6 class="timeline-header">${track.status}</h6>
+                            <p class="timeline-date">${new Date(track.timestamp).toLocaleString()}</p>
+                            ${track.location ? `<p class="timeline-location"><i class="fas fa-map-marker-alt"></i> ${track.location}</p>` : ''}
+                            ${track.description ? `<p class="timeline-description">${track.description}</p>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+            // Update progress steps
+            document.querySelectorAll('.step').forEach(step => {
+                const stepText = step.querySelector('.step-text').textContent;
+                if (stepText === data.status || 
+                    (stepText === 'Order Placed' && ['Processing', 'Shipped', 'Delivered'].includes(data.status)) ||
+                    (stepText === 'Processing' && ['Shipped', 'Delivered'].includes(data.status)) ||
+                    (stepText === 'Shipped' && data.status === 'Delivered')) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error updating tracking status:', error);
+    }
+}
+
+// Update status every 30 seconds
+setInterval(updateTrackingStatus, 30000);
+</script>
+
+<%- include('../partials/user/footer.ejs') %>
