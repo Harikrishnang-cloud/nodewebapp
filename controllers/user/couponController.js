@@ -22,6 +22,8 @@ const applyCoupon = async (req, res) => {
     try {
         const { couponCode } = req.body;
         const userId = req.session.user._id;
+        console.log("coupon code:",couponCode)
+        console.log("user name,id:",userId)
 
         // Find the coupon
         const coupon = await Coupon.findOne({
@@ -29,7 +31,7 @@ const applyCoupon = async (req, res) => {
             status: true,
             expiryDate: { $gt: new Date() }
         });
-
+        console.log("coupon name:",coupon)
         if (!coupon) {
             return res.status(400).json({success: false,message: 'Invalid or expired coupon code'});
         }

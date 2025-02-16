@@ -37,14 +37,12 @@
                         <div class="step-icon"><i class="fas fa-shipping-fast"></i></div>
                         <div class="step-text">Shipped</div>
                     </div>
-                    
                     <div class="step <%= order.status === 'Delivered' ? 'active' : '' %>">
                         <div class="step-icon"><i class="fas fa-check-circle"></i></div>
                         <div class="step-text">Delivered</div>
                     </div>
                 </div>
             </div>
-
             <div class="tracking-history mt-4">
                 <h5>Tracking History</h5>
                 <div class="timeline" id="trackingTimeline">
