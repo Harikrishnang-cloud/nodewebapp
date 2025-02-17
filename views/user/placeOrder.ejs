@@ -1226,7 +1226,7 @@
                                                             confirmButtonText: "OK",
                                                             allowOutsideClick: false
                                                         }).then(() => {
-                                                            window.location.href = `/orderConfirmation/${result.orderId}`;
+                                                            window.location.replace(`/orderConfirmation/${result.orderId}`) ;
                                                         });
                                                     } else {
                                                         Swal.fire({

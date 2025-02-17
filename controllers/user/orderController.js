@@ -48,7 +48,7 @@ const placeOrder = async (req, res) => {
         const selectedAddress = user.address[addressIndex];
 
         // Fetch product details and calculate total
-        let totalAmount = 40; // Base delivery fee
+        let totalAmount = 50; // Base delivery fee (40) + packaging fee (10)
         const orderItems = [];
         let totalDiscount = 0;
 
@@ -135,6 +135,7 @@ const placeOrder = async (req, res) => {
             discount: totalDiscount,
             status: paymentMethod === 'cod' ? 'Pending' : 'Processing',
             deliveryFee: 40,
+            packagingFee: 10,
             orderDate: new Date(),
             address: {
                 fullName: selectedAddress.fullName,
@@ -391,9 +392,10 @@ const generateInvoice = async (req, res) => {
             totalAmount += (item.quantity * item.price);
         });
         doc.text("(Shipping Fee: ₹40)");
+        doc.text("(Packaging Fee: ₹10)");
         doc.moveDown();
         // Total
-        doc.fontSize(14).text(`Total Amount: ₹${totalAmount + 40}`, { underline: true });
+        doc.fontSize(14).text(`Total Amount: ₹${totalAmount + 50}`, { underline: true });
         
         // Payment details
         doc.moveDown();
