@@ -48,9 +48,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Check if user is blocked before all routes except login/signup
+
 app.use((req, res, next) => {
-    // Skip check for login, signup, and auth routes
     if (req.path === '/login' || 
         req.path === '/signup' || 
         req.path.startsWith('/auth/') || 

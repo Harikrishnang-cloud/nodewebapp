@@ -983,7 +983,7 @@
                                                         <h3 class="product-title">
                                                             <%= product.productName %>
                                                         </h3>
-                                                        <p class="seller">Seller: <%= product.seller || 'Book Store' %></p>
+                                                        <p class="seller">Seller: <%= product.seller || 'Book-Love' %></p>
                                                     </div>
                                                     <div class="product-info-right">
                                                         <div class="price-line">
@@ -1201,7 +1201,7 @@
                                             key: orderRazorpay.key,
                                             amount: orderRazorpay.order.amount,
                                             currency: "INR",
-                                            name: "Bookstore",
+                                            name: "Book-Love",
                                             description: "Payment for your order",
                                             order_id: orderRazorpay.order.id,
                                             handler: async function (response) {
@@ -1523,9 +1523,6 @@
                 const couponCode = document.getElementById('couponCode');
                 const couponButton = document.getElementById('couponButton');
            
-                
-                
-
                 if (couponCode.value) {
                     Swal.fire({
                         icon: 'error',

@@ -5,7 +5,6 @@
         <main class="main-content">
             <div class="orders-container">
                 <h2 class="orders-title">My Orders</h2>
-                
                 <% if (orders && orders.length > 0) { %>
                     <div class="orders-list">
                         <% orders.forEach(function(order) { %>
@@ -44,7 +43,7 @@
                                             <%= order.address.fullName %><br>
                                             <%= order.address.street %><br>
                                             <%= order.address.city %>, <%= order.address.state %><br>
-                                            <%= order.address.pinCode %><br>
+                                            PinCode: <%= order.address.pinCode %><br>
                                             Phone: <%= order.address.phone %>
                                         </p>
                                     </div>
@@ -562,7 +561,7 @@
                     key: orderRazorpay.key,
                     amount: orderRazorpay.order.amount,
                     currency: "INR",
-                    name: "Book Store",
+                    name: "Book-Love",
                     description: "Retry Payment for Order",
                     order_id: orderRazorpay.order.id,
                     handler: async function (response) {
@@ -672,7 +671,8 @@
                         }).then(() => window.location.reload());
                     }
                 });
-            } else {
+            } 
+            else {
                 throw new Error(orderRazorpay.error || 'Failed to create payment order');
             }
         } catch (error) {

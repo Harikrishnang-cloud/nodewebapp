@@ -33,11 +33,12 @@
                             <div class="shipping-address">
                                 <h3>Shipping Address</h3>
                                 <p>
-                                    <%= order.address.name %><br>
+                                    <%= order.address.fullName %><br>
                                     <%= order.address.street %><br>
-                                    <%= order.address.city %>, <%= order.address.state %><br>
-                                    <%= order.address.pincode %><br>
-                                    Phone: <%= order.address.mobile %>
+                                    <%= order.address.city %>,
+                                     <%= order.address.state %><br>
+                                    PinCode: <%= order.address.pinCode %><br>
+                                    Phone: <%= order.address.phone %>
                                 </p>
                             </div>
 
