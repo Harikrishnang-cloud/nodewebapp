@@ -1180,7 +1180,8 @@
                             body: JSON.stringify({ 
                                 items: orderItems,
                                 addressIndex: selectedAddressIndex,
-                                paymentMethod: selectedPaymentMethod
+                                paymentMethod: selectedPaymentMethod,
+                                couponCode: document.getElementById('couponCode').value
                             })
                         });
 

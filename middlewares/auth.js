@@ -1,6 +1,9 @@
 //user-auth
 const user = require("../models/userSchema")
 const userAuth = (req,res,next)=>{
+    // Check if it's an AJAX request
+    const isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+
     if(req.session.user){// user undo
         user.findById(req.session.user)
         .then(data=>{
@@ -8,15 +11,27 @@ const userAuth = (req,res,next)=>{
                 next()
             }
             else{
-                res.redirect("/login")
+                if (isAjax) {
+                    res.status(401).json({ success: false, message: 'Please login to continue' });
+                } else {
+                    res.redirect("/login")
+                }
             }
         }).catch(error=>{
             console.log("Error in user auth middleware")
-            res.status(500).send("Internal server error")
+            if (isAjax) {
+                res.status(500).json({ success: false, message: 'Internal server error' });
+            } else {
+                res.status(500).send("Internal server error")
+            }
         })
     }
     else{
-        res.redirect("/login")
+        if (isAjax) {
+            res.status(401).json({ success: false, message: 'Please login to continue' });
+        } else {
+            res.redirect("/login")
+        }
     }
 }
 

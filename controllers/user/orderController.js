@@ -4,6 +4,7 @@ const Cart = require('../../models/cartSchema');
 const User = require('../../models/userSchema'); 
 const Wallet = require('../../models/walletSchema');
 const PDFDocument = require('pdfkit');
+const Coupon = require('../../models/couponSchema');
 
 const getPlaceOrderPage = async (req, res) => {
     try {
@@ -12,6 +13,10 @@ const getPlaceOrderPage = async (req, res) => {
         }
 
         const cart = await Cart.findOne({ userId: req.session.user._id }).populate('books.product');
+        console.log("cartlength",cart.books.length)
+        if(cart.books.length===0){
+            return res.redirect('/shop');
+        }
         const cartItems = cart ? cart.books : []
         const user = await User.findById(req.session.user._id);
         const wallet = await Wallet.findOne({ userId: req.session.user._id });
@@ -20,7 +25,7 @@ const getPlaceOrderPage = async (req, res) => {
             return res.redirect('/login'); 
         }
 
-        console.log("User data:", user); 
+        console.log("UserData:", user); 
         
         res.render('placeOrder', { 
             products: cartItems.map(item => ({...item.product.toObject(),quantity: item.quantity})),
@@ -37,14 +42,14 @@ const getPlaceOrderPage = async (req, res) => {
 
 const placeOrder = async (req, res) => {
     try {
-        const { items, addressIndex, paymentMethod } = req.body;
+        const { items, addressIndex, paymentMethod, couponCode } = req.body;
         const userId = req.session.user._id;
         const user = await User.findById(userId);
 
         if (!user || !user.address || !user.address[addressIndex]) {
             return res.status(400).json({ message: 'Invalid address selected' });
         }
-
+        //select cheytha address fetch cheyyunnu
         const selectedAddress = user.address[addressIndex];
 
         // Fetch product details and calculate total
@@ -58,7 +63,7 @@ const placeOrder = async (req, res) => {
                 return res.status(404).json({ error: 'Product not found' });
             }
 
-            // Calculate discount for this item
+            // Calculate product discount
             const itemDiscount = (product.regularPrice - product.salePrice) * item.quantity;
             totalDiscount += itemDiscount;
 
@@ -85,15 +90,17 @@ const placeOrder = async (req, res) => {
         // 1000 nu mukalil aanengil COD not allowed
         if (paymentMethod === 'cod' && totalAmount > 1000) {
             return res.status(400).json({success: false,
-                message: 'COD is not available for orders above ₹1000. Please choose online payment or wallet.'});
+                message: 'COD is not available for orders above ₹1000. Please choose online payment or wallet.'
+            });
         }
 
         console.log("before coupon", totalDiscount)
         // If a coupon is applied, calculate additional discount
         if (req.body.couponCode) {
             const coupon = await Coupon.findOne({ code: req.body.couponCode });
-            if (coupon && coupon.isActive) {
-                const couponDiscount = (totalAmount * coupon.discountPercentage) / 100;
+            console.log("coupon code:", coupon)
+            if (coupon && coupon.status) {
+                const couponDiscount = (totalAmount * coupon.discountAmount) / 100;
                 totalDiscount = totalDiscount + couponDiscount;
                 totalAmount = totalAmount - couponDiscount;
             }
@@ -179,7 +186,7 @@ const placeOrder = async (req, res) => {
                     }       
                 }
 
-                // Clear the user's cart
+                // Clear the user's cart, after placing an order
                 await Cart.findOneAndUpdate({ userId: userId },{ $set: { books: [] } });
             }
 
@@ -361,8 +368,6 @@ const generateInvoice = async (req, res) => {
         doc.fontSize(20).text('Invoice', { align: 'center', underline: true });
         doc.moveDown();
         
-        
-
         // Customer details
         doc.fontSize(12).text(`Customer Name: ${order.userId.fullName}, ${order.userId.phone}`);
         doc.text(`Email: ${order.userId.email}`);
@@ -419,12 +424,12 @@ const trackOrder = async (req, res) => {
             .populate('items.product');
 
         if (!order) {
-            return res.status(404).render('404');
+            return res.status(404).render('404');//Not-Found
         }
 
-        // Check if the order belongs to the logged-in user
+        // order belongs to the logged-in user
         if (order.userId.toString() !== req.session.user._id.toString()) {
-            return res.status(403).render('403');
+            return res.status(403).render('403');//Forbidden
         }
 
         res.render('orderTracking', {
@@ -445,10 +450,7 @@ const getOrderStatus = async (req, res) => {
             .select('status trackingHistory estimatedDeliveryDate');
 
         if (!order) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Order not found' 
-            });
+            return res.status(404).json({ success: false, message: 'Order not found'});
         }
 
         res.json({

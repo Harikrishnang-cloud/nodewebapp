@@ -23,7 +23,6 @@ const getCart = async(req,res)=>{
     } 
     catch (error) {
       console.log(error);
-      
     }
   }
 
@@ -55,7 +54,7 @@ const addToCart = async (req, res) => {
             if(quantity > product.Quantity) {
                 return res.status(400).json({success:false, message:`Only ${product.Quantity} units available`});
             }
-
+            //cart ellengil--->
             const newCart = new Cart({
                 userId:user._id,
                 books:[{product:productId, quantity:quantity}]
@@ -99,7 +98,7 @@ const removeFromCart = async (req, res) => {
         }
         const cart = await Cart.findOne({userId:user._id});
         const productIndex = cart.books.findIndex((book) => book.product.toString() === productId);
-        if (productIndex !== -1) {
+        if (productIndex !== -1) {//--product cart ill undo nn nokkanam-->
             cart.books.splice(productIndex, 1);
             await cart.save();
             return res.status(200).json({success:true, message:"Product removed from cart successfully", cartCount: cart.books.length})

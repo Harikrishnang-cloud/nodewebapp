@@ -9,7 +9,7 @@ const getAvailableCoupons = async (req, res) => {
         
         console.log("coupons VANNU",coupons);
 
-        res.json({success: true,coupons: coupons});
+        res.status(200).json({success: true,coupons: coupons});
 
     } catch (error) {
         console.error('Error fetching coupons:', error);
@@ -23,7 +23,7 @@ const applyCoupon = async (req, res) => {
         const { couponCode } = req.body;
         const userId = req.session.user._id;
         console.log("coupon code:",couponCode)
-        console.log("user name,id:",userId)
+        console.log("userName,id:",userId)
 
         // Find the coupon
         const coupon = await Coupon.findOne({
@@ -48,11 +48,12 @@ const applyCoupon = async (req, res) => {
         // Calculate discount
         let discount = 0;
         if (coupon.discountType === 'percentage') {
+            //percentage aanengil -->
             discount = (req.body.total * coupon.discountAmount) / 100;
         } else {
+            //flat-amount aanengil -->
             discount = coupon.discountAmount;
         }
-
         res.json({success: true,discount: discount,message: 'Coupon applied successfully'});
 
     } catch (error) {

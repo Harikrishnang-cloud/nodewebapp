@@ -15,17 +15,20 @@ const createOrder = async (req, res) => {
       amount: amount * 100, // amount in paise
       currency: "INR",
     };
+    // //after applying the coupon
+    // if(orderData.coupon){
+    //   amount = amount - orderData.coupon.discountAmount;
+    // }
+    // console.log(options);
+    
     const order = await razorpay.orders.create(options);
     console.log("Razorpay order created:", order);
 
-    res.json({
-      success: true,
-      order,
+    res.json({success: true, order,
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
     console.error("Error creating Razorpay order:", error)
-
     res.status(500).json({success: false,error: "Failed to create Razorpay order"});
   }
 };
@@ -69,7 +72,6 @@ const verifyPayment = async (req, res) => {
       });
 
       console.log("Order updated successfully");
-
       return res.json({success: true,message: "Payment verified successfully"})
 
     } else {

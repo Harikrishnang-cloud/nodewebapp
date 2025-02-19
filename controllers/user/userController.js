@@ -348,7 +348,6 @@ const productDetails = async (req, res) => {
 }
 
 //load userProfile
-
 const userProfile = async (req, res) => {
   try {
     console.log(req.session.user)
@@ -513,8 +512,6 @@ const editProfile = async (req, res) => {
     console.log(error)
   }
 }
-
-
 
 //shop page controller
 const getShopPage = async (req, res) => {

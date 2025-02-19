@@ -486,20 +486,37 @@
                     }
                 });
             } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Cannot Add to Cart",
-                    text: data.message || 'Failed to add product to cart',
-                    showConfirmButton: true,
-                    confirmButtonText: 'OK'
-                });
+                if (response.status === 401) {
+                    // User is not logged in
+                    Swal.fire({
+                        icon: "info",
+                        title: "Please Login",
+                        text: "You need to login to add items to cart",
+                        showConfirmButton: true,
+                        confirmButtonText: 'Login',
+                        showCancelButton: true,
+                        cancelButtonText: 'Continue Shopping'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/login';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Cannot Add to Cart",
+                        text: data.message || 'Failed to add product to cart',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK'
+                    });
+                }
             }
         } catch (error) {
             console.error('Error:', error);
             Swal.fire({
                 icon: "error",
                 title: "Error!",
-                text: error.message || 'Something went wrong! Please try again.',
+                text: "Something went wrong. Please try again.",
                 showConfirmButton: true,
                 confirmButtonText: 'OK'
             });
