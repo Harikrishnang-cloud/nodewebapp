@@ -30,9 +30,14 @@ const getOrders = async (req, res) => {
         const limit = 10; 
         const skip = (page - 1) * limit;
 
-        const totalOrders = await Order.countDocuments();
+        // Add filter for return requests
+        const returnFilter = req.query.filter === 'returns' ? {
+            'items.returnStatus': { $in: ['Requested', 'Approved', 'Rejected'] }
+        } : {};
+
+        const totalOrders = await Order.countDocuments(returnFilter);
         const totalPages = Math.ceil(totalOrders / limit);
-        let orders = await Order.find()
+        let orders = await Order.find(returnFilter)
             .populate('userId', 'fullName email')
             .populate('items.product', 'productName images price')
             .sort({ orderDate: -1 })
@@ -48,7 +53,8 @@ const getOrders = async (req, res) => {
             }
         }
 
-        res.render('adminOrders', {orders,
+        res.render('adminOrders', {
+            orders,
             currentPage: page,
             totalPages,
             hasNextPage: page < totalPages,
@@ -56,7 +62,8 @@ const getOrders = async (req, res) => {
             nextPage: page + 1,
             prevPage: page - 1,
             lastPage: totalPages,
-            title: 'Order Management'
+            title: 'Order Management',
+            currentFilter: req.query.filter || 'all'
         });
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -166,10 +173,48 @@ const updateStatus = async (req, res) => {
     }
 }
 
+// Handle return request
+const handleReturnRequest = async (req, res) => {
+    try {
+        const { orderId, itemId, action } = req.body;
+        
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        const item = order.items.find(item => item._id.toString() === itemId);
+        if (!item) {
+            return res.status(404).json({ success: false, message: 'Item not found' });
+        }
+
+        if (item.returnStatus !== 'Requested') {
+            return res.status(400).json({ success: false, message: 'Item is not in return requested state' });
+        }
+
+        if (action === 'approve') {
+            item.returnStatus = 'Approved';
+        } else if (action === 'reject') {
+            item.returnStatus = 'Rejected';
+        } else {
+            return res.status(400).json({ success: false, message: 'Invalid action' });
+        }
+
+        order.markModified('items');
+        await order.save();
+
+        res.json({ success: true, message: `Return request ${action}d successfully` });
+    } catch (error) {
+        console.error('Error handling return request:', error);
+        res.status(500).json({ success: false, message: 'Error handling return request' });
+    }
+};
+
 module.exports = {
     getOrders,
     updateOrderStatus,
     getOrderDetails,
     cancelOrder,
-    updateStatus
+    updateStatus,
+    handleReturnRequest
 };
