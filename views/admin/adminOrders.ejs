@@ -26,7 +26,7 @@
                                 <% if (orders && orders.length > 0) { %>
                                     <% orders.forEach(function(order) { %>
                                         <tr>
-                                            <td><%= order._id %></td>
+                                            <td><%= order.orderId || order._id %></td>
                                             <td>
                                                 <%= order.userId.name %><br>
                                                 <small><%= order.userId.email %></small>
@@ -43,7 +43,7 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <select onchange="updateOrderStatus('<%= order._id %>', this.value)" class="form-select order-status" 
+                                                <select onchange="updateOrderStatus('<%= order.orderId || order._id %>', this.value)" class="form-select order-status" 
                                                         <%= order.status === 'Delivered' || order.status === 'Cancelled' ? 'disabled' : '' %>>
                                                     <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                                                     <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
@@ -54,7 +54,7 @@
                                             </td>
                                             <td>
                                                 <button class="btn btn-primary view-details-btn" 
-                                                    onclick="viewOrderDetails('<%= order._id %>')">Details</button>
+                                                    onclick="viewOrderDetails('<%= order.orderId || order._id %>')">Details</button>
                                             </td>
                                         </tr>
                                     <% }); %>
@@ -272,125 +272,47 @@
             const response = await fetch('/admin/update-order-status', {
                 method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ orderId, status })
             });
 
             const data = await response.json();
-            
             if (data.success) {
+                // Show success message
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Order status updated successfully',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    window.location.reload();
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success'
                 });
             } else {
-                throw new Error(data.message || 'Failed to update order status');
+                throw new Error(data.message);
             }
         } catch (error) {
-            console.error('Error updating order status:', error);
-            // Swal.fire({
-            //     icon: 'error',
-            //     title: 'Error',
-            //     text: error.message || 'Failed to update order status'
-            // });
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message || 'Failed to update order status',
+                icon: 'error'
+            });
         }
     }
 
-    async function viewOrderDetails(orderId) {
-        // Find the order data from the existing orders array
-        const orders = <%- JSON.stringify(orders) %>;
-        const order = orders.find(o => o._id === orderId);
-        
-        if (order) {
-            const modalContent = `
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h6 class="mb-3">Customer Information</h6>
-                        <p class="mb-1"><strong>Name:</strong> ${order.userId.fullName}</p>
-                        <p class="mb-1"><strong>Email:</strong> ${order.userId.email}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="mb-3">Order Information</h6>
-                        <p class="mb-1"><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
-                        <p class="mb-1"><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</p>
-                        <p class="mb-1"><strong>Payment Status:</strong> ${order.paymentStatus}</p>
-                        <p class="mb-1"><strong>Order Status:</strong> 
-                            <span class="badge bg-${
-                                order.status === 'Delivered' ? 'success' : 
-                                order.status === 'Cancelled' ? 'danger' : 
-                                order.status === 'Processing' ? 'warning' : 'info'
-                            }">
-                                ${order.status}
-                            </span>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${order.items.map(item => `
-                                <tr>
-                                    <td>${item.product.productName}</td>
-                                    <td>₹${item.price.toFixed(2)}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>₹${(item.price * item.quantity).toFixed(2)}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
-                                <td><strong>₹${order.totalAmount.toFixed(2)}</strong></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>`;
-
-            document.getElementById('orderDetailsContent').innerHTML = modalContent;
-            document.getElementById('orderDetailsModal').style.display = 'block';
-        }
+    function viewOrderDetails(orderId) {
+        window.location.href = `/admin/order-details/${orderId}`;
     }
 
-    // Initialize DataTable
-    $(document).ready(function() {
-        $('#ordersTable').DataTable({
-            order: [[0, 'desc']], // Sort by first column (Order ID) descending
-            pageLength: 10,
-            responsive: true,
-            dom: 'Bfrtip',
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
-        });
-    });
-
-    // Close modal when clicking the close button or outside the modal
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('orderDetailsModal');
         const closeBtn = document.querySelector('.close-modal');
 
         closeBtn.onclick = function() {
-            modal.style.display = 'none';
+            modal.style.display = "none";
         }
 
         window.onclick = function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
+            if (event.target == modal) {
+                modal.style.display = "none";
             }
         }
     });

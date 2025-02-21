@@ -38,7 +38,10 @@ router.get('/downloadInvoice/:orderId', loginauth.userAuth, orderController.gene
 
 // Order Tracking Routes
 router.get('/order/track/:orderId', loginauth.userAuth, orderController.trackOrder);
-router.get('/api/order/status/:orderId', loginauth.userAuth, orderController.getOrderStatus);
+router.get('/order/status/:orderId', loginauth.userAuth, orderController.getOrderStatus);
+
+// Return request
+router.post('/request-return', loginauth.userAuth, orderController.requestReturn);
 
 //user pages route
 router.get('/userProfile',loginauth.userAuth,userController.userProfile); 

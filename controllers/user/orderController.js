@@ -6,6 +6,28 @@ const Wallet = require('../../models/walletSchema');
 const PDFDocument = require('pdfkit');
 const Coupon = require('../../models/couponSchema');
 
+// Generate 8-character order ID
+const generateOrderId = async () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let orderId;
+    let isUnique = false;
+    
+    while (!isUnique) {
+        orderId = 'BL';
+        
+        for (let i = 0; i < 6; i++) {
+            orderId += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        // Check if this ID already exists
+        const existingOrder = await Order.findOne({ orderId });
+        if (!existingOrder) {
+            isUnique = true;
+        }
+    }
+    
+    return orderId;
+};
+
 const getPlaceOrderPage = async (req, res) => {
     try {
         if (!req.session.user || !req.session.user._id) {
@@ -49,8 +71,15 @@ const placeOrder = async (req, res) => {
         if (!user || !user.address || !user.address[addressIndex]) {
             return res.status(400).json({ message: 'Invalid address selected' });
         }
+
+        // Generate unique order ID
+        const orderId = await generateOrderId();
+
         //select cheytha address fetch cheyyunnu
         const selectedAddress = user.address[addressIndex];
+
+        // Fetch cart for validation
+        const cart = await Cart.findOne({ userId: userId }).populate('books.product');
 
         // Fetch product details and calculate total
         let totalAmount = 50; // Base delivery fee (40) + packaging fee (10)
@@ -136,6 +165,7 @@ const placeOrder = async (req, res) => {
         console.log("discount",totalDiscount)
         // Create new order with mapped address fields
         const newOrder = new Order({
+            orderId: orderId,
             userId: userId,
             items: orderItems,
             totalAmount: totalAmount,
@@ -247,11 +277,20 @@ const getOrders = async (req, res) => {
         const totalOrders = await Order.countDocuments({ userId: userId });
         const totalPages = Math.ceil(totalOrders / limit);
 
-        const orders = await Order.find({ userId: userId })
-            .populate('items.product', 'productName productImage salePrice')
+        // Get orders and ensure they all have order IDs
+        let orders = await Order.find({ userId: userId })
             .sort({ orderDate: -1 })
             .skip(skip)
             .limit(limit);
+
+        // Check if any orders need order IDs
+        for (let order of orders) {
+            if (!order.orderId) {
+                const orderId = await generateOrderId();
+                order.orderId = orderId;
+                await order.save();
+            }
+        }
 
         if (!orders) {
             return res.redirect('/pageNotFound');
@@ -461,14 +500,94 @@ const getOrderStatus = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching order status:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Error fetching order status' 
-        });
+        res.status(500).json({ success: false, message: 'Error fetching order status' });
     }
 };
 
-// Update tracking status (internal function)
+// Request return for an item
+const requestReturn = async (req, res) => {
+    try {
+        const { orderId, itemId, reason } = req.body;
+        const userId = req.session.user._id;
+
+        const order = await Order.findOne({ _id: orderId, userId });
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        // Check if order is delivered
+        if (order.status !== 'Delivered') {
+            return res.status(400).json({ success: false, message: 'Only delivered orders can be returned' });
+        }
+
+        // Find the specific item in the order
+        const item = order.items.find(item => item._id.toString() === itemId);
+        if (!item) {
+            return res.status(404).json({ success: false, message: 'Item not found in order' });
+        }
+
+        // Check if return is eligible
+        const deliveryDate = order.deliveryDate;
+        const returnEligibleDays = 7; // 7 days return policy
+        const returnEligibleUntil = new Date(deliveryDate.getTime() + (returnEligibleDays * 24 * 60 * 60 * 1000));
+        
+        if (!deliveryDate || new Date() > returnEligibleUntil) {
+            return res.status(400).json({ success: false, 
+                message: 'Return period has expired. Items can only be returned within 7 days of delivery' });
+        }
+
+        if (item.returnStatus !== 'Eligible') {
+            return res.status(400).json({ success: false, message: 'This item is not eligible for return' });
+        }
+
+        // Update item return status
+        item.returnStatus = 'Requested';
+        item.returnRequestDate = new Date();
+        item.returnReason = reason;
+
+        // Mark the changes as modified so mongoose knows to save them
+        order.markModified('items');
+        await order.save();
+
+        res.status(200).json({ success: true, message: 'Return request submitted successfully' });
+
+    } catch (error) {
+        console.error('Error requesting return:', error);
+        res.status(500).json({ success: false, message: 'Failed to submit return request' });
+    }
+};
+
+// Mark item as eligible for return when order is delivered
+const markItemsEligibleForReturn = async (orderId) => {
+    try {
+        const order = await Order.findById(orderId).populate('items.product');
+        if (!order) return;
+
+        // Set delivery date and return eligibility
+        order.deliveryDate = new Date();
+        const returnEligibleDays = 7;
+        order.returnEligibleUntil = new Date(order.deliveryDate.getTime() + (returnEligibleDays * 24 * 60 * 60 * 1000));
+
+        // Mark items as eligible for return based on conditions
+        for (const item of order.items) {
+            // Check if the product exists and is returnable
+            if (item.product) {
+                // You can add more conditions here based on your product schema
+                // For example: if the product is not in a special category, damaged, etc.
+                item.returnStatus = 'Eligible';
+            } else {
+                item.returnStatus = 'Not Eligible';
+            }
+        }
+
+        order.markModified('items');
+        await order.save();
+    } catch (error) {
+        console.error('Error marking items eligible for return:', error);
+    }
+};
+
+// Update the existing updateOrderStatus function to handle return eligibility
 const updateOrderStatus = async (orderId, status, location = '', description = '') => {
     try {
         const order = await Order.findById(orderId);
@@ -476,9 +595,9 @@ const updateOrderStatus = async (orderId, status, location = '', description = '
             throw new Error('Order not found');
         }
 
-        // Update main status
+        const previousStatus = order.status;
         order.status = status;
-
+        
         // Add to tracking history
         order.trackingHistory.push({
             status,
@@ -486,6 +605,21 @@ const updateOrderStatus = async (orderId, status, location = '', description = '
             description,
             timestamp: new Date()
         });
+
+        // If order is delivered, mark items as eligible for return
+        if (status === 'Delivered' && previousStatus !== 'Delivered') {
+            await markItemsEligibleForReturn(orderId);
+        }
+
+        // If order status changes from Delivered, make items not eligible for return
+        if (previousStatus === 'Delivered' && status !== 'Delivered') {
+            order.items.forEach(item => {
+                if (item.returnStatus === 'Eligible') {
+                    item.returnStatus = 'Not Eligible';
+                }
+            });
+            order.markModified('items');
+        }
 
         await order.save();
         return true;
@@ -495,6 +629,29 @@ const updateOrderStatus = async (orderId, status, location = '', description = '
     }
 };
 
+// Migrate existing orders to new order ID format
+const migrateExistingOrders = async () => {
+    try {
+        // Get all orders that don't have an orderId
+        const orders = await Order.find({ orderId: { $exists: false } });
+        
+        for (const order of orders) {
+            // Generate new order ID
+            const orderId = await generateOrderId();
+            
+            // Update the order with new ID
+            await Order.findByIdAndUpdate(order._id, { orderId: orderId });
+        }
+        
+        console.log(`Successfully migrated ${orders.length} orders to new ID format`);
+    } catch (error) {
+        console.error('Error migrating orders:', error);
+    }
+};
+
+// Run migration when server starts
+migrateExistingOrders();
+
 module.exports = {
     getPlaceOrderPage,
     placeOrder,
@@ -503,6 +660,8 @@ module.exports = {
     cancelOrder,
     generateInvoice,
     trackOrder,
+    getOrderStatus,
     updateOrderStatus,
-    getOrderStatus
+    requestReturn,
+    markItemsEligibleForReturn
 };

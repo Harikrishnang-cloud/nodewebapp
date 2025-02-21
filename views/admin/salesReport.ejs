@@ -103,7 +103,7 @@
                                 <tbody>
                                     <% orders.forEach(order => { %>
                                         <tr>
-                                            <td><%= order._id %></td>
+                                            <td><%= order.orderId || order._id %></td>
                                             <td><%= moment(order.orderDate).format('YYYY-MM-DD HH:mm') %></td>
                                             <td><%=  order.userId?.fullName  %></td>
                                             <td>₹<%= (order.discount || 0).toFixed(2) %></td>

@@ -1,22 +1,52 @@
 const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
 
+// Generate 8-character order ID (same as user controller)
+const generateOrderId = async () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let orderId;
+    let isUnique = false;
+    
+    while (!isUnique) {
+        orderId = 'BL';
+        
+        for (let i = 0; i < 6; i++) {
+            orderId += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        // Check if this ID already exists
+        const existingOrder = await Order.findOne({ orderId });
+        if (!existingOrder) {
+            isUnique = true;
+        }
+    }
+    
+    return orderId;
+};
+
 //orders with pagination
 const getOrders = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = 8; 
+        const limit = 10; 
         const skip = (page - 1) * limit;
 
         const totalOrders = await Order.countDocuments();
         const totalPages = Math.ceil(totalOrders / limit);
-        const orders = await Order.find()
+        let orders = await Order.find()
             .populate('userId', 'fullName email')
             .populate('items.product', 'productName images price')
             .sort({ orderDate: -1 })
             .skip(skip)
-            .limit(limit)
-            .lean(); 
+            .limit(limit);
+
+        // Ensure all orders have order IDs
+        for (let order of orders) {
+            if (!order.orderId) {
+                const orderId = await generateOrderId();
+                order.orderId = orderId;
+                await order.save();
+            }
+        }
 
         res.render('adminOrders', {orders,
             currentPage: page,
@@ -38,9 +68,12 @@ const getOrders = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
     try {
         const { orderId, status } = req.body;
-        const order = await Order.findById(orderId);
+        
+        // Find order by orderId instead of _id
+        const order = await Order.findOne({ orderId: orderId });
+        
         if (!order) {
-            return res.status(404).json({success: false,message: 'Order is not found'});
+            return res.status(404).json({ message: 'Order not found' });
         }
 
         const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
@@ -53,15 +86,14 @@ const updateOrderStatus = async (req, res) => {
             return res.status(400).json({success: false,message: `Cannot change status of ${order.status.toLowerCase()} order`});
         }
  
-        // update aayath db ill save cheyyanam
+        // Update the order status
         order.status = status;
         await order.save();
 
-        res.json({success: true,message: 'Order status updated successfully'});
-
+        res.json({ success: true, message: 'Order status updated successfully' });
     } catch (error) {
         console.error('Error updating order status:', error);
-        res.status(500).json({success: false,message: 'Failed to update order status'});
+        res.status(500).json({ success: false, message: 'Error updating order status' });
     }
 };
 
@@ -69,7 +101,9 @@ const updateOrderStatus = async (req, res) => {
 const getOrderDetails = async (req, res) => {
     try {
         const orderId = req.params.orderId;
-        const order = await Order.findById(orderId)
+
+        // Find order by orderId instead of _id
+        const order = await Order.findOne({ orderId: orderId })
             .populate('userId', 'fullName email')
             .populate('items.product', 'productName images price');
        console.log("order",order)
@@ -117,7 +151,7 @@ const updateStatus = async (req, res) => {
     try {
         const  { orderId, status } = req.body;
         
-        const update = await Order.updateOne({ _id: orderId }, { $set: { status: status } });
+        const update = await Order.updateOne({ orderId: orderId }, { $set: { status: status } });
         if (update.modifiedCount > 0) {
          return res.status(200).json({ success: true, message: 'Order status updated successfully' });
         }

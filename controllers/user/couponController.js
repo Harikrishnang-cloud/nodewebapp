@@ -1,4 +1,5 @@
 const Coupon = require('../../models/couponSchema');
+const cart = require('../../models/cartSchema')
 
 // Get available coupons
 const getAvailableCoupons = async (req, res) => {
@@ -35,7 +36,7 @@ const applyCoupon = async (req, res) => {
         if (!coupon) {
             return res.status(400).json({success: false,message: 'Invalid or expired coupon code'});
         }
-
+        
         // Check if coupon usage limit is reached
         if (coupon.usedCount >= coupon.usageLimit) {
             return res.status(400).json({success: false,message: 'Coupon usage limit reached'});

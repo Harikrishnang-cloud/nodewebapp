@@ -11,7 +11,7 @@
                             <div class="order-card">
                                 <div class="order-header">
                                     <div class="order-info">
-                                        <h3>Order #<%= order._id %></h3>
+                                        <h3>Order #<%= order.orderId %></h3>
                                         <p class="order-date">Ordered on <%= new Date(order.orderDate).toLocaleDateString() %></p>
                                     </div>
                                     <div class="order-status <%= order.status.toLowerCase() %>">
@@ -72,6 +72,23 @@
                                             <a href="/downloadInvoice/<%= order._id %>" class="btn btn-primary" target="_blank">
                                                 <i class="fas fa-download"></i> Download Invoice
                                             </a>
+                                            
+                                            <% order.items.forEach(function(item) { %>
+                                                <% if (item.returnStatus === 'Eligible') { %>
+                                                    <button onclick="openReturnModal('<%= order._id %>', '<%= item._id %>', '<%= item.productName %>')" 
+                                                            class="btn btn-warning">
+                                                        <i class="fas fa-undo"></i> Return Item
+                                                    </button>
+                                                <% } else if (item.returnStatus === 'Requested') { %>
+                                                    <span class="badge bg-info">Return Requested</span>
+                                                <% } else if (item.returnStatus === 'Approved') { %>
+                                                    <span class="badge bg-success">Return Approved</span>
+                                                <% } else if (item.returnStatus === 'Rejected') { %>
+                                                    <span class="badge bg-danger">Return Rejected</span>
+                                                <% } else if (item.returnStatus === 'Returned') { %>
+                                                    <span class="badge bg-secondary">Returned</span>
+                                                <% } %>
+                                            <% }); %>
                                         <% } %>
                                         <% if (order.paymentStatus === 'PaymentFailed') { %>
                                             <button onclick="retryPayment('<%= order._id %>', <%= order.totalAmount %>)" class="btn btn-warning">
@@ -104,6 +121,39 @@
         </div>
         <div class="modal-body">
             <p>Order cancelled successfully</p>
+        </div>
+    </div>
+</div>
+
+<!-- Return Modal -->
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="returnModalLabel">Request Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Please select a reason for returning <span id="returnItemName"></span>:</p>
+                <select class="form-select mb-3" id="returnReason">
+                    <option value="">Select a reason</option>
+                    <option value="Damaged Product">Damaged Product</option>
+                    <option value="Wrong Item Received">Wrong Item Received</option>
+                    <option value="Not as Described">Not as Described</option>
+                    <option value="Quality Issues">Quality Issues</option>
+                    <option value="Other">Other</option>
+                </select>
+                <div id="otherReasonDiv" style="display: none;">
+                    <textarea class="form-control" id="otherReason" rows="3" placeholder="Please specify your reason"></textarea>
+                </div>
+            </div>
+            <div class="modal-body" id="returnModalBody">
+                <!-- Content will be dynamically added here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReturn()">Submit Return Request</button>
+            </div>
         </div>
     </div>
 </div>
@@ -487,6 +537,23 @@
     .btn-primary i {
         font-size: 1rem;
     }
+
+    .badge {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        margin: 0 5px;
+    }
+    
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+    
+    .btn-warning:hover {
+        background-color: #ffb300;
+        border-color: #ffb300;
+    }
 </style>
 <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -684,6 +751,96 @@
                 showConfirmButton: true
             });
         }
+    }
+
+    let currentOrderId = null;
+    let currentItemId = null;
+
+    function openReturnModal(orderId, itemId, itemName) {
+        currentOrderId = orderId;
+        currentItemId = itemId;
+        document.getElementById('returnItemName').textContent = itemName;
+        
+        // Reset form
+        document.getElementById('returnReason').value = '';
+        document.getElementById('otherReason').value = '';
+        document.getElementById('otherReasonDiv').style.display = 'none';
+        
+        // Show modal
+        const returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
+        returnModal.show();
+    }
+
+    // Show/hide other reason textarea based on selection
+    document.getElementById('returnReason').addEventListener('change', function() {
+        const otherReasonDiv = document.getElementById('otherReasonDiv');
+        otherReasonDiv.style.display = this.value === 'Other' ? 'block' : 'none';
+    });
+
+    async function submitReturn() {
+        const reasonSelect = document.getElementById('returnReason');
+        const otherReasonText = document.getElementById('otherReason');
+        let reason = reasonSelect.value;
+        
+        if (!reason) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please select a return reason'
+            });
+            return;
+        }
+
+        if (reason === 'Other') {
+            if (!otherReasonText.value.trim()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please specify your return reason'
+                });
+                return;
+            }
+            reason = otherReasonText.value.trim();
+        }
+
+        try {
+            const response = await fetch('/request-return', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orderId: currentOrderId,
+                    itemId: currentItemId,
+                    reason: reason
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Return request submitted successfully',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Failed to submit return request');
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to submit return request'
+            });
+        }
+
+        // Close modal
+        const returnModal = bootstrap.Modal.getInstance(document.getElementById('returnModal'));
+        returnModal.hide();
     }
 </script>
 

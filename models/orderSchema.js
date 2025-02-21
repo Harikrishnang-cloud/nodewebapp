@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
+    orderId: {
+        type: String,
+        unique: true,
+        required: true,
+        maxLength: 8,
+        minLength: 8
+    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -32,7 +39,14 @@ const orderSchema = new mongoose.Schema({
         price: {
             type: Number,
             required: true
-        }
+        },
+        returnStatus: {
+            type: String,
+            enum: ['Not Eligible', 'Eligible', 'Requested', 'Approved', 'Rejected', 'Returned'],
+            default: 'Not Eligible'
+        },
+        returnRequestDate: Date,
+        returnReason: String
     }],
     totalAmount: {
         type: Number,
@@ -40,7 +54,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
+        enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Returned'],
         default: 'Pending'
     },
     deliveryFee: {
@@ -50,6 +64,12 @@ const orderSchema = new mongoose.Schema({
     discount: {
         type: Number,
         default: 0
+    },
+    deliveryDate: {
+        type: Date
+    },
+    returnEligibleUntil: {
+        type: Date
     },
     orderDate: {
         type: Date,
