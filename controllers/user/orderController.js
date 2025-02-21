@@ -279,16 +279,47 @@ const getOrders = async (req, res) => {
 
         // Get orders and ensure they all have order IDs
         let orders = await Order.find({ userId: userId })
+            .populate('items.product')  // Populate product information
             .sort({ orderDate: -1 })
             .skip(skip)
             .limit(limit);
 
-        // Check if any orders need order IDs
+        // Process orders to ensure return eligibility is properly set
         for (let order of orders) {
             if (!order.orderId) {
                 const orderId = await generateOrderId();
                 order.orderId = orderId;
                 await order.save();
+            }
+
+            // If order is delivered but items don't have return status set
+            if (order.status === 'Delivered') {
+                let needsSave = false;
+                
+                // Set delivery date if not set
+                if (!order.deliveryDate) {
+                    order.deliveryDate = new Date();
+                    needsSave = true;
+                }
+
+                // Set return eligibility for items
+                if (!order.returnEligibleUntil) {
+                    const returnEligibleDays = 7;
+                    order.returnEligibleUntil = new Date(order.deliveryDate.getTime() + (returnEligibleDays * 24 * 60 * 60 * 1000));
+                    needsSave = true;
+                }
+
+                // Check each item's return status
+                order.items.forEach(item => {
+                    if (!item.returnStatus || item.returnStatus === 'Not Eligible') {
+                        item.returnStatus = 'Eligible';
+                        needsSave = true;
+                    }
+                });
+
+                if (needsSave) {
+                    await order.save();
+                }
             }
         }
 

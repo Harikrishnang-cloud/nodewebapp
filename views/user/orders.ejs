@@ -31,6 +31,49 @@
                                                 <p>Quantity: <%= item.quantity %></p>
                                                 <p>Price: ₹<%= item.price.toFixed(2) %></p>
                                                 <p>Total: ₹<%= (item.price * item.quantity).toFixed(2) %></p>
+                                                
+                                                <% if (order.status === 'Delivered') { %>
+                                                    <div class="return-status-section mt-3">
+                                                        <% if (item.returnStatus === 'Eligible') { %>
+                                                            <div class="return-eligible-info">
+                                                                <% if (order.returnEligibleUntil) { %>
+                                                                    <p class="text-success mb-2">
+                                                                        <i class="fas fa-check-circle"></i> 
+                                                                        Eligible for return until <%= new Date(order.returnEligibleUntil).toLocaleDateString() %>
+                                                                    </p>
+                                                                <% } %>
+                                                                <button onclick="openReturnModal('<%= order._id %>', '<%= item._id %>', '<%= item.productName %>')" 
+                                                                        class="btn return-btn">
+                                                                    <i class="fas fa-undo"></i> Return Item
+                                                                </button>
+                                                            </div>
+                                                        <% } else if (item.returnStatus === 'Requested') { %>
+                                                            <div class="return-status-badge info">
+                                                                <i class="fas fa-clock"></i> Return Requested
+                                                                <small>We'll process your request soon</small>
+                                                            </div>
+                                                        <% } else if (item.returnStatus === 'Approved') { %>
+                                                            <div class="return-status-badge success">
+                                                                <i class="fas fa-check"></i> Return Approved
+                                                                <small>Please check your email for return instructions</small>
+                                                            </div>
+                                                        <% } else if (item.returnStatus === 'Rejected') { %>
+                                                            <div class="return-status-badge danger">
+                                                                <i class="fas fa-times"></i> Return Rejected
+                                                                <small>Contact support for more information</small>
+                                                            </div>
+                                                        <% } else if (item.returnStatus === 'Returned') { %>
+                                                            <div class="return-status-badge secondary">
+                                                                <i class="fas fa-box"></i> Item Returned
+                                                                <small>Return completed</small>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <div class="return-status-badge warning">
+                                                                <i class="fas fa-exclamation-circle"></i> Not Eligible for Return
+                                                            </div>
+                                                        <% } %>
+                                                    </div>
+                                                <% } %>
                                             </div>
                                         </div>
                                     <% }); %>
@@ -72,23 +115,6 @@
                                             <a href="/downloadInvoice/<%= order._id %>" class="btn btn-primary" target="_blank">
                                                 <i class="fas fa-download"></i> Download Invoice
                                             </a>
-                                            
-                                            <% order.items.forEach(function(item) { %>
-                                                <% if (item.returnStatus === 'Eligible') { %>
-                                                    <button onclick="openReturnModal('<%= order._id %>', '<%= item._id %>', '<%= item.productName %>')" 
-                                                            class="btn btn-warning">
-                                                        <i class="fas fa-undo"></i> Return Item
-                                                    </button>
-                                                <% } else if (item.returnStatus === 'Requested') { %>
-                                                    <span class="badge bg-info">Return Requested</span>
-                                                <% } else if (item.returnStatus === 'Approved') { %>
-                                                    <span class="badge bg-success">Return Approved</span>
-                                                <% } else if (item.returnStatus === 'Rejected') { %>
-                                                    <span class="badge bg-danger">Return Rejected</span>
-                                                <% } else if (item.returnStatus === 'Returned') { %>
-                                                    <span class="badge bg-secondary">Returned</span>
-                                                <% } %>
-                                            <% }); %>
                                         <% } %>
                                         <% if (order.paymentStatus === 'PaymentFailed') { %>
                                             <button onclick="retryPayment('<%= order._id %>', <%= order.totalAmount %>)" class="btn btn-warning">
@@ -553,6 +579,88 @@
     .btn-warning:hover {
         background-color: #ffb300;
         border-color: #ffb300;
+    }
+
+    .return-status-section {
+        margin-top: 15px;
+        padding: 10px;
+        border-top: 1px solid #eee;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .return-eligible-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .return-btn {
+        background-color: #e94560;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .return-btn:hover {
+        background-color: #d63384;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .return-status-badge {
+        padding: 10px 15px;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .return-status-badge small {
+        font-size: 0.85em;
+        opacity: 0.9;
+    }
+
+    .return-status-badge.info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .return-status-badge.success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .return-status-badge.danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .return-status-badge.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .return-status-badge.warning {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .return-status-badge i {
+        margin-right: 8px;
+    }
+
+    .text-success {
+        color: #28a745 !important;
     }
 </style>
 <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
