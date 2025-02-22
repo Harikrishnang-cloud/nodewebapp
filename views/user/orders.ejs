@@ -30,7 +30,6 @@
                                                 <p class="description"><%= item.productDescription %></p>
                                                 <p>Quantity: <%= item.quantity %></p>
                                                 <p>Price: ₹<%= item.price.toFixed(2) %></p>
-                                                <p>Total: ₹<%= (item.price * item.quantity).toFixed(2) %></p>
                                                 
                                                 <% if (order.status === 'Delivered') { %>
                                                     <div class="return-status-section mt-3">
@@ -109,10 +108,13 @@
                                                 <%= order.paymentStatus %>
                                             </span>
                                         </div>
-                                        <div class="summary-row total">
-                                            <span>Total Amount:</span>
-                                            <span>₹<%= order.totalAmount.toFixed(2) %></span>
-                                        </div>
+                                    </div>
+                                    <div class="order-total">
+                                        <p class="mb-1"><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
+                                        <% if (order.discount) { %>
+                                            <p class="mb-1"><strong>Discount:</strong> -₹<%= order.discount.toFixed(2) %></p>
+                                            <p class="mb-1"><strong>Final Amount:</strong> ₹<%= (order.totalAmount - order.discount).toFixed(2) %></p>
+                                        <% } %>
                                     </div>
                                     <div class="order-actions">
                                         <% if (order.status === 'Delivered') { %>
@@ -305,12 +307,26 @@
     }
 
     .order-footer {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
         border-top: 1px solid #eee;
+    }
+
+    .order-total {
+        text-align: right;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .order-total p {
+        margin: 0.25rem 0;
+        font-size: 1rem;
+    }
+
+    .order-total p:last-child {
+        font-size: 1.1rem;
+        color: #e94560;
     }
 
     .delivery-address h4, .order-summary h4 {

@@ -50,7 +50,6 @@
                                     <th>Product</th>
                                     <th>Price</th>
                                     <th>Quantity</th>
-                                    <th>Total</th>
                                     <th>Return Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -61,7 +60,6 @@
                                     <td><%= item.productName %></td>
                                     <td>₹<%= item.price.toFixed(2) %></td>
                                     <td><%= item.quantity %></td>
-                                    <td>₹<%= (item.price * item.quantity).toFixed(2) %></td>
                                     <td>
                                         <% if (item.returnStatus !== 'Not Eligible') { %>
                                             <span class="badge bg-<%= 
@@ -96,42 +94,24 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td colspan="2" class="text-end"><strong>Subtotal:</strong></td>
                                     <td>₹<%= order.totalAmount.toFixed(2) %></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="2"></td>
                                 </tr>
                                 <% if (order.discount) { %>
                                 <tr>
-                                    <td colspan="3" class="text-end"><strong>Discount:</strong></td>
+                                    <td colspan="2" class="text-end"><strong>Discount:</strong></td>
                                     <td>-₹<%= order.discount.toFixed(2) %></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="2"></td>
                                 </tr>
                                 <% } %>
                                 <tr>
-                                    <td colspan="3" class="text-end"><strong>Grand Total:</strong></td>
+                                    <td colspan="2" class="text-end"><strong>Grand Total:</strong></td>
                                     <td><strong>₹<%= (order.totalAmount - (order.discount || 0)).toFixed(2) %></strong></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="2"></td>
                                 </tr>
                             </tfoot>
                         </table>
-                    </div>
-
-                    <div class="mt-4">
-                        <h6>Update Order Status</h6>
-                        <form id="updateStatusForm" action="/admin/update-order-status" method="POST">
-                            <input type="hidden" name="orderId" value="<%= order.orderId || order._id %>">
-                            <select name="status" class="form-select" style="max-width: 200px;">
-                                <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                            </select>
-                            <button type="submit" class="btn btn-primary">Update Status</button>
-                        </form>
                     </div>
                 </div>
             </div>

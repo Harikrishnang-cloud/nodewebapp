@@ -108,44 +108,60 @@
 
                     <!-- Pagination -->
                     <% if (orders && orders.length > 0) { %>
-                        <div class="pagination justify-content-center mt-4">
-                            <% if (hasPrevPage) { %>
-                                <a href="/admin/orders?page=<%= prevPage %>&filter=<%= currentFilter %>" class="page-link">&laquo;</a>
-                            <% } %>
-
-                            <% 
-                            let startPage = Math.max(1, currentPage - 1);
-                            let endPage = Math.min(totalPages, startPage + 2);
-                            if (endPage - startPage < 2) {
-                                startPage = Math.max(1, endPage - 2);
-                            }
-                            %>
-
-                            <% if (startPage > 1) { %>
-                                <a href="/admin/orders?page=1&filter=<%= currentFilter %>" class="page-link">1</a>
-                                <% if (startPage > 2) { %>
-                                    <span class="page-link dots">...</span>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mt-4">
+                                <% if (hasPrevPage) { %>
+                                    <li class="page-item">
+                                        <a href="/admin/orders?page=<%= prevPage %>&filter=<%= currentFilter %>" class="page-link">&laquo; Previous</a>
+                                    </li>
                                 <% } %>
-                            <% } %>
 
-                            <% for(let i = startPage; i <= endPage; i++) { %>
-                                <a href="/admin/orders?page=<%= i %>&filter=<%= currentFilter %>" 
-                                   class="page-link <%= currentPage === i ? 'active' : '' %>">
-                                    <%= i %>
-                                </a>
-                            <% } %>
+                                <% 
+                                let startPage = Math.max(1, currentPage - 1);
+                                let endPage = Math.min(totalPages, startPage + 2);
+                                if (endPage - startPage < 2) {
+                                    startPage = Math.max(1, endPage - 2);
+                                }
+                                %>
 
-                            <% if (endPage < totalPages) { %>
-                                <% if (endPage < totalPages - 1) { %>
-                                    <span class="page-link dots">...</span>
+                                <% if (startPage > 1) { %>
+                                    <li class="page-item">
+                                        <a href="/admin/orders?page=1&filter=<%= currentFilter %>" class="page-link">1</a>
+                                    </li>
+                                    <% if (startPage > 2) { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    <% } %>
                                 <% } %>
-                                <a href="/admin/orders?page=<%= totalPages %>&filter=<%= currentFilter %>" class="page-link"><%= totalPages %></a>
-                            <% } %>
 
-                            <% if (hasNextPage) { %>
-                                <a href="/admin/orders?page=<%= nextPage %>&filter=<%= currentFilter %>" class="page-link">&raquo;</a>
-                            <% } %>
-                        </div>
+                                <% for(let i = startPage; i <= endPage; i++) { %>
+                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                        <a href="/admin/orders?page=<%= i %>&filter=<%= currentFilter %>" 
+                                           class="page-link">
+                                            <%= i %>
+                                        </a>
+                                    </li>
+                                <% } %>
+
+                                <% if (endPage < totalPages) { %>
+                                    <% if (endPage < totalPages - 1) { %>
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    <% } %>
+                                    <li class="page-item">
+                                        <a href="/admin/orders?page=<%= totalPages %>&filter=<%= currentFilter %>" class="page-link"><%= totalPages %></a>
+                                    </li>
+                                <% } %>
+
+                                <% if (hasNextPage) { %>
+                                    <li class="page-item">
+                                        <a href="/admin/orders?page=<%= nextPage %>&filter=<%= currentFilter %>" class="page-link">Next &raquo;</a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </nav>
                     <% } %>
                 </div>
             </div>
@@ -213,32 +229,34 @@
 }
 
 .pagination {
-    gap: 5px;
+    margin: 2rem 0;
 }
 
 .page-link {
-    padding: 0.5rem 0.75rem;
-    color: #333;
-    background-color: #fff;
-    border: 1px solid #dee2e6;
+    color: #0d6efd;
+    padding: 0.5rem 1rem;
+    margin: 0 2px;
     border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
-.page-link:hover {
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.page-link:hover:not(.active) {
     background-color: #e9ecef;
-    color: #333;
+    color: #0d6efd;
+    border-color: #dee2e6;
 }
 
-.page-link.active {
-    background-color: #007bff;
-    color: #fff;
-    border-color: #007bff;
-}
-
-.dots {
+.page-item.disabled .page-link {
+    color: #6c757d;
     pointer-events: none;
-    background-color: transparent;
-    border: none;
+    background-color: #fff;
+    border-color: #dee2e6;
 }
 </style>
 
