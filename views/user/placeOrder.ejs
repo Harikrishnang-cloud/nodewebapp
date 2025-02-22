@@ -1060,7 +1060,7 @@
                         <!-- Sale Price -->
                         <div class="price-row">
                             <span class="price-label">Sale Price</span>
-                            <span class="price-value" data-type="sale-price">₹<%= subtotal.toFixed(2) %></span>
+                            <span class="price-value" data-type="sale-price" id="sale-price">₹<%= subtotal.toFixed(2) %></span>
                         </div>
 
                         <!-- Coupons -->
@@ -1523,7 +1523,7 @@
             async function showAvailableCoupons() {
                 const couponCode = document.getElementById('couponCode');
                 const couponButton = document.getElementById('couponButton');
-           
+                const totalA = document.getElementById('sale-price').innerHTML.replace('₹','')
                 if (couponCode.value) {
                     Swal.fire({
                         icon: 'error',
@@ -1534,19 +1534,20 @@
                  return    
                 }
                 try {
-                    const response = await fetch('/getAvailableCoupons');
+                    const response = await fetch(`/getAvailableCoupons?amount=${totalA}`)
                     const data = await response.json();
 
-                    if (data.success) {
+                    if (data.success==true) {
                         const couponList = document.getElementById('couponList');
                         couponList.innerHTML = '';
 
                         if (!data.coupons || data.coupons.length === 0) {
                             couponList.innerHTML = `
                                 <div class="text-center p-4">
-                                    <i class="fas fa-ticket-alt text-muted" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mt-2">No coupons available at the moment</p>
+                                    <i class="fas fa-ticket-alt text-danger" style="font-size: 2rem"></i>
+                                    <p class="text-danger mt-2">No coupons available at the moment</p>
                                 </div>`;
+                                document.getElementById('couponModal').style.display='flex';
                             return;
                         }
 

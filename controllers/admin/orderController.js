@@ -176,7 +176,7 @@ const updateStatus = async (req, res) => {
 // Handle return request
 const handleReturnRequest = async (req, res) => {
     try {
-        const { orderId, itemId, action } = req.body;
+        const { orderId, itemId, action, rejectionReason } = req.body;
         
         const order = await Order.findById(orderId);
         if (!order) {
@@ -195,7 +195,11 @@ const handleReturnRequest = async (req, res) => {
         if (action === 'approve') {
             item.returnStatus = 'Approved';
         } else if (action === 'reject') {
+            if (!rejectionReason) {
+                return res.status(400).json({ success: false, message: 'Rejection reason is required' });
+            }
             item.returnStatus = 'Rejected';
+            item.rejectionReason = rejectionReason;
         } else {
             return res.status(400).json({ success: false, message: 'Invalid action' });
         }

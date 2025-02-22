@@ -60,7 +60,11 @@
                                                         <% } else if (item.returnStatus === 'Rejected') { %>
                                                             <div class="return-status-badge danger">
                                                                 <i class="fas fa-times"></i> Return Rejected
-                                                                <small>Contact support for more information</small>
+                                                                <% if (item.rejectionReason) { %>
+                                                                    <div class="rejection-reason mt-2">
+                                                                        <strong>Reason:</strong> <%= item.rejectionReason %>
+                                                                    </div>
+                                                                <% } %>
                                                             </div>
                                                         <% } else if (item.returnStatus === 'Returned') { %>
                                                             <div class="return-status-badge secondary">
@@ -641,8 +645,12 @@
     }
 
     .return-status-badge.danger {
-        background-color: #dc3545;
-        color: white;
+        background-color: #fde8e8;
+        color: #dc3545;
+        border: 1px solid #fad7d7;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
     }
 
     .return-status-badge.secondary {
@@ -661,6 +669,15 @@
 
     .text-success {
         color: #28a745 !important;
+    }
+
+    .rejection-reason {
+        font-size: 0.9rem;
+        color: #721c24;
+        background-color: #f8d7da;
+        border-radius: 4px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
     }
 </style>
 <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">

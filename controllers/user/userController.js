@@ -523,7 +523,7 @@ const getShopPage = async (req, res) => {
     const totalProducts = await Product.countDocuments({ isListed: true });
     const totalPages = Math.ceil(totalProducts / limit);
 
-    const productsList = await Product.find({ isListed: true })
+    const productsList = await Product.find({ isListed: true})
       .populate('category')
       .skip(skip)
       .limit(limit);

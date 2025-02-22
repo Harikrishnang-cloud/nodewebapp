@@ -24,7 +24,6 @@ const generateOrderId = async () => {
             isUnique = true;
         }
     }
-    
     return orderId;
 };
 
@@ -134,7 +133,6 @@ const placeOrder = async (req, res) => {
                 totalAmount = totalAmount - couponDiscount;
             }
         }
-
 
         // Handle wallet payment
         if (paymentMethod === 'wallet') {
@@ -512,7 +510,7 @@ const trackOrder = async (req, res) => {
     }
 };
 
-// Get order status API
+// Get order status 
 const getOrderStatus = async (req, res) => {
     try {
         const orderId = req.params.orderId;

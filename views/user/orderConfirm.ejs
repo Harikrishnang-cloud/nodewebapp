@@ -53,6 +53,31 @@
                                             <h4><%= item.productName %></h4>
                                             <p>Quantity: <%= item.quantity %></p>
                                             <p>Price: ₹<%= item.price.toFixed(2) %></p>
+                                            <% if (item.returnStatus !== 'Not Eligible') { %>
+                                                <div class="return-info mt-2">
+                                                    <p class="return-status mb-1">
+                                                        <span class="badge bg-<%= 
+                                                            item.returnStatus === 'Approved' ? 'success' :
+                                                            item.returnStatus === 'Rejected' ? 'danger' :
+                                                            item.returnStatus === 'Requested' ? 'warning' : 'secondary'
+                                                        %>">
+                                                            Return Status: <%= item.returnStatus %>
+                                                        </span>
+                                                    </p>
+                                                    <% if (item.returnReason) { %>
+                                                        <p class="return-reason small mb-1">
+                                                            <strong>Your Return Reason:</strong><br>
+                                                            <%= item.returnReason %>
+                                                        </p>
+                                                    <% } %>
+                                                    <% if (item.returnStatus === 'Rejected' && item.rejectionReason) { %>
+                                                        <p class="rejection-reason small mb-1">
+                                                            <strong>Rejection Reason:</strong><br>
+                                                            <%= item.rejectionReason %>
+                                                        </p>
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
                                         </div>
                                     </div>
                                 <% }); %>
@@ -165,6 +190,37 @@
             margin: 0;
             font-size: 0.9rem;
             color: #666;
+        }
+
+        .return-info {
+            border-top: 1px solid #eee;
+            padding-top: 0.5rem;
+        }
+
+        .return-status {
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .return-status, .return-reason, .rejection-reason {
+            margin: 0.25rem 0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .return-reason {
+            background-color: #f8f9fa;
+            border-left: 3px solid #17a2b8;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .rejection-reason {
+            background-color: #fff3f3;
+            border-left: 3px solid #dc3545;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
         }
 
         .action-buttons {

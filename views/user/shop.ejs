@@ -32,7 +32,6 @@
                                 <span>₹5000</span>
                             </div>
                         </div>
-
                         <button class="btn w-100" style="background-color: #a62d43; color: white;" onclick="applyFilters()">
                             Apply Filters
                         </button>
@@ -93,6 +92,9 @@
                                                     </button>
                                                 </div>
                                             </div>
+                                            <!-- <div>
+                                                <%=(((product.regularPrice - product.salePrice)/product.regularPrice)*100).toFixed(2) + '% Offer' %> 
+                                            </div> -->
                                             <div class="d-flex gap-2">
                                                 <button class="btn btn-outline-primary flex-grow-1 add-to-cart-btn" onclick="event.preventDefault(); addToCart('<%= product._id %>')">
                                                     <i class="fas fa-shopping-cart me-1"></i> Add to Cart

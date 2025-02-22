@@ -46,7 +46,8 @@ const orderSchema = new mongoose.Schema({
             default: 'Not Eligible'
         },
         returnRequestDate: Date,
-        returnReason: String
+        returnReason: String,
+        rejectionReason: String
     }],
     totalAmount: {
         type: Number,

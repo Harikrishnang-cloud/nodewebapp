@@ -4,9 +4,11 @@ const cart = require('../../models/cartSchema')
 // Get available coupons
 const getAvailableCoupons = async (req, res) => {
     try {
+        const totalAmount = req.query.amount;
+
         const currentDate = new Date();
         // Find active coupons that haven't expired
-        const coupons = await Coupon.find({status: true,expiryDate: { $gt: currentDate }})
+        const coupons = await Coupon.find({status: true,expiryDate: { $gt: currentDate },minimumPurchase:{$lt:totalAmount}})
         
         console.log("coupons VANNU",coupons);
 
@@ -33,14 +35,16 @@ const applyCoupon = async (req, res) => {
             expiryDate: { $gt: new Date() }
         });
         console.log("coupon name:",coupon)
-        if (!coupon) {
-            return res.status(400).json({success: false,message: 'Invalid or expired coupon code'});
+
+        if(!coupon){
+            return res.status(400).json({success: false,message:'Coupon not found'})
         }
-        
+
         // Check if coupon usage limit is reached
         if (coupon.usedCount >= coupon.usageLimit) {
             return res.status(400).json({success: false,message: 'Coupon usage limit reached'});
         }
+        // console.log("coupon details",coupon)
         
         if(coupon.minimumPurchase > req.body.total){
             return res.status(400).json({success: false,message: 'Minimum purchase amount not met'});
