@@ -351,11 +351,17 @@ const cancelOrder = async (req, res) => {
         const order = await Order.findOne({ _id: orderId, userId: userId });
         
         if (!order) {
-            return res.redirect('/pageNotFound');
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
         }
 
         if (order.status === 'Shipped' || order.status === 'Delivered') {
-            return res.status(400).json({success: false,message: 'Cannot cancel order that has been shipped or delivered'});
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot cancel order that has been shipped or delivered'
+            });
         }
 
         //refund amount 
@@ -400,10 +406,17 @@ const cancelOrder = async (req, res) => {
             order.paymentStatus = 'Refunded';
             await order.save();
         }
-            res.json({success: true,message: 'Order cancelled successfully. Refund has been credited to your wallet.'});
+
+        res.json({
+            success: true,
+            message: `Order cancelled successfully. ${order.paymentMethod === 'online' || order.paymentMethod === 'wallet' ? 'Refund of ₹' + refundAmount.toFixed(2) + ' has been credited to your wallet.' : ''}`
+        });
     } catch (error) {
         console.error('Error cancelling order:', error);
-        res.redirect('/pageNotFound');
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while cancelling the order'
+        });
     }
 };
 

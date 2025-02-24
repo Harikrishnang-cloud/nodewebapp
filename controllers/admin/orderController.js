@@ -1,5 +1,6 @@
 const Order = require('../../models/orderSchema');
 const User = require('../../models/userSchema');
+const Wallet = require('../../models/walletSchema'); // Assuming Wallet model is defined in walletSchema.js
 
 // Generate 8-character order ID (same as user controller)
 const generateOrderId = async () => {
@@ -194,6 +195,80 @@ const handleReturnRequest = async (req, res) => {
 
         if (action === 'approve') {
             item.returnStatus = 'Approved';
+            
+            // Calculate refund amount for this item
+            const refundAmount = item.price * item.quantity;
+
+            // Handle refund based on payment method
+            if (order.paymentMethod === 'wallet') {
+                // Refund directly to wallet
+                const wallet = await Wallet.findOneAndUpdate(
+                    { userId: order.userId },
+                    {
+                        $inc: { balance: refundAmount },
+                        $push: {
+                            transactions: {
+                                type: 'credit',
+                                amount: refundAmount,
+                                description: `Refund for return of order ${order.orderId}`,
+                                orderId: order.orderId
+                            }
+                        }
+                    },
+                    { new: true }
+                );
+                if (!wallet) {
+                    throw new Error('Failed to process wallet refund');
+                }
+                // Set refund info
+                item.refundInfo = {
+                    amount: refundAmount,
+                    method: 'wallet',
+                    message: `₹${refundAmount.toFixed(2)} has been refunded to your wallet`,
+                    timestamp: new Date()
+                };
+            } else if (order.paymentMethod === 'online') {
+                // For online payments, initiate refund process
+                order.paymentStatus = 'RefundInitiated';
+                // Note: Implement actual payment gateway refund logic here
+                // After successful refund from payment gateway:
+                order.paymentStatus = 'Refunded';
+                // Set refund info
+                item.refundInfo = {
+                    amount: refundAmount,
+                    method: 'online',
+                    message: `₹${refundAmount.toFixed(2)} refund has been initiated to your original payment method`,
+                    timestamp: new Date()
+                };
+            } else if (order.paymentMethod === 'cod') {
+                // For COD, add to wallet as store credit
+                const wallet = await Wallet.findOneAndUpdate(
+                    { userId: order.userId },
+                    {
+                        $inc: { balance: refundAmount },
+                        $push: {
+                            transactions: {
+                                type: 'credit',
+                                amount: refundAmount,
+                                description: `Store credit for COD return of order ${order.orderId}`,
+                                orderId: order.orderId
+                            }
+                        }
+                    },
+                    { new: true, upsert: true } // Create wallet if it doesn't exist
+                );
+                if (!wallet) {
+                    throw new Error('Failed to process store credit');
+                }
+                // Set refund info
+                item.refundInfo = {
+                    amount: refundAmount,
+                    method: 'cod',
+                    message: `₹${refundAmount.toFixed(2)} has been added to your wallet as store credit`,
+                    timestamp: new Date()
+                };
+            }
+
         } else if (action === 'reject') {
             if (!rejectionReason) {
                 return res.status(400).json({ success: false, message: 'Rejection reason is required' });
@@ -204,6 +279,7 @@ const handleReturnRequest = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid action' });
         }
 
+        // Save the changes
         order.markModified('items');
         await order.save();
 

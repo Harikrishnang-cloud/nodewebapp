@@ -61,6 +61,9 @@ router.post('/orders/:orderId/cancel', adminAuth, orderController.cancelOrder);
 router.patch('/update-order-status', adminAuth, orderController.updateStatus);
 router.post('/orders/return', adminAuth, orderController.handleReturnRequest);
 
+// Return handling route
+router.post('/handle-return', adminAuth, adminController.handleReturnApproval);
+
 //coupon Management Routes
 router.get("/coupon", adminAuth, couponController.couponInfo);
 router.get("/addCoupon", adminAuth, couponController.getAddCouponPage);

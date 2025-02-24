@@ -16,6 +16,11 @@
                                     </div>
                                     <div class="order-status <%= order.status.toLowerCase() %>">
                                         <%= order.status %>
+                                        <% if (order.status === 'Cancelled' && (order.paymentMethod === 'online' || order.paymentMethod === 'wallet')) { %>
+                                            <div class="refund-info mt-2">
+                                                <i class="fas fa-wallet"></i> ₹<%= order.totalAmount.toFixed(2) %> has been refunded to your wallet
+                                            </div>
+                                        <% } %>
                                     </div>
                                 </div>
 
@@ -54,7 +59,16 @@
                                                         <% } else if (item.returnStatus === 'Approved') { %>
                                                             <div class="return-status-badge success">
                                                                 <i class="fas fa-check"></i> Return Approved
-                                                                <small>Please check your email for return instructions</small>
+                                                                <% if (item.refundInfo && item.refundInfo.message) { %>
+                                                                    <div class="refund-info mt-2">
+                                                                        <i class="fas fa-wallet"></i> <%= item.refundInfo.message %>
+                                                                        <small class="d-block mt-1 text-muted">
+                                                                            Refunded on <%= new Date(item.refundInfo.timestamp).toLocaleDateString() %>
+                                                                        </small>
+                                                                    </div>
+                                                                <% } else { %>
+                                                                    <small>Return approved, <strong>₹<%= order.totalAmount.toFixed(2) %></strong> will be refunded to your wallet</small>
+                                                                <% } %>
                                                             </div>
                                                         <% } else if (item.returnStatus === 'Rejected') { %>
                                                             <div class="return-status-badge danger">
@@ -110,10 +124,10 @@
                                         </div>
                                     </div>
                                     <div class="order-total">
-                                        <p class="mb-1"><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
+                                        <!-- <p class="mb-1"><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p> -->
                                         <% if (order.discount) { %>
-                                            <p class="mb-1"><strong>Discount:</strong> -₹<%= order.discount.toFixed(2) %></p>
-                                            <p class="mb-1"><strong>Final Amount:</strong> ₹<%= (order.totalAmount - order.discount).toFixed(2) %></p>
+                                            <!-- <p class="mb-1"><strong>Discount:</strong> -₹<%= order.discount.toFixed(2) %></p> -->
+                                            <p class="mb-1"><strong>Final Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
                                         <% } %>
                                     </div>
                                     <div class="order-actions">
@@ -262,8 +276,23 @@
     }
 
     .order-status.cancelled {
-        background: #f8d7da;
-        color: #721c24;
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .order-status.cancelled .refund-info {
+        font-size: 0.85rem;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin-top: 4px !important;
+    }
+
+    .order-status.cancelled .refund-info i {
+        margin-right: 4px;
     }
 
     .order-items {
@@ -695,13 +724,46 @@
         padding: 0.5rem;
         margin-top: 0.5rem;
     }
+
+    .refund-info {
+        background-color: #f8fff8;
+        border: 1px solid #d1e7dd;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: #0f5132;
+    }
+
+    .refund-info i {
+        margin-right: 5px;
+        color: #198754;
+    }
+
+    .refund-info small {
+        color: #6c757d !important;
+        font-size: 0.8rem;
+    }
+
+    .refund-alert {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+    }
+
+    .refund-alert i {
+        margin-right: 5px;
+        color: #28a745;
+    }
 </style>
 <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     async function cancelOrder(orderId) {
         const result = await Swal.fire({
-            title: 'Are you sure?',
+            title: 'Cancel Order?',
             text: "Are you sure you want to cancel this order?",
             icon: 'warning',
             showCancelButton: true,
@@ -718,33 +780,36 @@
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
-                    Swal.fire({
+                    await Swal.fire({
+                        title: 'Order Cancelled!',
+                        html: `Your order has been cancelled.<br><br>
+                              <div class="refund-alert">
+                                <i class="fas fa-wallet"></i> 
+                                ${data.message}
+                              </div>`,
                         icon: 'success',
-                        title: 'Order Cancelled',
-                        text: data.message,
-                        showConfirmButton: true
-                    }).then(() => {
-                        window.location.reload();
+                        confirmButtonText: 'OK'
                     });
+                    location.reload();
                 } else {
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
+                        title: 'Error!',
                         text: data.message || 'Failed to cancel order',
-                        showConfirmButton: true
+                        icon: 'error',
+                        confirmButtonText: 'OK'
                     });
                 }
             } catch (error) {
                 console.error('Error:', error);
                 Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while cancelling the order',
                     icon: 'error',
-                    title: 'Error',
-                    text: 'Something went wrong. Please try again.',
-                    showConfirmButton: true
+                    confirmButtonText: 'OK'
                 });
             }
         }

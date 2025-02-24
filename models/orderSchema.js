@@ -47,7 +47,19 @@ const orderSchema = new mongoose.Schema({
         },
         returnRequestDate: Date,
         returnReason: String,
-        rejectionReason: String
+        rejectionReason: String,
+        refundInfo: {
+            amount: Number,
+            method: {
+                type: String,
+                enum: ['wallet', 'online', 'cod']
+            },
+            message: String,
+            timestamp: {
+                type: Date,
+                default: Date.now
+            }
+        }
     }],
     totalAmount: {
         type: Number,

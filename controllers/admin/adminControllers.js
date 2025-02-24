@@ -219,11 +219,82 @@ const logout = async(req,res)=>{
   }
 }
 
+// Handle return approval
+const handleReturnApproval = async (req, res) => {
+    try {
+        const { orderId, itemId, action } = req.body;
+        console.log('Processing return approval:', { orderId, itemId, action });
+        
+        const order = await Order.findById(orderId);
+        if (!order) {
+            console.log('Order not found:', orderId);
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        const item = order.items.id(itemId);
+        if (!item) {
+            console.log('Item not found in order:', itemId);
+            return res.status(404).json({ success: false, message: 'Item not found in order' });
+        }
+
+        if (action === 'approve') {
+            // Update return status to Approved
+            item.returnStatus = 'Approved';
+            
+            // Restore product quantity
+            const product = await Product.findById(item.product);
+            if (product) {
+                console.log('Before quantity update:', {
+                    productId: product._id,
+                    currentQuantity: product.Quantity,
+                    returnQuantity: item.quantity
+                });
+                
+                product.Quantity += item.quantity; 
+                await product.save();
+                
+                console.log('After quantity update:', {
+                    productId: product._id,
+                    newQuantity: product.Quantity
+                });
+            } else {
+                console.log('Product not found:', item.product);
+            }
+
+            // Add refund information
+            item.refundInfo = {
+                status: 'Processed',
+                amount: item.price * item.quantity,
+                date: new Date()
+            };
+        } else if (action === 'reject') {
+            item.returnStatus = 'Rejected';
+            item.rejectionReason = req.body.rejectionReason || 'Return request rejected by admin';
+        }
+
+        await order.save();
+        console.log('Order updated successfully:', {
+            orderId: order._id,
+            itemId: item._id,
+            newStatus: item.returnStatus
+        });
+        
+        res.json({
+            success: true,
+            message: `Return request ${action}ed successfully`,
+            returnStatus: item.returnStatus
+        });
+    } catch (error) {
+        console.error('Error handling return approval:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
 
 module.exports = {
     loadLogin,
     loaddashboard,
     adminLogin,
     logout,
-    pageError
-}
+    pageError,
+    handleReturnApproval
+};
