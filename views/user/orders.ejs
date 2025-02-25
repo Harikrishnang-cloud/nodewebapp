@@ -8,11 +8,22 @@
                 <% if (orders && orders.length > 0) { %>
                     <div class="orders-list">
                         <% orders.forEach(function(order) { %>
-                            <div class="order-card">
+                            <div class="order-card" data-order-id="<%= order._id %>">
                                 <div class="order-header">
                                     <div class="order-info">
                                         <h3>Order #<%= order.orderId %></h3>
                                         <p class="order-date">Ordered on <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                                        <% if (order.couponCode) { %>
+                                            <p class="coupon-info">
+                                                <i class="fas fa-tag"></i> Coupon Applied: <%= order.couponCode %>
+                                                <% if (order.discount) { %>
+                                                    (Saved ₹<%= order.discount.toFixed(2) %>)
+                                                <% } %>
+                                            </p>
+                                            <p class="coupon-warning">
+                                                <i class="fas fa-warning"></i> This items cannot be returned
+                                            </p>
+                                        <% } %>
                                     </div>
                                     <div class="order-status <%= order.status.toLowerCase() %>">
                                         <%= order.status %>
@@ -38,7 +49,12 @@
                                                 
                                                 <% if (order.status === 'Delivered') { %>
                                                     <div class="return-status-section mt-3">
-                                                        <% if (item.returnStatus === 'Eligible') { %>
+                                                        <% if (item.returnStatus === 'Not Eligible') { %>
+                                                            <div class="return-status-badge warning">
+                                                                <i class="fas fa-exclamation-circle"></i>
+                                                                <%= item.returnMessage || 'This item is not eligible for return' %>
+                                                            </div>
+                                                        <% } else if (item.returnStatus === 'Eligible') { %>
                                                             <div class="return-eligible-info">
                                                                 <% if (order.returnEligibleUntil) { %>
                                                                     <p class="text-success mb-2">
@@ -67,7 +83,7 @@
                                                                         </small>
                                                                     </div>
                                                                 <% } else { %>
-                                                                    <small>Return approved, <strong>₹<%= order.totalAmount.toFixed(2) %></strong> will be refunded to your wallet</small>
+                                                                    <small>Return approved, <strong>₹<%= item.price.toFixed(2) %></strong> will be refunded to your wallet</small>
                                                                 <% } %>
                                                             </div>
                                                         <% } else if (item.returnStatus === 'Rejected') { %>
@@ -86,7 +102,12 @@
                                                             </div>
                                                         <% } else { %>
                                                             <div class="return-status-badge warning">
-                                                                <i class="fas fa-exclamation-circle"></i> Not Eligible for Return
+                                                                <i class="fas fa-exclamation-circle"></i>
+                                                                <% if (item.returnMessage) { %>
+                                                                    <%= item.returnMessage %>
+                                                                <% } else { %>
+                                                                    Not Eligible for Return
+                                                                <% } %>
                                                             </div>
                                                         <% } %>
                                                     </div>
@@ -100,35 +121,35 @@
                                     <div class="delivery-address">
                                         <h4>Delivery Address</h4>
                                         <p>
-                                            <%= order.address.fullName %><br>
-                                            <%= order.address.street %><br>
+                                            Name: <%= order.address.fullName %><br>
+                                            Address: <%= order.address.street %>,
                                             <%= order.address.city %>, <%= order.address.state %><br>
                                             PinCode: <%= order.address.pinCode %><br>
                                             Phone: <%= order.address.phone %>
-                                        </p>
+                                        </p><br>
                                     </div>
                                     <div class="order-summary">
                                         <div class="summary-row">
-                                            <span>Total Items:</span>
-                                            <span><%= order.items.length %></span>
+                                            <h4>Total Items:</h4>
+                                            <h4><%= order.items.length %>  No.s</h4>
                                         </div>
                                         <div class="summary-row">
-                                            <span>Payment Method:</span>
-                                            <span><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></span>
+                                            <h4>Payment Method:</h4>
+                                            <h4><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></h4>
                                         </div>
                                         <div class="summary-row">
-                                            <span>Payment Status:</span>
-                                            <span class="<%= order.paymentStatus.toLowerCase() %>">
+                                            <h4>Payment Status:</h4>
+                                            <h4 class="<%= order.paymentStatus.toLowerCase() %>">
                                                 <%= order.paymentStatus %>
-                                            </span>
+                                            </h4>
                                         </div>
                                     </div>
                                     <div class="order-total">
-                                        <!-- <p class="mb-1"><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p> -->
-                                        <% if (order.discount) { %>
-                                            <!-- <p class="mb-1"><strong>Discount:</strong> -₹<%= order.discount.toFixed(2) %></p> -->
-                                            <p class="mb-1"><strong>Final Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
-                                        <% } %>
+                                        <p class="mb-1"><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
+                                        <!-- <% if (order.discount) { %>
+                                            <p class="mb-1"><strong>Discount:</strong> -₹<%= order.discount.toFixed(2) %></p>
+                                            <p class="mb-1"><strong>Final Amount:</strong> ₹<%= order.totalAmount.toFixed(2) - order.discount.toFixed(2) + 50 %></p>
+                                        <% } %> -->
                                     </div>
                                     <div class="order-actions">
                                         <% if (order.status === 'Delivered') { %>
@@ -481,9 +502,10 @@
         border: 1px solid #dee2e6;
         color: #e94560;
         text-decoration: none;
-        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         transition: all 0.2s;
-        font-size: 0.9rem;
     }
 
     .page-link:hover {
@@ -664,6 +686,13 @@
         color: white;
     }
 
+    .return-btn.disabled {
+        background-color: #ccc !important;
+        cursor: not-allowed !important;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
     .return-status-badge {
         padding: 10px 15px;
         border-radius: 4px;
@@ -706,6 +735,13 @@
     .return-status-badge.warning {
         background-color: #ffc107;
         color: #000;
+        padding: 8px 12px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
     }
 
     .return-status-badge i {
@@ -757,6 +793,24 @@
     .refund-alert i {
         margin-right: 5px;
         color: #28a745;
+    }
+
+    .coupon-info {
+        color: #28a745;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    .coupon-warning{
+        color: #e94560;
+        font-size: 0.9rem;
+    }
+    .coupon-warning p {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .coupon-info i {
+        margin-right: 5px;
     }
 </style>
 <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
@@ -965,6 +1019,7 @@
     function openReturnModal(orderId, itemId, itemName) {
         currentOrderId = orderId;
         currentItemId = itemId;
+        
         document.getElementById('returnItemName').textContent = itemName;
         
         // Reset form

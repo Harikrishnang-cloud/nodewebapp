@@ -56,49 +56,42 @@ const userSchema = new Schema({
         street : {type:String,required:true},
         city : {type:String,required:true},
         state : {type:String,required:true},
-        // country : {type:String,required:true},
         pinCode : {type:String,required:true},
         phone :{type:String,required:true},
-        }],
-    // cart : [{
-    //     type : Schema.Types.ObjectId,
-    //     ref:"Cart"
-    // }],
-    // wallet : [{
-    //     type : Schema.Types.ObjectId,
-    //     default : "Wishlist"
-    // }],
-    // orderHistory : [{
-    //     type : Schema.Types.ObjectId,
-    //     ref : "Order"
-    // }],
+    }],
+    wallet: {
+        balance: {
+            type: Number,
+            default: 0
+        },
+        transactions: [{
+            amount: {
+                type: Number,
+                required: true
+            },
+            type: {
+                type: String,
+                enum: ['credit', 'debit'],
+                required: true
+            },
+            description: {
+                type: String,
+                required: true
+            },
+            orderId: {
+                type: Schema.Types.ObjectId,
+                ref: 'Order'
+            },
+            date: {
+                type: Date,
+                default: Date.now
+            }
+        }]
+    },
     createdOn : {
         type : Date,
         default : Date.now,
-    },
-    // referalCode : {
-    //     type : String
-    // },
-    // redeemed : {
-    //     type : Boolean
-    // },
-    // redeemedUsers : [{
-    //     type : Schema.Types.ObjectId,
-    //     ref : "User"
-    // }], 
-    // SearchHistory : {
-    //     category : {
-    //         type : Schema.Types.ObjectId,
-    //         ref : "Category",
-    //     },
-    //     brand : {
-    //         type : String
-    //     },
-    //     searchOn : {
-    //         type : Date,
-    //         default : Date.now
-    //     }
-    // }
+    }
 })
 const User = mongoose.model("User",userSchema);
 

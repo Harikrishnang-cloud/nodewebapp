@@ -4,7 +4,9 @@ const bcrypt = require('bcrypt')
 const Category = require('../../models/categorySchema')
 const Product = require('../../models/productSchema')
 const Order = require('../../models/orderSchema')
+const User = require('../../models/userSchema')
 const Publication = require('../../models/publicationSchema')
+const Wallet = require('../../models/walletSchema')
 
 //page-error controller --->
 const pageError = async (req, res) => {
@@ -230,12 +232,23 @@ const handleReturnApproval = async (req, res) => {
             console.log('Order not found:', orderId);
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
+        console.log('Found order:', {
+            orderId: order._id,
+            userId: order.userId,
+            items: order.items.length
+        });
 
         const item = order.items.id(itemId);
         if (!item) {
             console.log('Item not found in order:', itemId);
             return res.status(404).json({ success: false, message: 'Item not found in order' });
         }
+        console.log('Found item:', {
+            itemId: item._id,
+            productName: item.productName,
+            quantity: item.quantity,
+            price: item.price
+        });
 
         if (action === 'approve') {
             // Update return status to Approved
@@ -250,7 +263,7 @@ const handleReturnApproval = async (req, res) => {
                     returnQuantity: item.quantity
                 });
                 
-                product.Quantity += item.quantity; 
+                product.Quantity += item.quantity;
                 await product.save();
                 
                 console.log('After quantity update:', {
@@ -261,10 +274,51 @@ const handleReturnApproval = async (req, res) => {
                 console.log('Product not found:', item.product);
             }
 
-            // Add refund information
+            // Calculate refund amount
+            const refundAmount = item.price * item.quantity;
+            console.log('Calculated refund amount:', refundAmount);
+
+
+            try {
+                const userwallet = await Wallet.findOne({ userId: order.userId });
+                if(!userwallet){
+                  let wallet = await Wallet.create({
+                    userId: order.userId,
+                    balance: 0,
+                    transactions: []
+                  });
+                  wallet.balance += refundAmount;
+                  wallet.transactions.push({
+                    amount: refundAmount,
+                    type: 'credit',
+                    description: `Refund for returned item: ${item.productName}`,
+                    orderId: order._id,
+                    date: new Date()
+                  });
+                  await wallet.save();
+                }
+                else{
+                  userwallet.balance += refundAmount;
+                  userwallet.transactions.push({
+                    amount: refundAmount,
+                    type: 'credit',
+                    description: `Refund for returned item: ${item.productName}`,
+                    orderId: order._id,
+                    date: new Date()
+                  });
+                  await userwallet.save();
+                }
+               
+
+            } catch (walletError) {
+                console.error('Error updating wallet:', walletError);
+                return res.status(500).json({ success: false, message: 'Error updating wallet: ' + walletError.message });
+            }
+
+            // Add refund information to order item
             item.refundInfo = {
                 status: 'Processed',
-                amount: item.price * item.quantity,
+                amount: refundAmount,
                 date: new Date()
             };
         } else if (action === 'reject') {
@@ -286,9 +340,9 @@ const handleReturnApproval = async (req, res) => {
         });
     } catch (error) {
         console.error('Error handling return approval:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        res.status(500).json({ success: false, message: 'Internal server error: ' + error.message });
     }
-};
+}; 
 
 module.exports = {
     loadLogin,

@@ -1,6 +1,6 @@
 <%- include('../partials/admin/header.ejs') %>
 
-<div class="container-fluid">
+<div class="container-fluid container-fluid-custom">
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -38,7 +38,7 @@
                                             <td><%= order.orderId || order._id %></td>
                                             <td>
                                                 <%= order.userId.name %><br>
-                                                <small><%= order.userId.email %></small>
+                                                <small><%= order.userId.fullName %></small>
                                             </td>
                                             <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
                                             <td>₹<%= order.totalAmount.toFixed(2) %></td>
@@ -181,6 +181,10 @@
 </div>
 
 <style>
+
+.container-fluid-custom {
+    overflow-y: scroll;
+}
 .card {
     margin: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);

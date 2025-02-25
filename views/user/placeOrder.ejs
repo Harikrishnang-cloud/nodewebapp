@@ -877,8 +877,23 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
+        .coupon-apply {
+            font-weight: bold;
+            font-size:15px;
+            margin-top: 10px;
+            justify-content: center;
+            display: flex;
+        }
+        .coupon-apply p{
+            color : #28a745;
+        }
+        .text-danger{
+            margin-top:10px;
+            font-size: 11px;
+        }
+
 
         .discount-badge {
             background: #e9ecef;
@@ -1039,6 +1054,9 @@
                         <button onclick="showAvailableCoupons()" class="available-coupons-btn" id="couponButton">
                             <i class="fas fa-ticket-alt"></i> View Available Coupons
                         </button>
+                        <div>
+                            <p class="text-danger">* Warning : If use any coupon then your order will not return and you will not get refund</p>
+                        </div>
                     </div>
 
                     <!-- Price Details Section -->
@@ -1551,7 +1569,7 @@
                             return;
                         }
 
-                        data.coupons.forEach(coupon => {
+                        data.coupons.forEach((coupon,i) => {
                             const discountText = coupon.discountType === 'percentage' 
                                 ? `${coupon.discountAmount}% OFF` 
                                 : `₹${coupon.discountAmount} OFF`;
@@ -1571,6 +1589,10 @@
                                     <div class="min-purchase">Min. Purchase: ₹${coupon.minimumPurchase}</div>
                                 </div>
                                 <div class="coupon-validity">Valid till: ${new Date(coupon.expiryDate).toLocaleDateString()}</div>
+                            ${i==data.coupons.length-1 ? `
+                                <div class="coupon-apply">
+                                    <p>This is the best Coupon for you</p>
+                                </div>` : ''}
                             `;
                             couponList.appendChild(couponItem);
                         });

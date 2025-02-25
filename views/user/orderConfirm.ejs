@@ -14,7 +14,7 @@
                                 <h3>Order Details</h3>
                                 <div class="details-row">
                                     <span>Order ID:</span>
-                                    <span>#<%= order._id %></span>
+                                    <span>#<%= order.orderId %></span>
                                 </div>
                                 <div class="details-row">
                                     <span>Order Date:</span>
@@ -33,10 +33,9 @@
                             <div class="shipping-address">
                                 <h3>Shipping Address</h3>
                                 <p>
-                                    <%= order.address.fullName %><br>
-                                    <%= order.address.street %><br>
-                                    <%= order.address.city %>,
-                                     <%= order.address.state %><br>
+                                    Name: <%= order.address.fullName %><br>
+                                    Address: <%= order.address.street %>,
+                                    <%= order.address.city %>,<%= order.address.state %><br>
                                     PinCode: <%= order.address.pinCode %><br>
                                     Phone: <%= order.address.phone %>
                                 </p>

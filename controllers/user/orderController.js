@@ -27,8 +27,10 @@ const generateOrderId = async () => {
     return orderId;
 };
 
+// Place order page
 const getPlaceOrderPage = async (req, res) => {
     try {
+        //not user 
         if (!req.session.user || !req.session.user._id) {
             return res.redirect('/login'); 
         }
@@ -124,11 +126,12 @@ const placeOrder = async (req, res) => {
 
         console.log("before coupon", totalDiscount)
         // If a coupon is applied, calculate additional discount
+        let couponDiscount = 0;
         if (req.body.couponCode) {
             const coupon = await Coupon.findOne({ code: req.body.couponCode });
             console.log("coupon code:", coupon)
             if (coupon && coupon.status) {
-                const couponDiscount = (totalAmount * coupon.discountAmount) / 100;
+                couponDiscount = (totalAmount * coupon.discountAmount) / 100;
                 totalDiscount = totalDiscount + couponDiscount;
                 totalAmount = totalAmount - couponDiscount;
             }
@@ -167,11 +170,9 @@ const placeOrder = async (req, res) => {
             userId: userId,
             items: orderItems,
             totalAmount: totalAmount,
-            discount: totalDiscount,
-            status: paymentMethod === 'cod' ? 'Pending' : 'Processing',
-            deliveryFee: 40,
-            packagingFee: 10,
-            orderDate: new Date(),
+            discount: couponDiscount,
+            couponDiscount: couponDiscount,  // Store the coupon discount amount
+            couponCode: req.body.couponCode,  // Store the coupon code used
             address: {
                 fullName: selectedAddress.fullName,
                 phone: selectedAddress.phone,
@@ -309,13 +310,19 @@ const getOrders = async (req, res) => {
 
                 // Check each item's return status
                 order.items.forEach(item => {
-                    if (!item.returnStatus || item.returnStatus === 'Not Eligible') {
-                        item.returnStatus = 'Eligible';
-                        needsSave = true;
+                    // If order has a coupon, items are not returnable
+                    if (order.couponCode) {
+                        item.returnStatus = 'Not Eligible';
+                        item.returnMessage = 'Returns not available for items purchased with coupon';
+                    }
+                    // Otherwise check normal eligibility
+                    else { 
+                        item.returnStatus = item.returnStatus ==='Not Eligible' ? 'Eligible' : item.returnStatus;
                     }
                 });
 
                 if (needsSave) {
+                    order.markModified('items');
                     await order.save();
                 }
             }
@@ -462,7 +469,7 @@ const generateInvoice = async (req, res) => {
         doc.moveDown();
 
         // Order details
-        doc.fontSize(12).text(`Order ID: ${orderId}`);
+        doc.fontSize(12).text(`Order ID: ${order.orderId}`);
         doc.text(`Date: ${order.orderDate.toLocaleDateString()}`);
         doc.moveDown();
 
@@ -477,11 +484,27 @@ const generateInvoice = async (req, res) => {
             doc.moveDown(0.5);
             totalAmount += (item.quantity * item.price);
         });
-        doc.text("(Shipping Fee: ₹40)");
-        doc.text("(Packaging Fee: ₹10)");
+
+        // Add shipping and packaging fees
+        const shippingFee = 40;
+        const packagingFee = 10;
+        doc.text(`Shipping Fee: ₹${shippingFee}`);
+        doc.text(`Packaging Fee: ₹${packagingFee}`);
+        
+        // Subtotal before discount
+        const subtotal = totalAmount + shippingFee + packagingFee;
+        doc.text(`Subtotal: ₹${subtotal}`);
+
+        // Apply discount only if coupon is used
+        const discount = order.discount || 0;
+        if(discount > 0){
+            doc.text(`Coupon Discount: -₹${discount}`);
+            totalAmount = subtotal - discount;
+        } 
+        
         doc.moveDown();
         // Total
-        doc.fontSize(14).text(`Total Amount: ₹${totalAmount + 50}`, { underline: true });
+        doc.fontSize(14).text(`Total Amount: ₹${totalAmount}`, { underline: true });
         
         // Payment details
         doc.moveDown();
@@ -551,19 +574,26 @@ const requestReturn = async (req, res) => {
     try {
         const { orderId, itemId, reason } = req.body;
         const userId = req.session.user._id;
+        
+        console.log('Return Request Data:', { orderId, itemId, reason, userId });
 
         const order = await Order.findOne({ _id: orderId, userId });
+        console.log('Found Order:', order ? 'Yes' : 'No', order?._id);
+        
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
         // Check if order is delivered
+        console.log('Order Status:', order.status);
         if (order.status !== 'Delivered') {
             return res.status(400).json({ success: false, message: 'Only delivered orders can be returned' });
         }
 
         // Find the specific item in the order
         const item = order.items.find(item => item._id.toString() === itemId);
+        console.log('Found Item:', item ? 'Yes' : 'No', item?._id);
+        
         if (!item) {
             return res.status(404).json({ success: false, message: 'Item not found in order' });
         }
@@ -572,64 +602,111 @@ const requestReturn = async (req, res) => {
         const deliveryDate = order.deliveryDate;
         const returnEligibleDays = 7; // 7 days return policy
         const returnEligibleUntil = new Date(deliveryDate.getTime() + (returnEligibleDays * 24 * 60 * 60 * 1000));
+        const currentDate = new Date();
         
-        if (!deliveryDate || new Date() > returnEligibleUntil) {
+        console.log('Return Eligibility:', {
+            deliveryDate,
+            returnEligibleUntil,
+            currentDate,
+            isEligible: currentDate <= returnEligibleUntil
+        });
+
+        if (!deliveryDate || currentDate > returnEligibleUntil) {
             return res.status(400).json({ success: false, 
                 message: 'Return period has expired. Items can only be returned within 7 days of delivery' });
         }
 
+        console.log('Item Return Status:', item.returnStatus);
         if (item.returnStatus !== 'Eligible') {
             return res.status(400).json({ success: false, message: 'This item is not eligible for return' });
         }
 
-        // Update item return status
+        // Calculate refund amount considering coupon discount if applicable
+        let refundAmount = item.price * item.quantity;
+        if (order.couponCode && order.couponDiscount) {
+            const totalOrderValue = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const discountPercentage = order.couponDiscount / totalOrderValue;
+            refundAmount = refundAmount - (refundAmount * discountPercentage);
+        }
+        
+        console.log('Refund Calculation:', {
+            originalPrice: item.price,
+            quantity: item.quantity,
+            couponDiscount: order.couponDiscount,
+            finalRefundAmount: refundAmount
+        });
+
+        // Update item return status and refund info
         item.returnStatus = 'Requested';
         item.returnRequestDate = new Date();
         item.returnReason = reason;
+        item.refundInfo = {
+            amount: refundAmount,
+            method: 'wallet', // Default to wallet refund
+            message: 'Return request initiated',
+            timestamp: new Date()
+        };
 
         // Mark the changes as modified so mongoose knows to save them
         order.markModified('items');
         await order.save();
+        console.log('Order saved successfully');
 
-        res.status(200).json({ success: true, message: 'Return request submitted successfully' });
+        res.status(200).json({ 
+            success: true, 
+            message: 'Return request submitted successfully',
+            refundAmount: refundAmount,
+            refundMethod: 'wallet'
+        });
 
     } catch (error) {
-        console.error('Error requesting return:', error);
-        res.status(500).json({ success: false, message: 'Failed to submit return request' });
+        console.error('Error in requestReturn:', error);
+        res.status(500).json({ success: false, message: 'Failed to submit return request', error: error.message });
     }
 };
 
 // Mark item as eligible for return when order is delivered
 const markItemsEligibleForReturn = async (orderId) => {
     try {
+        console.log('Marking items eligible for return for order:', orderId);
+        
         const order = await Order.findById(orderId).populate('items.product');
-        if (!order) return;
+        if (!order) {
+            console.log('Order not found for eligibility marking');
+            return;
+        }
 
         // Set delivery date and return eligibility
         order.deliveryDate = new Date();
         const returnEligibleDays = 7;
         order.returnEligibleUntil = new Date(order.deliveryDate.getTime() + (returnEligibleDays * 24 * 60 * 60 * 1000));
 
-        // Mark items as eligible for return based on conditions
+        console.log('Processing return eligibility for items:', order.items.length);
+        
+        // All items are eligible for return within the return period
         for (const item of order.items) {
-            // Check if the product exists and is returnable
-            if (item.product) {
-                // You can add more conditions here based on your product schema
-                // For example: if the product is not in a special category, damaged, etc.
+            console.log('Checking item:', item._id, 'Product:', item.product?._id);
+            
+            if (item.product && !item.product.nonReturnable) {
                 item.returnStatus = 'Eligible';
+                item.returnMessage = 'Eligible for return within 7 days of delivery';
+                console.log('Item marked as eligible');
             } else {
                 item.returnStatus = 'Not Eligible';
+                item.returnMessage = item.product ? 'This item is not eligible for return' : 'Product information not found';
+                console.log('Item marked as not eligible');
             }
         }
 
         order.markModified('items');
         await order.save();
+        console.log('Successfully saved return eligibility status');
+        
     } catch (error) {
-        console.error('Error marking items eligible for return:', error);
+        console.error('Error marking items for return eligibility:', error);
     }
 };
 
-// Update the existing updateOrderStatus function to handle return eligibility
 const updateOrderStatus = async (orderId, status, location = '', description = '') => {
     try {
         const order = await Order.findById(orderId);
