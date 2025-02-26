@@ -38,15 +38,16 @@
                                 <div class="order-items">
                                     <% order.items.forEach(function(item) { %>
                                         <div class="order-item">
-                                            <div class="item-image">
-                                                <img src="/uploads/<%= item.productImage %>" alt="<%= item.productName %>">
+                                            <div class="book-info">
+                                                <img class="item-image" src="/uploads/<%= item.productImage %>" alt="<%= item.productName %>">
+                                                <div  class="item-details">
+                                                    <h4><%= item.productName %></h4>
+                                                    <p class="description"><%= item.productDescription %></p>
+                                                    <p>Quantity: <%= item.quantity %></p>
+                                                    <p>Price: ₹<%= item.price.toFixed(2) %></p>
+                                                </div>
                                             </div>
-                                            <div class="item-details">
-                                                <h4><%= item.productName %></h4>
-                                                <p class="description"><%= item.productDescription %></p>
-                                                <p>Quantity: <%= item.quantity %></p>
-                                                <p>Price: ₹<%= item.price.toFixed(2) %></p>
-                                                
+                                            <div>
                                                 <% if (order.status === 'Delivered') { %>
                                                     <div class="return-status-section mt-3">
                                                         <% if (item.returnStatus === 'Not Eligible') { %>
@@ -146,10 +147,7 @@
                                     </div>
                                     <div class="order-total">
                                         <p class="mb-1"><strong>Total Amount:</strong> ₹<%= order.totalAmount.toFixed(2) %></p>
-                                        <!-- <% if (order.discount) { %>
-                                            <p class="mb-1"><strong>Discount:</strong> -₹<%= order.discount.toFixed(2) %></p>
-                                            <p class="mb-1"><strong>Final Amount:</strong> ₹<%= order.totalAmount.toFixed(2) - order.discount.toFixed(2) + 50 %></p>
-                                        <% } %> -->
+                                        
                                     </div>
                                     <div class="order-actions">
                                         <% if (order.status === 'Delivered') { %>
@@ -812,8 +810,20 @@
     .coupon-info i {
         margin-right: 5px;
     }
+    .item-image{
+        width:90px;
+        height:120px;
+        border-radius: 3px;
+    }
+    .book-info{
+        display:flex;
+        width:100%;
+
+    }
 </style>
 <link href="https://cdn.razorpay.com/static/assets/razorpay-checkout.css" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
     async function cancelOrder(orderId) {
         const result = await Swal.fire({

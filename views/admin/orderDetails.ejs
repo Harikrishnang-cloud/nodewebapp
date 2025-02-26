@@ -1,15 +1,11 @@
 <%- include('../partials/admin/header.ejs') %>
 
 <div class="container-fluid">
-    <div class="row">
-<!--     
-<div class="container-fluid">
-    <div class="row"> -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="row overflow-y-scroll">
+        <main class="col-md-9 ms-sm-3 col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Order Details</h1>
             </div>
-
             <div class="card mb-4">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
@@ -19,7 +15,7 @@
                 <div class="card-body">
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <h6 class="mb-3">Shipping Details</h6>
+                            <h6 class="mb-3"><strong>Shipping Details</strong></h6>
                             <p class="mb-1"><strong>Name:</strong> <%= order.address.fullName %></p>
                             <p class="mb-1"><strong>Address:</strong> <%= order.address.street %></p>
                             <p class="mb-1"><strong>City:</strong> <%= order.address.city %></p>
@@ -29,7 +25,7 @@
                             <p class="mb-1"><strong>Phone:</strong> <%= order.address.phone %></p>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="mb-3">Order Information</h6>
+                            <h6 class="mb-3"><strong>Order Information</strong></h6>
                             <p class="mb-1"><strong>Order Date:</strong> <%= new Date(order.orderDate).toLocaleString() %></p>
                             <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
                             <p class="mb-1"><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
@@ -145,6 +141,7 @@
     </div>
 </div>
 
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Create modal instance
@@ -234,5 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 <%- include('../partials/admin/footer.ejs') %>
