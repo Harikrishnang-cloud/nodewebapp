@@ -48,7 +48,7 @@ const loaddashboard = async (req, res) => {
           }
         }
       ]);
-// console.log(topProducts)
+
 
       // Fetch top 10 categories
       const topCategories = await Order.aggregate([{ $unwind: "$items" },
@@ -75,7 +75,7 @@ const loaddashboard = async (req, res) => {
           }
         }
       ]);
-// console.log(topCategories)
+
 
       // Fetch top 10 publications
       const topPublications = await Order.aggregate([
@@ -103,7 +103,7 @@ const loaddashboard = async (req, res) => {
           }
         }
       ]);
-// console.log(topPublications)
+
       // Get yearly, monthly, and weekly sales data
       const currentDate = new Date();
       const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
@@ -275,9 +275,9 @@ const handleReturnApproval = async (req, res) => {
             }
 
             // Calculate refund amount
-            const refundAmount = item.price * item.quantity;
+            let refundAmount = item.price * item.quantity;
+  
             console.log('Calculated refund amount:', refundAmount);
-
 
             try {
                 const userwallet = await Wallet.findOne({ userId: order.userId });

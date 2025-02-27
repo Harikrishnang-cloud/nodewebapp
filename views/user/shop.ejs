@@ -141,9 +141,8 @@
 </div>
 
 <style>
-    /* Existing styles */
-
     /* Product Card Styles */
+    
     .product-card {
         transition: all 0.3s ease;
     }
@@ -532,12 +531,8 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ 
-                    id: productId,
-                    quantity: 1
-                })
+                    'X-Requested-With': 'XMLHttpRequest'},
+                body: JSON.stringify({ id: productId,quantity: 1})
             });
 
             const data = await response.json();
@@ -596,7 +591,7 @@
                     title: isInWishlist ? 'Product Removed from Wishlist!' : 'Product Added to Wishlist!',
                     showConfirmButton: true,
                     confirmButtonText: 'OK',
-                    confirmButtonColor: '#e94560'
+                    confirmButtonColor: '#28a745'
                 });
             } else {
                 throw new Error(data.message || 'Failed to update wishlist');

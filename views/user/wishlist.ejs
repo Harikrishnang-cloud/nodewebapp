@@ -21,9 +21,9 @@
                         <tr>
                             <td>
                                 <% if (product.productImage && product.productImage.length > 0) { %>
-                                    <img src="/uploads/<%= product.productImage[0] %>" alt="<%= product.name %>" style="height: 100px; width: 100px; object-fit: cover;">
+                                    <img src="/uploads/<%= product.productImage[0] %>" alt="<%= product.name %>" style="height: 140px; width: 100px; object-fit: cover;">
                                 <% } else { %>
-                                    <img src="/uploads/default-product.jpg" alt="<%= product.name %>" style="height: 100px; width: 100px; object-fit: cover;">
+                                    <img src="/uploads/default-product.jpg" alt="<%= product.name %>" style="height: 140px; width: 100px; object-fit: cover;">
                                 <% } %>
                             </td>
                             <td><%= product.productName %></td>
@@ -198,6 +198,7 @@
             min-width: 80px;
         }
     }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
