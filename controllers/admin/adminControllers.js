@@ -193,7 +193,7 @@ const adminLogin = async (req, res) => {
     if (admindata) {
       if(!admindata.isAdmin)return res.status(400).json({success:true, message:"You are not an admin"})
 
-        const isPasswordMatch = await bcrypt.compare(admindata.password, password)
+        const isPasswordMatch = await bcrypt.compare( password,admindata.password)
       if (isPasswordMatch) {
         req.session.admin = admindata._id + "";
         return res.status(200).json({ success: true, message: "Admin login successful" });
