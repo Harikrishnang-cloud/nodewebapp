@@ -36,15 +36,8 @@ const addCoupon = async (req, res) => {
             return res.status(400).json({success: false,message: 'Coupon code already exists'});
         }
 
-        const coupon = new Coupon({
-            code: code.toUpperCase(),
-            description,
-            discountType,
-            discountAmount,
-            minimumPurchase,
-            usageLimit,
-            expiryDate: new Date(expiryDate)
-        });
+        const coupon = new Coupon({code: code.toUpperCase(),description,discountType,discountAmount,minimumPurchase,usageLimit,
+            expiryDate: new Date(expiryDate)});
 
         await coupon.save();
         res.status(201).json({ success: true, message: 'Coupon created successfully' });

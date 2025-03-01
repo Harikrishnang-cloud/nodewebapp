@@ -67,9 +67,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'controllers/public/uplo
 app.use('/auth', authRoutes);
 app.use('*',adminController.pageError)
 app.use('/error',(req,res)=>{
+    // console.log()
     throw new Error("This is Error")
 })
 app.use((err,req,res,next)=>{
+    console.log(err)
     res.redirect(`/admin/pageerror/?error=${err.message}`)
 })
 

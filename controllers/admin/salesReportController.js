@@ -162,7 +162,7 @@ const downloadSalesReport = async (req, res) => {
         const reportData = orders.map(order => {
             const userName = order.userId ? (order.userId.fullName || order.userId.name || 'N/A') : 'Deleted User';
             return {
-                'Order ID': order._id.toString(),
+                'Order ID': order.orderId.toString(),
                 'Date': moment(order.orderDate).format('YYYY-MM-DD HH:mm:ss'),
                 'Customer Name': userName,
                 'Discount': (order.discount || 0).toFixed(2),

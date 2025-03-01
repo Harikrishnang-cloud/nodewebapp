@@ -51,10 +51,12 @@
                                                 <% if (order.status === 'Delivered') { %>
                                                     <div class="return-status-section mt-3">
                                                         <% if (item.returnStatus === 'Not Eligible') { %>
+                                                            
                                                             <div class="return-status-badge warning">
                                                                 <i class="fas fa-exclamation-circle"></i>
                                                                 <%= item.returnMessage || 'This item is not eligible for return' %>
                                                             </div>
+                                                            
                                                         <% } else if (item.returnStatus === 'Eligible') { %>
                                                             <div class="return-eligible-info">
                                                                 <% if (order.returnEligibleUntil) { %>
@@ -132,7 +134,11 @@
                                     <div class="order-summary">
                                         <div class="summary-row">
                                             <h4>Total Items:</h4>
-                                            <h4><%= order.items.length %>  No.s</h4>
+                                            <h4><%= order.items.length %> </h4>
+                                        </div>
+                                        <div class = "summary-row">
+                                            <h4>Total Quantity:</h4> 
+                                            <h4><%= order.items.reduce((total, item) => total + item.quantity, 0) %> items</h4>
                                         </div>
                                         <div class="summary-row">
                                             <h4>Payment Method:</h4>
@@ -883,12 +889,8 @@
         try {
             const razorpayOrder = await fetch('/razorpay/createOrder', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    orderId: orderId
-                })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({orderId: orderId})
             });
 
             const orderRazorpay = await razorpayOrder.json();

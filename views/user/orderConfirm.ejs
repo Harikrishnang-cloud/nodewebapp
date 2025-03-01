@@ -25,6 +25,10 @@
                                     <span><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %></span>
                                 </div>
                                 <div class="details-row">
+                                    <span>Total Quantity:</span>
+                                    <span><%= order.items.reduce((total, item) => total + item.quantity, 0) %></span>
+                                </div>
+                                <div class="details-row">
                                     <span>Total Amount:</span>
                                     <span>₹<%= order.totalAmount.toFixed(2) %></span>
                                 </div>

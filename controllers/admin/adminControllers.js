@@ -140,7 +140,7 @@ async function getSalesData(startDate, period) {
       groupBy = {
         year: { $year: "$createdAt" }
       };
-      const years = [2022, 2023, 2024];
+      const years = [2023, 2024, 2025];
       labels = years.map(year => year.toString());
     } else if (period === 'month') {
       groupBy = {
@@ -276,7 +276,7 @@ const handleReturnApproval = async (req, res) => {
 
             // Calculate refund amount
             let refundAmount = item.price * item.quantity;
-  
+            
             console.log('Calculated refund amount:', refundAmount);
 
             try {
