@@ -344,6 +344,16 @@
             min-width: 80px;
         }
     }
+
+    .text-truncate-multiline {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3; /* Change this number to limit lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 4.5em; /* Adjust based on font-size */
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -418,7 +428,7 @@
                             <a href="/productDetails/?id=${product._id}" class="text-decoration-none">
                                 <h5 class="card-title" style="color: #e94560;">${product.productName}</h5>
                             </a>
-                            <p class="card-text mb-2">${product.description || 'Unknown description'}</p>
+                            <p class="card-text mb-2 text-truncate-multiline">${product.description || 'Unknown description'}</p>
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
