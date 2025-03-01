@@ -1,5 +1,14 @@
 <%-include("../../views/partials/user/header")%>
     <style>
+      .text-truncate-multiline {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3; /* Change this number to limit lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 4.5em; /* Adjust based on font-size */
+}
       .book-card{
         align-self: st;
       }
@@ -145,8 +154,8 @@
                   <img src="uploads/<%= cats[i].topProducts[j].productImage[0] %>" class="img-fluid shadow-sm" alt="product item">
                   <div class="item-content ms-3">
                     <h6 class="mb-0 fw-bold"><a href="/productDetails/?id=<%=cats[i].topProducts[j]._id%>"><%=cats[i].topProducts[j].productName%></a></h6>
-                    <div class="review-content d-flex">
-                      <p class="my-2 me-2 fs-6 text-black-50"><%=cats[i].topProducts[j].description %></p>
+                    <div class="review-content d-flex flex-column">
+                      <p class="my-2 me-2 fs-6 text-black-50 text-truncate-multiline"><%=cats[i].topProducts[j].description %></p>
 
                       <div class="rating text-warning d-flex align-items-center">
                         <svg class="star star-fill">
