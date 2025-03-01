@@ -35,6 +35,10 @@ const userSchema = new Schema({
             type: String
         }
     },
+    googleId:{
+        type:String
+    }
+    ,
     password : {
         type : String,
         required : false
