@@ -79,7 +79,7 @@
                                         <a href="/productDetails/?id=<%= product._id %>" class="text-decoration-none">
                                             <h5 class="card-title" style="color: #e94560;"><%= product.productName %></h5>
                                         </a>
-                                        <p class="card-text mb-2">By <%= product.description || 'Unknown description' %></p>
+                                        <p class="card-text mb-2 text-truncate-multiline"><%= product.description || 'Unknown description' %></p>
                                         <div class="mt-auto">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <div>
