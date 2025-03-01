@@ -8,6 +8,7 @@ const User = require('../../models/userSchema')
 const Publication = require('../../models/publicationSchema')
 const Wallet = require('../../models/walletSchema')
 
+
 //page-error controller --->
 const pageError = async (req, res) => {
     try {
@@ -187,10 +188,13 @@ const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log(req.body);
-    const admindata = await adminModel.findOne({ email: email });
+    const admindata = await User.findOne({ email: email });
 
     if (admindata) {
-      if (admindata.password === password) {
+      if(!admindata.isAdmin)return res.status(400).json({success:true, message:"You are not an admin"})
+
+        const isPasswordMatch = await bcrypt.compare(admindata.password, password)
+      if (isPasswordMatch) {
         req.session.admin = admindata._id + "";
         return res.status(200).json({ success: true, message: "Admin login successful" });
       } 
