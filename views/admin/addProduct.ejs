@@ -218,7 +218,7 @@
     <div class="content-header">
         <h1>Add New Product</h1>
     </div>
-    <form method="post" action="/admin/addProduct" enctype="multipart/form-data" id="addProductForm">
+    <form method="post"  enctype="multipart/form-data" id="addProductForm" onsubmit="return false">
         <div class="form-container">
             <!-- Left Section -->
             <div class="left-section">
@@ -385,11 +385,23 @@
     }
 
     cropSaveBtn.addEventListener('click', () => {
-        const croppedCanvas = cropper.getCroppedCanvas();
-        const croppedImage = croppedCanvas.toDataURL('image/png');
+    const croppedCanvas = cropper.getCroppedCanvas();
+
+    if (!croppedCanvas) return;
+
+    croppedCanvas.toBlob((blob) => {
+        const file = new File([blob], `cropped-image-${currentImageIndex}.png`, { type: "image/png" });
+
+        const imageInput = document.getElementById(`imageInput${currentImageIndex}`);
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        imageInput.files = dataTransfer.files;
+
         const previewContainer = document.getElementById(`previewContainer${currentImageIndex}`);
-        previewContainer.innerHTML = `<img src="${croppedImage}" alt="Cropped Image">`;
+        previewContainer.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Cropped Image">`;
+
         closeCropperModal();
+    }, "image/png");
     });
 
     cropCancelBtn.addEventListener('click', closeCropperModal);
@@ -670,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(this);
             
             // Submit the form using fetch
-            const response = await fetch(this.action, {
+            const response = await fetch("/admin/addProduct", {
                 method: 'POST',
                 body: formData
             });
