@@ -1,6 +1,7 @@
 <%-include("../../views/partials/user/header")%>
-    <style>
-      .text-truncate-multiline {
+
+<style>
+.text-truncate-multiline {
   display: -webkit-box;
   line-clamp: 3;
   -webkit-line-clamp: 3; /* Change this number to limit lines */
@@ -9,15 +10,15 @@
   text-overflow: ellipsis;
   max-height: 4.5em; /* Adjust based on font-size */
 }
-      .book-card{
+.book-card{
         align-self: st;
       }
 
-      .item{
-        height: 9rem;
-      }
+.item{
+  height: 9rem;
+}
 
-      .heading {
+.heading {
   font-size: 28px;
   font-weight: bold;
   color: #ff3d00; /* Bright red for urgency */
@@ -35,7 +36,7 @@
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-    </style>
+</style>
     <section id="limited-offer" class="padding-large"
       style="background-image: url(images/banner-image-bg-1.jpg); background-size: cover; background-repeat: no-repeat; background-position: center; height: 800px;">
       <div class="container">
@@ -97,7 +98,7 @@
         <div class="swiper product-swiper">
           <div class="swiper-wrapper">
             <!-- books -->
-             <% for(let i = 0; i < book.length; i++){ %>
+             <% for(let i = 0; i < Math.min(8,book.length); i++){ %>
             <div class="swiper-slide book-card">
               <div class="card position-relative p-4 border rounded-3">
                 <div class="position-absolute">
@@ -149,12 +150,10 @@
               </div>
             </div>
             <% } %>
-
           </div>
         </div>
       </div>
     </section>
-
     <section id="items-listing" class="padding-large">
       <div class="container">
         <div class="row">
