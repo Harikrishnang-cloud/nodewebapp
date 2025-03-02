@@ -16,19 +16,38 @@
       .item{
         height: 9rem;
       }
+
+      .heading {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ff3d00; /* Bright red for urgency */
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.8); /* Light transparent white */
+  padding: 12px 24px;
+  border-radius: 10px;
+  display: inline-block;
+  text-align: center;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
     </style>
     <section id="limited-offer" class="padding-large"
       style="background-image: url(images/banner-image-bg-1.jpg); background-size: cover; background-repeat: no-repeat; background-position: center; height: 800px;">
       <div class="container">
-        <div class="row d-flex align-items-center">
+        <div class="row d-flex  align-items-center">
           <div class="col-md-6 text-center">
             <div class="image-holder">
               <img src="images/banner-image3.png" class="img-fluid" alt="banner">
             </div>
           </div>
           <div class="col-md-5 offset-md-1 mt-5 mt-md-0 text-center text-md-start">
-            <h2>30% Discount on all items. Hurry Up !!!</h2>
-            <div id="countdown-clock" class="text-dark d-flex align-items-center my-3">
+            <h2 class="heading">Month-End Rush! Grab Your Deal Now!</h2>
+            <div id="countdown-clock" class="text-dark d-flex justify-content-center align-items-center my-3">
               <div class="time d-grid pe-3">
                 <span class="days fs-1 fw-normal"></span>
                 <small>Days</small>
@@ -49,7 +68,10 @@
                 <small>Sec</small>
               </div>
             </div>
-            <a href="/user/shop/:page" class="btn mt-3">Shop Collection</a>
+            <div class="d-flex justify-content-center">
+              <a href="/user/shop/:page" class="btn mt-3">Shop Collection</a>
+            </div>
+            
           </div>
         </div>
       </div>
