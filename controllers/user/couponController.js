@@ -1,5 +1,6 @@
 const Coupon = require('../../models/couponSchema');
-const cart = require('../../models/cartSchema')
+const cart = require('../../models/cartSchema');
+const statusCode = require('../statusCode');
 
 // Get available coupons
 const getAvailableCoupons = async (req, res) => {
@@ -12,11 +13,11 @@ const getAvailableCoupons = async (req, res) => {
         
         console.log("coupons VANNU",coupons);
 
-        res.status(200).json({success: true,coupons: coupons});
+        res.status(statusCode.success).json({success: true,coupons: coupons});
 
     } catch (error) {
         console.error('Error fetching coupons:', error);
-        res.status(500).json({success: false,message: 'Failed to fetch coupons'});
+        res.status(statusCode.Internal_server_error).json({success: false,message: 'Failed to fetch coupons'});
     }
 };
 

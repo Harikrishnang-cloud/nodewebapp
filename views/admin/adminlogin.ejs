@@ -193,13 +193,11 @@ document
     // Basic validation
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       isValid = false;
-      document.getElementById("emailError").textContent =
-        "Enter a valid email address.";
+      document.getElementById("emailError").textContent = "Enter a valid email address.";
     }
     if (password.length < 6) {
       isValid = false;
-      document.getElementById("passwordError").textContent =
-        "Password must be at least 6 characters.";
+      document.getElementById("passwordError").textContent = "Password must be at least 6 characters.";
     }
 
     if (isValid) {
